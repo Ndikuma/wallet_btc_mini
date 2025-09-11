@@ -32,43 +32,45 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { Area, AreaChart, XAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { BitcoinIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/api";
 import type { Wallet, Transaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+
 
 const chartConfig = {
-  balance: {
-    label: "Balance (BTC)",
+  price: {
+    label: "Price (USD)",
     color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
 
 const INITIAL_BTC_TO_USD_RATE = 65000;
+const INITIAL_BTC_TO_BIF_RATE = 200000000; // Mock rate for BTC to BIF
 
 export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [balanceHistory, setBalanceHistory] = useState<any[]>([]);
+  const [priceHistory, setPriceHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [btcPrice, setBtcPrice] = useState(INITIAL_BTC_TO_USD_RATE);
+  const [btcToBifRate, setBtcToBifRate] = useState(INITIAL_BTC_TO_BIF_RATE);
   const [priceMovement, setPriceMovement] = useState<"up" | "down" | "neutral">("neutral");
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [walletRes, transactionsRes, historyRes] = await Promise.all([
+        const [walletRes, transactionsRes] = await Promise.all([
           api.get("/wallets/"),
           api.get("/transactions/?limit=4"),
-          api.get("/wallets/balance-history/"),
         ]);
         setWallet(walletRes.data);
         setRecentTransactions(transactionsRes.data.results);
-        setBalanceHistory(historyRes.data);
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
       } finally {
@@ -77,21 +79,39 @@ export default function DashboardPage() {
     }
     fetchData();
 
+    // Simulate price history for the chart
+    const generatePriceHistory = () => {
+        let history = [];
+        let price = INITIAL_BTC_TO_USD_RATE;
+        const now = new Date();
+        for (let i = 30; i >= 0; i--) {
+            const date = new Date(now);
+            date.setDate(now.getDate() - i);
+            price += (Math.random() - 0.5) * 1000;
+            history.push({
+                date: date.toISOString().split('T')[0],
+                price: price
+            });
+        }
+        setPriceHistory(history);
+    }
+    generatePriceHistory();
+
     const interval = setInterval(() => {
       setBtcPrice(prevPrice => {
         const change = (Math.random() - 0.5) * 200;
         const newPrice = prevPrice + change;
         setPriceMovement(newPrice > prevPrice ? "up" : "down");
+        // Also update BIF rate proportionally
+        setBtcToBifRate(prevBifRate => prevBifRate * (newPrice / prevPrice));
         return newPrice;
       });
     }, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  const displayBalance = () => {
-    if (!wallet) return "$0.00";
-    return (wallet.balance * btcPrice).toLocaleString("en-US", { style: "currency", currency: "USD" });
-  };
+  const balanceUsd = useMemo(() => (wallet?.balance || 0) * btcPrice, [wallet, btcPrice]);
+  const balanceBif = useMemo(() => (wallet?.balance || 0) * btcToBifRate, [wallet, btcToBifRate]);
 
   if (loading) {
     return (
@@ -137,7 +157,7 @@ export default function DashboardPage() {
           <CardHeader>
              <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold">{displayBalance()}</span>
+                <span className="text-4xl font-bold">{balanceUsd.toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
                 <div className={cn("flex items-center gap-1 text-sm font-medium", {
                     "text-green-600": priceMovement === 'up',
                     "text-destructive": priceMovement === 'down',
@@ -146,30 +166,47 @@ export default function DashboardPage() {
                     {priceMovement === 'down' && <ArrowDown className="size-4" />}
                 </div>
              </div>
+             <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>{(wallet?.balance || 0).toFixed(8)} BTC</span>
+                <Separator orientation="vertical" className="h-4" />
+                <span>≈ {((wallet?.balance || 0) * 100000000).toLocaleString()} Sats</span>
+                 <Separator orientation="vertical" className="h-4" />
+                <span>≈ {balanceBif.toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
+             </div>
           </CardHeader>
           <CardContent className="h-[120px] w-full pt-4">
               <ChartContainer config={chartConfig} className="h-full w-full">
                 <AreaChart
                   accessibilityLayer
-                  data={balanceHistory}
+                  data={priceHistory}
                   margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
                 >
                   <defs>
-                    <linearGradient id="fillBalance" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-balance)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="var(--color-balance)" stopOpacity={0} />
+                    <linearGradient id="fillPrice" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-price)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--color-price)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="date" hide />
+                  <YAxis domain={['dataMin - 1000', 'dataMax + 1000']} hide />
                   <ChartTooltip
-                    cursor={{stroke: 'hsl(var(--primary))', strokeWidth: 2, strokeDasharray: '3 3'}}
-                    content={<ChartTooltipContent indicator="dot" />}
+                    cursor={{stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3'}}
+                    content={<ChartTooltipContent 
+                        indicator="dot" 
+                        labelKey="date"
+                        formatter={(value, name, props) => (
+                           <div className="flex flex-col">
+                                <span className="font-bold text-foreground">{(value as number).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
+                                <span className="text-xs text-muted-foreground">{new Date(props.payload.date).toLocaleDateString()}</span>
+                           </div>
+                        )}
+                    />}
                   />
                   <Area
-                    dataKey="balance"
+                    dataKey="price"
                     type="monotone"
-                    fill="url(#fillBalance)"
-                    stroke="var(--color-balance)"
+                    fill="url(#fillPrice)"
+                    stroke="var(--color-price)"
                     strokeWidth={2}
                     dot={false}
                   />
@@ -253,3 +290,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

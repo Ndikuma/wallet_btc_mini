@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2 } from "lucide-react";
+import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Edit } from "lucide-react";
 import { wallet } from "@/lib/data";
 import {
   Dialog,
@@ -30,6 +30,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useRouter } from "next/navigation";
+
 
 const formSchema = z.object({
   recipient: z
@@ -43,20 +45,31 @@ const formSchema = z.object({
   fee: z.array(z.number()).default([50]),
 });
 
+export type SendFormValues = z.infer<typeof formSchema>;
+
 const recommendedFee = 50;
 
-export function SendForm() {
+interface SendFormProps {
+  onFormSubmit: (values: SendFormValues) => void;
+  initialData?: SendFormValues | null;
+  isConfirmationStep?: boolean;
+  onBack?: () => void;
+}
+
+
+export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false, onBack }: SendFormProps) {
   const { toast } = useToast();
-  const [feeValue, setFeeValue] = useState(recommendedFee);
+  const router = useRouter();
+  const [feeValue, setFeeValue] = useState(initialData?.fee[0] || recommendedFee);
   const [isScanning, setIsScanning] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<SendFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       recipient: "",
       amount: "" as any,
       fee: [recommendedFee],
@@ -81,7 +94,6 @@ export function SendForm() {
           const code = jsQR(imageData.data, imageData.width, imageData.height);
           
           if (code) {
-            // Remove "bitcoin:" prefix if present
             const address = code.data.replace(/^bitcoin:/, "").split("?")[0];
             form.setValue("recipient", address);
             toast({
@@ -131,21 +143,37 @@ export function SendForm() {
   };
 
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    
-    toast({
-      title: "Transaction Submitted",
-      description: `Sending ${values.amount} BTC to ${values.recipient.slice(0,10)}...`,
-    });
-    
-    // Simulate network delay
-    setTimeout(() => {
-       setIsSuccessDialogOpen(true);
-       form.reset({ recipient: "", amount: "" as any, fee: [recommendedFee] });
-       setFeeValue(recommendedFee);
-    }, 2000);
+  function onSubmit(values: SendFormValues) {
+    if (isConfirmationStep) {
+        console.log("Final submission:", values);
+        toast({
+        title: "Transaction Submitted",
+        description: `Sending ${values.amount} BTC to ${values.recipient.slice(0,10)}...`,
+        });
+        
+        setTimeout(() => {
+        setIsSuccessDialogOpen(true);
+        }, 2000);
+    } else {
+      onFormSubmit(values);
+    }
   }
+
+  if (isConfirmationStep) {
+    return (
+        <div className="flex flex-col gap-4">
+             <Button type="button" size="lg" onClick={form.handleSubmit(onSubmit)}>
+                <ArrowUpRight className="mr-2 size-5" />
+                Confirm & Send
+            </Button>
+            <Button type="button" variant="outline" size="lg" onClick={onBack}>
+                <Edit className="mr-2 size-5" />
+                Edit
+            </Button>
+        </div>
+    );
+  }
+
 
   return (
     <>
@@ -212,7 +240,7 @@ export function SendForm() {
                  </div>
                  <div className="relative">
                     <FormControl>
-                      <Input type="number" step="0.00000001" placeholder="0.00" {...field} className="pl-8"/>
+                      <Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ""} className="pl-8"/>
                     </FormControl>
                     <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                  </div>
@@ -231,8 +259,7 @@ export function SendForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Transaction Fee (sats/vB) -{" "}
-                  <span className="font-bold text-primary">{feeValue}</span>
+                  Transaction Fee
                 </FormLabel>
                 <FormControl>
                   <div className="relative pt-2">
@@ -261,11 +288,16 @@ export function SendForm() {
           />
           <Button type="submit" className="w-full" size="lg">
             <ArrowUpRight className="mr-2 size-5" />
-            Send Bitcoin
+            Review Transaction
           </Button>
         </form>
       </Form>
-      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+      <Dialog open={isSuccessDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+            router.push("/dashboard");
+        }
+        setIsSuccessDialogOpen(open);
+      }}>
         <DialogContent>
             <DialogHeader className="items-center text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">

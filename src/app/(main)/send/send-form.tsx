@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useRef, useEffect } from "react";
+import jsQR from "jsqr";
 import {
   Form,
   FormControl,
@@ -51,38 +52,70 @@ export function SendForm() {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    if (isScanning) {
-      const getCameraPermission = async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          setHasCameraPermission(true);
-  
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
+   useEffect(() => {
+    let stream: MediaStream | null = null;
+    let animationFrameId: number;
+
+    const scanQRCode = () => {
+      if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA && canvasRef.current) {
+        const canvas = canvasRef.current;
+        const video = videoRef.current;
+        const ctx = canvas.getContext("2d");
+
+        if (ctx) {
+          canvas.height = video.videoHeight;
+          canvas.width = video.videoWidth;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          
+          if (code) {
+            // Remove "bitcoin:" prefix if present
+            const address = code.data.replace(/^bitcoin:/, "").split("?")[0];
+            form.setValue("recipient", address);
+            toast({
+              title: "QR Code Scanned",
+              description: `Recipient address set.`
+            });
+            setIsScanning(false);
+            return; 
           }
-        } catch (error) {
-          console.error('Error accessing camera:', error);
-          setHasCameraPermission(false);
-          toast({
-            variant: 'destructive',
-            title: 'Camera Access Denied',
-            description: 'Please enable camera permissions in your browser settings to use this app.',
-          });
-        }
-      };
-  
-      getCameraPermission();
-
-      return () => {
-        if (videoRef.current && videoRef.current.srcObject) {
-          const stream = videoRef.current.srcObject as MediaStream;
-          stream.getTracks().forEach(track => track.stop());
         }
       }
+      animationFrameId = requestAnimationFrame(scanQRCode);
+    };
+
+    const startScan = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        setHasCameraPermission(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+          animationFrameId = requestAnimationFrame(scanQRCode);
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+      }
+    };
+
+    if (isScanning) {
+      startScan();
     }
-  }, [isScanning, toast]);
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isScanning, toast, form]);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -110,23 +143,10 @@ export function SendForm() {
     // Simulate network delay
     setTimeout(() => {
        setIsSuccessDialogOpen(true);
-       form.reset();
+       form.reset({ recipient: "", amount: "", fee: [recommendedFee] });
        setFeeValue(recommendedFee);
     }, 2000);
   }
-
-  // A real implementation would use a QR code scanning library
-  const handleScan = () => {
-     // Placeholder for QR scan logic
-     const mockAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
-     form.setValue("recipient", mockAddress);
-     toast({
-       title: "QR Code Scanned",
-       description: `Recipient address set to ${mockAddress.slice(0, 10)}...`
-     });
-     setIsScanning(false); // Close dialog after mock scan
-  };
-
 
   return (
     <>
@@ -144,7 +164,7 @@ export function SendForm() {
                   </FormControl>
                   <Dialog open={isScanning} onOpenChange={setIsScanning}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="icon" type="button" onClick={() => setIsScanning(true)}>
+                       <Button variant="outline" size="icon" type="button">
                         <ScanLine className="size-5" />
                         <span className="sr-only">Scan QR Code</span>
                       </Button>
@@ -152,11 +172,15 @@ export function SendForm() {
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
                         <DialogTitle>Scan QR Code</DialogTitle>
+                        <DialogDescription>
+                          Point your camera at a Bitcoin address QR code.
+                        </DialogDescription>
                       </DialogHeader>
                       <div className="flex flex-col items-center gap-4">
                         <div className="relative w-full aspect-square bg-muted rounded-md overflow-hidden">
-                          <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                           <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+                           <canvas ref={canvasRef} className="hidden" />
+                           <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
                              <div className="w-2/3 h-2/3 border-4 border-primary rounded-lg" />
                           </div>
                         </div>
@@ -164,13 +188,10 @@ export function SendForm() {
                           <Alert variant="destructive">
                             <AlertTitle>Camera Access Required</AlertTitle>
                             <AlertDescription>
-                              Please allow camera access to use this feature.
+                              Please allow camera access in your browser settings to use this feature.
                             </AlertDescription>
                           </Alert>
                         )}
-                         <Button onClick={handleScan} type="button" className="w-full">
-                           Simulate Scan
-                         </Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -225,6 +246,7 @@ export function SendForm() {
                         field.onChange(value);
                         setFeeValue(value[0]);
                       }}
+                      value={field.value}
                     />
                     <div className="absolute left-0 -top-2.5 text-xs text-muted-foreground w-full flex justify-center">
                        <div style={{ left: `calc(${((recommendedFee - 10) / (200 - 10)) * 100}% - 12px)`}} className="absolute flex flex-col items-center">
@@ -251,7 +273,7 @@ export function SendForm() {
                     <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="space-y-2 pt-4">
-                    <DialogTitle className="text-2xl font-bold">Transaction Sent</DialogTitle>
+                    <DialogTitle>Transaction Sent</DialogTitle>
                     <DialogDescription className="text-muted-foreground">
                         Your Bitcoin has been sent successfully. It may take a few moments to confirm on the network.
                     </DialogDescription>

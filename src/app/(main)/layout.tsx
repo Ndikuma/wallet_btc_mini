@@ -1,4 +1,5 @@
 import { MainNav } from "@/components/main-nav";
+import { MobileNav } from "@/components/mobile-nav";
 import {
   SidebarProvider,
   Sidebar,
@@ -25,7 +26,8 @@ export default function MainLayout({
           </div>
           <UserNav />
         </header>
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="flex-1 p-4 pb-20 md:p-6">{children}</main>
+        <MobileNav />
       </SidebarInset>
     </SidebarProvider>
   );

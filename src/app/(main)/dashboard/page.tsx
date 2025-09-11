@@ -103,31 +103,40 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="flex flex-col lg:col-span-2">
           <CardHeader>
-             <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-muted-foreground">Total Balance</CardTitle>
-                  <CardDescription>
-                    Your entire portfolio value.
-                  </CardDescription>
+             <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex-1">
+                  <CardTitle className="text-muted-foreground">Portfolio Value</CardTitle>
+                   <div className="flex items-baseline gap-2 text-4xl font-bold">
+                    {displayUnit !== 'usd' && displayUnit !== 'bif' && <BitcoinIcon className="size-7 text-primary" />}
+                    <span>{displayBalance()}</span>
+                    <span className="text-xl font-medium text-muted-foreground">{displayUnitLabel()}</span>
+                  </div>
                 </div>
-                <ToggleGroup type="single" value={displayUnit} onValueChange={(value) => value && setDisplayUnit(value)} aria-label="Display Unit" size="sm">
-                  <ToggleGroupItem value="btc" aria-label="Bitcoin">BTC</ToggleGroupItem>
-                  <ToggleGroupItem value="sats" aria-label="Satoshi">SATS</ToggleGroupItem>
-                  <ToggleGroupItem value="usd" aria-label="US Dollar">USD</ToggleGroupItem>
-                  <ToggleGroupItem value="bif" aria-label="Burundian Franc">BIF</ToggleGroupItem>
-                </ToggleGroup>
+                <div className="flex flex-col items-end gap-2">
+                   <div className="flex items-baseline gap-2 text-2xl font-bold">
+                      <span>{btcPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                       <div className={cn("flex items-center gap-1 text-sm font-medium", {
+                          "text-green-600": priceMovement === 'up',
+                          "text-destructive": priceMovement === 'down',
+                      })}>
+                          {priceMovement === 'up' && <ArrowUp className="size-4" />}
+                          {priceMovement === 'down' && <ArrowDown className="size-4" />}
+                      </div>
+                  </div>
+                  <ToggleGroup type="single" value={displayUnit} onValueChange={(value) => value && setDisplayUnit(value)} aria-label="Display Unit" size="sm">
+                    <ToggleGroupItem value="btc" aria-label="Bitcoin">BTC</ToggleGroupItem>
+                    <ToggleGroupItem value="sats" aria-label="Satoshi">SATS</ToggleGroupItem>
+                    <ToggleGroupItem value="usd" aria-label="US Dollar">USD</ToggleGroupItem>
+                    <ToggleGroupItem value="bif" aria-label="Burundian Franc">BIF</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
              </div>
           </CardHeader>
           <CardContent className="flex-grow">
-            <div className="flex items-baseline gap-2 text-4xl font-bold">
-              {displayUnit !== 'usd' && displayUnit !== 'bif' && <BitcoinIcon className="size-7 text-primary" />}
-              <span>{displayBalance()}</span>
-              <span className="text-xl font-medium text-muted-foreground">{displayUnitLabel()}</span>
-            </div>
-            <div className="h-[180px] pt-4">
+            <div className="h-[200px] w-full pt-4">
               <ChartContainer config={chartConfig} className="h-full w-full">
                 <AreaChart
                   accessibilityLayer
@@ -157,44 +166,20 @@ export default function DashboardPage() {
                   <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(value) => value.slice(0, 3)} />
                   <ChartTooltip
                     cursor={false}
-                    content={<ChartTooltipContent indicator="line" />}
+                    content={<ChartTooltipContent indicator="line" labelClassName="font-bold" />}
                   />
                   <Area
                     dataKey="balance"
                     type="natural"
                     fill="url(#fillBalance)"
                     stroke="var(--color-balance)"
+                    strokeWidth={2}
                     stackId="a"
                   />
                 </AreaChart>
               </ChartContainer>
             </div>
           </CardContent>
-        </Card>
-
-         <Card>
-            <CardHeader>
-                <CardTitle className="text-muted-foreground">BTC Price</CardTitle>
-                <CardDescription>Real-time exchange rate.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-baseline gap-2 text-3xl font-bold">
-                    <span>{btcPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
-                </div>
-                <div className={cn("mt-2 flex items-center gap-1 text-sm font-medium", {
-                    "text-green-600": priceMovement === 'up',
-                    "text-destructive": priceMovement === 'down',
-                })}>
-                    {priceMovement === 'up' && <ArrowUp className="size-4" />}
-                    {priceMovement === 'down' && <ArrowDown className="size-4" />}
-                    {priceMovement !== 'neutral' && <span>{priceMovement === 'up' ? 'Price is up' : 'Price is down'}</span>}
-                </div>
-            </CardContent>
-             <CardFooter>
-                 <p className="text-xs text-muted-foreground">
-                    Updates every 3 seconds.
-                </p>
-            </CardFooter>
         </Card>
         
         <Card className="flex flex-col">

@@ -54,6 +54,15 @@ export function SendForm() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      recipient: "",
+      amount: "" as any,
+      fee: [recommendedFee],
+    },
+  });
+
    useEffect(() => {
     let stream: MediaStream | null = null;
     let animationFrameId: number;
@@ -116,16 +125,6 @@ export function SendForm() {
     };
   }, [isScanning, toast, form]);
 
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      recipient: "",
-      amount: "" as any,
-      fee: [recommendedFee],
-    },
-  });
-
   const handleSetAmount = (percentage: number) => {
     const newAmount = wallet.balance * percentage;
     form.setValue("amount", parseFloat(newAmount.toFixed(8)));
@@ -143,7 +142,7 @@ export function SendForm() {
     // Simulate network delay
     setTimeout(() => {
        setIsSuccessDialogOpen(true);
-       form.reset({ recipient: "", amount: "", fee: [recommendedFee] });
+       form.reset({ recipient: "", amount: "" as any, fee: [recommendedFee] });
        setFeeValue(recommendedFee);
     }, 2000);
   }

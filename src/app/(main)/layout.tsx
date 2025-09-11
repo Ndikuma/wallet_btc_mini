@@ -16,7 +16,7 @@ export default function MainLayout({
 }) {
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar collapsible="offcanvas">
         <Suspense>
           <MainNav />
         </Suspense>
@@ -25,11 +25,11 @@ export default function MainLayout({
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
           <SidebarTrigger className="md:hidden" />
           <div className="flex-1">
-            {/* Can add page title here if needed */}
+            <h1 className="text-xl font-semibold">Overview</h1>
           </div>
           <UserNav />
         </header>
-        <main className="flex-1 p-4 pb-20 md:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
         <MobileNav />
       </SidebarInset>
     </SidebarProvider>

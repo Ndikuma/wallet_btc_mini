@@ -41,6 +41,8 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { addDays, format } from "date-fns";
 
+const btcPrice = 65000; // Mock price
+
 export default function TransactionsPage() {
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -133,11 +135,11 @@ export default function TransactionsPage() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Details</TableHead>
-                <TableHead className="text-right">Amount (BTC)</TableHead>
-                <TableHead className="hidden text-right sm:table-cell">Status</TableHead>
-              </TableRow>
+                <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Transaction Status</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTransactions.map((tx) => (
@@ -151,11 +153,14 @@ export default function TransactionsPage() {
                           <ArrowDownLeft className="size-5 text-green-600" />
                         )}
                       </div>
-                      <div className="flex flex-col">
-                        <span className="font-medium capitalize">{tx.type}</span>
+                      <div className="font-medium">Bitcoin</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                        <span className="font-medium capitalize">{tx.status === 'completed' ? 'Complete' : 'In Progress'}</span>
                         <span className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleString()}</span>
                       </div>
-                    </div>
                   </TableCell>
                   <TableCell
                     className={cn(
@@ -163,28 +168,13 @@ export default function TransactionsPage() {
                       tx.type === "sent" ? "text-destructive" : "text-green-600"
                     )}
                   >
-                    {tx.type === "sent" ? "-" : "+"}
-                    {tx.amount.toFixed(4)}
-                  </TableCell>
-                  <TableCell className="hidden text-right sm:table-cell">
-                    <Badge
-                      variant={
-                        tx.status === "completed"
-                          ? "success"
-                          : tx.status === "pending"
-                          ? "secondary"
-                          : "destructive"
-                      }
-                      className="capitalize"
-                    >
-                      {tx.status}
-                    </Badge>
+                    {tx.type === "sent" ? "-" : "+"}${(tx.amount * btcPrice).toFixed(2)}
                   </TableCell>
                 </TableRow>
               ))}
               {filteredTransactions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={3} className="h-24 text-center">
                     No transactions found for the selected filters.
                   </TableCell>
                 </TableRow>

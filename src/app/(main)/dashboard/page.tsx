@@ -6,6 +6,8 @@ import {
   ArrowRight,
   ArrowUpRight,
   ArrowDownLeft,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import {
   Card,
@@ -35,7 +37,7 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { wallet, transactions, balanceHistory } from "@/lib/data";
 import { BitcoinIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const chartConfig = {
@@ -45,19 +47,38 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const BTC_TO_USD_RATE = 65000; // Mock exchange rate
+const INITIAL_BTC_TO_USD_RATE = 65000;
 const BTC_TO_BIF_RATE = 186550000; // Mock exchange rate
 
 export default function DashboardPage() {
   const recentTransactions = transactions.slice(0, 4);
   const [displayUnit, setDisplayUnit] = useState("btc");
+  const [btcPrice, setBtcPrice] = useState(INITIAL_BTC_TO_USD_RATE);
+  const [priceMovement, setPriceMovement] = useState<"up" | "down" | "neutral">("neutral");
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBtcPrice(prevPrice => {
+        const change = (Math.random() - 0.5) * 200; // Fluctuate by +/- $100
+        const newPrice = prevPrice + change;
+        if (newPrice > prevPrice) {
+            setPriceMovement("up");
+        } else {
+            setPriceMovement("down");
+        }
+        return newPrice;
+      });
+    }, 3000); // Update every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const displayBalance = () => {
     switch (displayUnit) {
       case "sats":
         return (wallet.balance * 100_000_000).toLocaleString("en-US", { maximumFractionDigits: 0 });
       case "usd":
-        return (wallet.balance * BTC_TO_USD_RATE).toLocaleString("en-US", { style: "currency", currency: "USD" });
+        return (wallet.balance * btcPrice).toLocaleString("en-US", { style: "currency", currency: "USD" });
       case "bif":
         return (wallet.balance * BTC_TO_BIF_RATE).toLocaleString("en-US", { style: "currency", currency: "BIF" });
       case "btc":
@@ -82,7 +103,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="flex flex-col lg:col-span-2">
           <CardHeader>
              <div className="flex items-start justify-between">
@@ -92,7 +113,7 @@ export default function DashboardPage() {
                     Your entire portfolio value.
                   </CardDescription>
                 </div>
-                <ToggleGroup type="single" value={displayUnit} onValueChange={(value) => value && setDisplayUnit(value)} aria-label="Display Unit">
+                <ToggleGroup type="single" value={displayUnit} onValueChange={(value) => value && setDisplayUnit(value)} aria-label="Display Unit" size="sm">
                   <ToggleGroupItem value="btc" aria-label="Bitcoin">BTC</ToggleGroupItem>
                   <ToggleGroupItem value="sats" aria-label="Satoshi">SATS</ToggleGroupItem>
                   <ToggleGroupItem value="usd" aria-label="US Dollar">USD</ToggleGroupItem>
@@ -149,6 +170,31 @@ export default function DashboardPage() {
               </ChartContainer>
             </div>
           </CardContent>
+        </Card>
+
+         <Card>
+            <CardHeader>
+                <CardTitle className="text-muted-foreground">BTC Price</CardTitle>
+                <CardDescription>Real-time exchange rate.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-baseline gap-2 text-3xl font-bold">
+                    <span>{btcPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+                </div>
+                <div className={cn("mt-2 flex items-center gap-1 text-sm font-medium", {
+                    "text-green-600": priceMovement === 'up',
+                    "text-destructive": priceMovement === 'down',
+                })}>
+                    {priceMovement === 'up' && <ArrowUp className="size-4" />}
+                    {priceMovement === 'down' && <ArrowDown className="size-4" />}
+                    {priceMovement !== 'neutral' && <span>{priceMovement === 'up' ? 'Price is up' : 'Price is down'}</span>}
+                </div>
+            </CardContent>
+             <CardFooter>
+                 <p className="text-xs text-muted-foreground">
+                    Updates every 3 seconds.
+                </p>
+            </CardFooter>
         </Card>
         
         <Card className="flex flex-col">

@@ -35,6 +35,7 @@ import {
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { wallet, transactions, balanceHistory } from "@/lib/data";
 import { BitcoinIcon } from "@/components/icons";
+import { cn } from "@/lib/utils";
 
 const chartConfig = {
   balance: {

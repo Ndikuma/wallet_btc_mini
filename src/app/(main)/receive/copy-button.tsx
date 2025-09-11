@@ -11,14 +11,14 @@ export function CopyButton({ text }: { text: string }) {
     navigator.clipboard.writeText(text);
     toast({
       title: "Copied to clipboard",
-      description: "Wallet address has been copied.",
+      description: "Payment details have been copied.",
     });
   };
 
   return (
-    <Button onClick={handleCopy}>
+    <Button onClick={handleCopy} variant="outline">
       <Copy className="mr-2 size-4" />
-      Copy Address
+      Copy
     </Button>
   );
 }

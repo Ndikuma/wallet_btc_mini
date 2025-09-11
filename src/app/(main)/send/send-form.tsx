@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -86,7 +87,7 @@ export function SendForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       recipient: "",
-      amount: undefined,
+      amount: "" as any,
       fee: [recommendedFee],
     },
   });

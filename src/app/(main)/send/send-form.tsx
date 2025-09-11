@@ -24,10 +24,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
 
 const formSchema = z.object({
   recipient: z
@@ -49,7 +47,6 @@ export function SendForm() {
   const [isScanning, setIsScanning] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-
 
   useEffect(() => {
     if (isScanning) {
@@ -87,10 +84,16 @@ export function SendForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       recipient: "",
-      amount: 0,
+      amount: undefined,
       fee: [recommendedFee],
     },
   });
+
+  const handleSetAmount = (percentage: number) => {
+    const newAmount = wallet.balance * percentage;
+    form.setValue("amount", parseFloat(newAmount.toFixed(8)));
+  };
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -181,10 +184,20 @@ export function SendForm() {
             name="amount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Amount (BTC)</FormLabel>
+                 <div className="flex items-center justify-between">
+                    <FormLabel>Amount (BTC)</FormLabel>
+                    <span className="text-xs text-muted-foreground">
+                        Balance: {wallet.balance.toFixed(4)} BTC
+                    </span>
+                 </div>
                 <FormControl>
-                  <Input type="number" step="0.0001" {...field} />
+                  <Input type="number" step="0.00000001" placeholder="0.00" {...field} />
                 </FormControl>
+                 <div className="flex gap-2 pt-1">
+                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.25)}>25%</Button>
+                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.5)}>50%</Button>
+                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(1)}>Max</Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -12,6 +12,8 @@ import {
 import { SendForm, type SendFormValues } from "./send-form";
 import { Bitcoin, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import api from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function TransactionDetailRow({
   label,
@@ -36,28 +38,36 @@ function TransactionDetailRow({
   );
 }
 
-type TransactionDetails = SendFormValues & { fee: number };
-
 export default function SendPage() {
   const [step, setStep] = useState<"form" | "confirmation">("form");
-  const [
-    transactionDetails,
-    setTransactionDetails,
-  ] = useState<TransactionDetails | null>(null);
+  const [transactionDetails, setTransactionDetails] = useState<SendFormValues | null>(null);
+  const [fee, setFee] = useState<number | null>(null);
+  const [loadingFee, setLoadingFee] = useState(false);
 
-  const handleFormSubmit = (values: TransactionDetails) => {
+  const handleFormSubmit = async (values: SendFormValues) => {
     setTransactionDetails(values);
+    setLoadingFee(true);
     setStep("confirmation");
+    try {
+      const response = await api.post('/transactions/calculate-fee/', { amount: values.amount });
+      setFee(response.data.fee);
+    } catch (error) {
+      console.error("Failed to calculate fee", error);
+      // Use a fallback fee
+      setFee(0.00005);
+    } finally {
+      setLoadingFee(false);
+    }
   };
 
   const handleBack = () => {
     setStep("form");
     setTransactionDetails(null);
+    setFee(null);
   };
   
-  const calculatedFee = transactionDetails ? (transactionDetails.amount * (transactionDetails.fee / 50000)).toFixed(8) : "0";
-  const totalAmount = transactionDetails ? (transactionDetails.amount + parseFloat(calculatedFee)).toFixed(8) : "0";
-
+  const calculatedFee = fee ? fee.toFixed(8) : "0";
+  const totalAmount = transactionDetails ? (transactionDetails.amount + (fee || 0)).toFixed(8) : "0";
 
   return (
     <div className="mx-auto max-w-md">
@@ -109,19 +119,26 @@ export default function SendPage() {
                         label="Amount"
                         value={`${transactionDetails.amount} BTC`}
                     />
-                    <TransactionDetailRow
-                        label="Network Fee"
-                        value={`${calculatedFee} BTC`}
-                    />
+                    {loadingFee ? (
+                       <div className="flex justify-between items-center">
+                           <span className="text-sm text-muted-foreground">Network Fee</span>
+                           <Skeleton className="h-5 w-24" />
+                       </div>
+                    ) : (
+                       <TransactionDetailRow
+                          label="Network Fee"
+                          value={`${calculatedFee} BTC`}
+                      />
+                    )}
                      <div className="my-2 border-t border-dashed border-border"></div>
                      <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Total</span>
-                        <span className="text-lg font-bold">{totalAmount} BTC</span>
+                        {loadingFee ? <Skeleton className="h-6 w-28" /> : <span className="text-lg font-bold">{totalAmount} BTC</span>}
                     </div>
                 </div>
 
                 <SendForm
-                    onFormSubmit={() => {}} // Final submit is handled here
+                    onFormSubmit={() => {}} // Final submit is handled in the form itself
                     initialData={transactionDetails}
                     isConfirmationStep={true}
                     onBack={handleBack}

@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Edit } from "lucide-react";
-import { wallet } from "@/lib/data";
 import {
   Dialog,
   DialogContent,
@@ -30,9 +29,10 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
+import api from "@/lib/api";
+import type { Wallet } from "@/lib/types";
 
-
-const formSchema = z.object({
+const formSchema = (balance: number) => z.object({
   recipient: z
     .string()
     .min(26, { message: "Bitcoin address is too short." })
@@ -40,32 +40,37 @@ const formSchema = z.object({
   amount: z.coerce
     .number()
     .positive({ message: "Amount must be positive." })
-    .max(wallet.balance, { message: "Insufficient balance." }),
+    .max(balance, { message: `Insufficient balance. Available: ${balance.toFixed(8)} BTC` }),
 });
 
-export type SendFormValues = z.infer<typeof formSchema>;
+export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
 
 interface SendFormProps {
-  onFormSubmit: (values: SendFormValues & { fee: number }) => void;
+  onFormSubmit: (values: SendFormValues) => void;
   initialData?: SendFormValues | null;
   isConfirmationStep?: boolean;
   onBack?: () => void;
 }
 
-const defaultFee = 50;
-
-
 export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false, onBack }: SendFormProps) {
   const { toast } = useToast();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+
+  useEffect(() => {
+    api.get('/wallets/').then(res => setWallet(res.data)).catch(console.error);
+  }, []);
+
+  const currentBalance = wallet?.balance || 0;
 
   const form = useForm<SendFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema(currentBalance)),
     defaultValues: initialData || {
       recipient: "",
       amount: "" as any,
@@ -134,43 +139,53 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   }, [isScanning, toast, form]);
 
   const handleSetAmount = (percentage: number) => {
-    const newAmount = wallet.balance * percentage;
+    const newAmount = currentBalance * percentage;
     form.setValue("amount", parseFloat(newAmount.toFixed(8)));
   };
 
-
-  function onSubmit(values: SendFormValues) {
-    const valuesWithFee = { ...values, fee: defaultFee };
+  async function onSubmit(values: SendFormValues) {
     if (isConfirmationStep) {
-        console.log("Final submission:", valuesWithFee);
-        toast({
-        title: "Transaction Submitted",
-        description: `Sending ${values.amount} BTC to ${values.recipient.slice(0,10)}...`,
-        });
-        
-        setTimeout(() => {
-        setIsSuccessDialogOpen(true);
-        }, 2000);
+        setIsLoading(true);
+        try {
+            await api.post('/transactions/send/', values);
+            toast({
+                title: "Transaction Submitted",
+                description: `Sending ${values.amount} BTC. You will be notified once confirmed.`,
+            });
+            setIsSuccessDialogOpen(true);
+        } catch(error: any) {
+            const errorMsg = error.response?.data?.detail || "An unexpected error occurred.";
+            toast({
+                variant: "destructive",
+                title: "Transaction Failed",
+                description: errorMsg,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     } else {
-      onFormSubmit(valuesWithFee);
+      onFormSubmit(values);
     }
   }
 
   if (isConfirmationStep) {
     return (
         <div className="flex flex-col gap-4">
-             <Button type="button" size="lg" onClick={form.handleSubmit(onSubmit)}>
-                <ArrowUpRight className="mr-2 size-5" />
-                Confirm & Send
+             <Button type="button" size="lg" onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
+                {isLoading ? 'Sending...' : (
+                    <>
+                        <ArrowUpRight className="mr-2 size-5" />
+                        Confirm & Send
+                    </>
+                )}
             </Button>
-            <Button type="button" variant="outline" size="lg" onClick={onBack}>
+            <Button type="button" variant="outline" size="lg" onClick={onBack} disabled={isLoading}>
                 <Edit className="mr-2 size-5" />
                 Edit
             </Button>
         </div>
     );
   }
-
 
   return (
     <>
@@ -232,7 +247,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
                  <div className="flex items-center justify-between">
                     <FormLabel>Amount</FormLabel>
                     <span className="text-xs text-muted-foreground">
-                        Balance: {wallet.balance.toFixed(4)} BTC
+                        Balance: {currentBalance.toFixed(4)} BTC
                     </span>
                  </div>
                  <div className="relative">
@@ -270,7 +285,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
               <div className="space-y-2 pt-4">
                   <DialogTitle>Transaction Sent</DialogTitle>
                   <DialogDescription className="text-muted-foreground">
-                      Your Bitcoin has been sent successfully. It may take a few moments to confirm on the network.
+                      Your Bitcoin has been sent. It may take a few moments to confirm on the network.
                   </DialogDescription>
               </div>
           </DialogHeader>

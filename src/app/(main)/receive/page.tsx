@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { wallet } from "@/lib/data";
 import { CopyButton } from "./copy-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,13 +16,34 @@ import { useState, useEffect } from "react";
 import { ShareButton } from "./share-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bitcoin } from "lucide-react";
+import api from "@/lib/api";
+import type { Wallet } from "@/lib/types";
 
 export default function ReceivePage() {
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
   const [qrCode, setQrCode] = useState<string | null>(null);
-  const [paymentUri, setPaymentUri] = useState(wallet.address);
+  const [paymentUri, setPaymentUri] = useState("");
 
   useEffect(() => {
+    async function fetchWallet() {
+      try {
+        const response = await api.get("/wallets/");
+        setWallet(response.data);
+        setPaymentUri(response.data.address);
+      } catch (error) {
+        console.error("Failed to fetch wallet address", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchWallet();
+  }, []);
+
+  useEffect(() => {
+    if (!wallet?.address) return;
+
     let uri = `bitcoin:${wallet.address}`;
     if (amount && parseFloat(amount) > 0) {
       uri += `?amount=${amount}`;
@@ -31,13 +52,11 @@ export default function ReceivePage() {
 
     const fetchQrCode = () => {
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(uri)}&format=png&bgcolor=ffffff`;
-        // In a real app, you might want to fetch and convert to base64 on the server
-        // to avoid exposing API details and to handle potential CORS issues.
         setQrCode(qrApiUrl);
     };
 
     fetchQrCode();
-  }, [amount]);
+  }, [amount, wallet?.address]);
 
 
   return (
@@ -51,7 +70,9 @@ export default function ReceivePage() {
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6 text-center">
           <div className="rounded-lg border bg-white p-4 shadow-sm">
-            {qrCode ? (
+            {loading || !qrCode ? (
+                <Skeleton className="h-[256px] w-[256px] rounded-md" />
+            ) : (
                 <Image
                 src={qrCode}
                 alt="Wallet Address QR Code"
@@ -60,8 +81,6 @@ export default function ReceivePage() {
                 className="rounded-md"
                 data-ai-hint="qr code"
               />
-            ) : (
-                <Skeleton className="h-[256px] w-[256px] rounded-md" />
             )}
           </div>
           <div className="w-full max-w-sm space-y-4">
@@ -82,12 +101,16 @@ export default function ReceivePage() {
                 <Label htmlFor="wallet-address" className="sr-only">
                 Wallet Address
                 </Label>
-                <Input
-                  id="wallet-address"
-                  value={wallet.address}
-                  readOnly
-                  className="text-center font-code text-sm"
-                />
+                {loading ? (
+                    <Skeleton className="h-10 w-full" />
+                ) : (
+                    <Input
+                      id="wallet-address"
+                      value={wallet?.address || ''}
+                      readOnly
+                      className="text-center font-code text-sm"
+                    />
+                )}
                 <p className="text-xs text-muted-foreground">
                   This is your unique Bitcoin address.
                 </p>

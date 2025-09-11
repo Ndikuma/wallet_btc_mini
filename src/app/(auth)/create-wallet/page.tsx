@@ -1,3 +1,7 @@
+
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -10,14 +14,35 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ShieldCheck } from "lucide-react";
-
-// In a real app, this would be generated securely
-const mockMnemonic = "drip salad theory later angle violin loan powder mammal hire isolate arena rocket reopen drink cause";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CreateWalletPage() {
-  const mnemonicWords = mockMnemonic.split(" ");
-  const firstHalf = mnemonicWords.slice(0, 12);
-  const secondHalf = mnemonicWords.slice(12);
+  const { toast } = useToast();
+  const [mnemonic, setMnemonic] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function createWallet() {
+      try {
+        const response = await api.post<{ mnemonic: string }>("/wallets/create/");
+        setMnemonic(response.data.mnemonic);
+        localStorage.setItem("tempMnemonic", response.data.mnemonic);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Wallet Creation Failed",
+          description: "Could not create a new wallet. Please try again.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+    createWallet();
+  }, [toast]);
+
+  const mnemonicWords = mnemonic?.split(" ") || Array(24).fill(null);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
@@ -39,18 +64,26 @@ export default function CreateWalletPage() {
             </AlertDescription>
           </Alert>
           <div className="rounded-lg border bg-background p-6">
-            <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3 md:grid-cols-4">
-              {mnemonicWords.map((word, index) => (
+            {loading ? (
+              <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3 md:grid-cols-4">
+                {mnemonicWords.map((_, index) => (
+                  <Skeleton key={index} className="h-6 w-24" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3 md:grid-cols-4">
+                {mnemonicWords.map((word, index) => (
                   <div key={index} className="flex items-baseline">
                     <span className="mr-3 text-sm text-muted-foreground">{index + 1}.</span>
                     <span>{word}</span>
                   </div>
                 ))}
-            </div>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter>
-          <Button asChild className="w-full" size="lg">
+          <Button asChild className="w-full" size="lg" disabled={loading}>
             <Link href="/verify-mnemonic">I've written it down</Link>
           </Button>
         </CardFooter>

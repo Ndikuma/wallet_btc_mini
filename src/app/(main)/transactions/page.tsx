@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -22,7 +23,6 @@ import {
   ArrowUpRight,
   Calendar as CalendarIcon,
 } from "lucide-react";
-import { transactions as allTransactions, Transaction } from "@/lib/data";
 import {
   Select,
   SelectContent,
@@ -39,11 +39,16 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
-import { addDays, format } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
+import api from "@/lib/api";
+import type { Transaction } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const btcPrice = 65000; // Mock price
 
 export default function TransactionsPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [date, setDate] = React.useState<DateRange | undefined>({
@@ -51,15 +56,25 @@ export default function TransactionsPage() {
     to: new Date(),
   });
 
-  const filteredTransactions = useMemo(() => {
-    return allTransactions.filter((tx) => {
-      const txDate = new Date(tx.date);
-      const isAfterFrom = date?.from ? txDate >= date.from : true;
-      const isBeforeTo = date?.to ? txDate <= date.to : true;
-      const typeMatch = filterType === "all" || tx.type === filterType;
-      const statusMatch = filterStatus === "all" || tx.status === filterStatus;
-      return isAfterFrom && isBeforeTo && typeMatch && statusMatch;
-    });
+  useEffect(() => {
+    async function fetchTransactions() {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (filterType !== 'all') params.append('type', filterType);
+        if (filterStatus !== 'all') params.append('status', filterStatus);
+        if (date?.from) params.append('date_after', date.from.toISOString().split('T')[0]);
+        if (date?.to) params.append('date_before', date.to.toISOString().split('T')[0]);
+
+        const response = await api.get(`/transactions/?${params.toString()}`);
+        setTransactions(response.data.results);
+      } catch (error) {
+        console.error("Failed to fetch transactions", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTransactions();
   }, [filterType, filterStatus, date]);
 
   return (
@@ -142,37 +157,46 @@ export default function TransactionsPage() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.map((tx) => (
-                <TableRow key={tx.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                        {tx.type === "sent" ? (
-                          <ArrowUpRight className="size-5 text-destructive" />
-                        ) : (
-                          <ArrowDownLeft className="size-5 text-green-600" />
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-10 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-10 w-40" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
+                    </TableRow>
+                ))
+              ) : transactions.length > 0 ? (
+                transactions.map((tx) => (
+                    <TableRow key={tx.id}>
+                    <TableCell>
+                        <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                            {tx.type === "sent" ? (
+                            <ArrowUpRight className="size-5 text-destructive" />
+                            ) : (
+                            <ArrowDownLeft className="size-5 text-green-600" />
+                            )}
+                        </div>
+                        <div className="font-medium">Bitcoin</div>
+                        </div>
+                    </TableCell>
+                    <TableCell>
+                        <div className="flex flex-col">
+                            <span className="font-medium capitalize">{tx.status}</span>
+                            <span className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleString()}</span>
+                        </div>
+                    </TableCell>
+                    <TableCell
+                        className={cn(
+                        "text-right font-mono text-base",
+                        tx.type === "sent" ? "text-destructive" : "text-green-600"
                         )}
-                      </div>
-                      <div className="font-medium">Bitcoin</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                        <span className="font-medium capitalize">{tx.status === 'completed' ? 'Complete' : 'In Progress'}</span>
-                        <span className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleString()}</span>
-                      </div>
-                  </TableCell>
-                  <TableCell
-                    className={cn(
-                      "text-right font-mono text-base",
-                      tx.type === "sent" ? "text-destructive" : "text-green-600"
-                    )}
-                  >
-                    {tx.type === "sent" ? "-" : "+"}${(tx.amount * btcPrice).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredTransactions.length === 0 && (
+                    >
+                        {tx.type === "sent" ? "-" : "+"}${(tx.amount * btcPrice).toFixed(2)}
+                    </TableCell>
+                    </TableRow>
+                ))
+              ) : (
                 <TableRow>
                   <TableCell colSpan={3} className="h-24 text-center">
                     No transactions found for the selected filters.

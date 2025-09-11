@@ -33,10 +33,12 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Area, AreaChart, XAxis } from "recharts";
-import { wallet, transactions, balanceHistory } from "@/lib/data";
 import { BitcoinIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import api from "@/lib/api";
+import type { Wallet, Transaction } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const chartConfig = {
   balance: {
@@ -46,44 +48,87 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const INITIAL_BTC_TO_USD_RATE = 65000;
-const BTC_TO_BIF_RATE = 186550000; // Mock exchange rate
 
 export default function DashboardPage() {
-  const recentTransactions = transactions.slice(0, 4);
-  const [displayUnit, setDisplayUnit] = useState("usd");
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [balanceHistory, setBalanceHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [btcPrice, setBtcPrice] = useState(INITIAL_BTC_TO_USD_RATE);
   const [priceMovement, setPriceMovement] = useState<"up" | "down" | "neutral">("neutral");
 
-
   useEffect(() => {
+    async function fetchData() {
+      try {
+        const [walletRes, transactionsRes, historyRes] = await Promise.all([
+          api.get("/wallets/"),
+          api.get("/transactions/?limit=4"),
+          api.get("/wallets/balance-history/"),
+        ]);
+        setWallet(walletRes.data);
+        setRecentTransactions(transactionsRes.data.results);
+        setBalanceHistory(historyRes.data);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+
     const interval = setInterval(() => {
       setBtcPrice(prevPrice => {
-        const change = (Math.random() - 0.5) * 200; // Fluctuate by +/- $100
+        const change = (Math.random() - 0.5) * 200;
         const newPrice = prevPrice + change;
-        if (newPrice > prevPrice) {
-            setPriceMovement("up");
-        } else {
-            setPriceMovement("down");
-        }
+        setPriceMovement(newPrice > prevPrice ? "up" : "down");
         return newPrice;
       });
-    }, 3000); // Update every 3 seconds
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
   const displayBalance = () => {
-    switch (displayUnit) {
-      case "sats":
-        return (wallet.balance * 100_000_000).toLocaleString("en-US", { maximumFractionDigits: 0 });
-      case "bif":
-        return (wallet.balance * BTC_TO_BIF_RATE).toLocaleString("en-US", { style: "currency", currency: "BIF" });
-      case "btc":
-        return wallet.balance.toFixed(8);
-      case "usd":
-      default:
-        return (wallet.balance * btcPrice).toLocaleString("en-US", { style: "currency", currency: "USD" });
-    }
+    if (!wallet) return "$0.00";
+    return (wallet.balance * btcPrice).toLocaleString("en-US", { style: "currency", currency: "USD" });
   };
+
+  if (loading) {
+    return (
+        <div className="flex flex-col gap-6">
+            <div className="grid gap-6 md:grid-cols-3">
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <Skeleton className="h-6 w-32" />
+                        <Skeleton className="h-10 w-48" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-[120px] w-full" />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-24" />
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-4">
+                        <Skeleton className="h-24 w-full" />
+                        <Skeleton className="h-24 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-40" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,7 +144,6 @@ export default function DashboardPage() {
                 })}>
                     {priceMovement === 'up' && <ArrowUp className="size-4" />}
                     {priceMovement === 'down' && <ArrowDown className="size-4" />}
-                    <span>+420.00 this week</span>
                 </div>
              </div>
           </CardHeader>
@@ -108,25 +152,12 @@ export default function DashboardPage() {
                 <AreaChart
                   accessibilityLayer
                   data={balanceHistory}
-                  margin={{
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                  }}
+                  margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
                 >
                   <defs>
                     <linearGradient id="fillBalance" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="var(--color-balance)"
-                        stopOpacity={0.3}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="var(--color-balance)"
-                        stopOpacity={0}
-                      />
+                      <stop offset="5%" stopColor="var(--color-balance)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--color-balance)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="date" hide />
@@ -195,7 +226,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex flex-col">
                          <span className="font-medium">Bitcoin</span>
-                        <span className="text-sm text-muted-foreground">{tx.status === 'completed' ? 'Complete' : 'In Progress'} - {new Date(tx.date).toLocaleDateString()}</span>
+                        <span className="text-sm text-muted-foreground">{tx.status} - {new Date(tx.date).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </TableCell>
@@ -210,6 +241,11 @@ export default function DashboardPage() {
                   </TableCell>
                 </TableRow>
               ))}
+              {recentTransactions.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={2} className="h-24 text-center">No recent transactions.</TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

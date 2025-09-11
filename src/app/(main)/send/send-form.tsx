@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUpRight, Bitcoin, ScanLine } from "lucide-react";
+import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2 } from "lucide-react";
 import { wallet } from "@/lib/data";
 import {
   Dialog,
@@ -24,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -45,6 +46,7 @@ export function SendForm() {
   const { toast } = useToast();
   const [feeValue, setFeeValue] = useState(recommendedFee);
   const [isScanning, setIsScanning] = useState(false);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -105,11 +107,7 @@ export function SendForm() {
     
     // Simulate network delay
     setTimeout(() => {
-       toast({
-        variant: "default",
-        title: "Transaction Successful",
-        description: "Your Bitcoin has been sent.",
-       });
+       setIsSuccessDialogOpen(true);
        form.reset();
        setFeeValue(recommendedFee);
     }, 2000);
@@ -244,6 +242,22 @@ export function SendForm() {
           </Button>
         </form>
       </Form>
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent>
+          <div className="flex flex-col items-center gap-6 py-6 text-center">
+             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+              <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="space-y-2">
+                <h3 className="text-2xl font-bold">Transaction Sent</h3>
+                <p className="text-muted-foreground">Your Bitcoin has been sent successfully. It may take a few moments to confirm on the network.</p>
+            </div>
+            <DialogClose asChild>
+                <Button className="w-full max-w-xs">Done</Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

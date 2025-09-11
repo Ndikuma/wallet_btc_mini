@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Edit } from "lucide-react";
 import { wallet } from "@/lib/data";
@@ -42,25 +41,23 @@ const formSchema = z.object({
     .number()
     .positive({ message: "Amount must be positive." })
     .max(wallet.balance, { message: "Insufficient balance." }),
-  fee: z.array(z.number()).default([50]),
 });
 
 export type SendFormValues = z.infer<typeof formSchema>;
 
-const recommendedFee = 50;
-
 interface SendFormProps {
-  onFormSubmit: (values: SendFormValues) => void;
+  onFormSubmit: (values: SendFormValues & { fee: number }) => void;
   initialData?: SendFormValues | null;
   isConfirmationStep?: boolean;
   onBack?: () => void;
 }
 
+const defaultFee = 50;
+
 
 export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false, onBack }: SendFormProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const [feeValue, setFeeValue] = useState(initialData?.fee[0] || recommendedFee);
   const [isScanning, setIsScanning] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -72,7 +69,6 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
     defaultValues: initialData || {
       recipient: "",
       amount: "" as any,
-      fee: [recommendedFee],
     },
   });
 
@@ -144,8 +140,9 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
 
 
   function onSubmit(values: SendFormValues) {
+    const valuesWithFee = { ...values, fee: defaultFee };
     if (isConfirmationStep) {
-        console.log("Final submission:", values);
+        console.log("Final submission:", valuesWithFee);
         toast({
         title: "Transaction Submitted",
         description: `Sending ${values.amount} BTC to ${values.recipient.slice(0,10)}...`,
@@ -155,7 +152,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
         setIsSuccessDialogOpen(true);
         }, 2000);
     } else {
-      onFormSubmit(values);
+      onFormSubmit(valuesWithFee);
     }
   }
 
@@ -253,39 +250,6 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="fee"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Transaction Fee
-                </FormLabel>
-                <FormControl>
-                  <div className="relative pt-2">
-                    <Slider
-                      min={10}
-                      max={200}
-                      step={1}
-                      defaultValue={[recommendedFee]}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        setFeeValue(value[0]);
-                      }}
-                      value={field.value}
-                    />
-                    <div className="absolute left-0 -top-2.5 text-xs text-muted-foreground w-full flex justify-center">
-                       <div style={{ left: `calc(${((recommendedFee - 10) / (200 - 10)) * 100}% - 12px)`}} className="absolute flex flex-col items-center">
-                          <div className="h-2 w-px bg-primary"></div>
-                          <span className="text-primary font-medium">Recommended</span>
-                       </div>
-                    </div>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <Button type="submit" className="w-full" size="lg">
             <ArrowUpRight className="mr-2 size-5" />
             Review Transaction
@@ -299,20 +263,20 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
         setIsSuccessDialogOpen(open);
       }}>
         <DialogContent>
-            <DialogHeader className="items-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-                    <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
-                </div>
-                <div className="space-y-2 pt-4">
-                    <DialogTitle>Transaction Sent</DialogTitle>
-                    <DialogDescription className="text-muted-foreground">
-                        Your Bitcoin has been sent successfully. It may take a few moments to confirm on the network.
-                    </DialogDescription>
-                </div>
-            </DialogHeader>
-            <DialogClose asChild>
-                <Button className="w-full max-w-xs mx-auto">Done</Button>
-            </DialogClose>
+          <DialogHeader className="items-center text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+                  <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="space-y-2 pt-4">
+                  <DialogTitle>Transaction Sent</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
+                      Your Bitcoin has been sent successfully. It may take a few moments to confirm on the network.
+                  </DialogDescription>
+              </div>
+          </DialogHeader>
+          <DialogClose asChild>
+              <Button className="w-full max-w-xs mx-auto">Done</Button>
+          </DialogClose>
         </DialogContent>
       </Dialog>
     </>

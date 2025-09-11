@@ -12,7 +12,6 @@ import {
 import { SendForm, type SendFormValues } from "./send-form";
 import { Bitcoin, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { wallet } from "@/lib/data";
 
 function TransactionDetailRow({
   label,
@@ -37,14 +36,16 @@ function TransactionDetailRow({
   );
 }
 
+type TransactionDetails = SendFormValues & { fee: number };
+
 export default function SendPage() {
   const [step, setStep] = useState<"form" | "confirmation">("form");
   const [
     transactionDetails,
     setTransactionDetails,
-  ] = useState<SendFormValues | null>(null);
+  ] = useState<TransactionDetails | null>(null);
 
-  const handleFormSubmit = (values: SendFormValues) => {
+  const handleFormSubmit = (values: TransactionDetails) => {
     setTransactionDetails(values);
     setStep("confirmation");
   };
@@ -54,7 +55,7 @@ export default function SendPage() {
     setTransactionDetails(null);
   };
   
-  const calculatedFee = transactionDetails ? (transactionDetails.amount * (transactionDetails.fee[0] / 50000)).toFixed(8) : "0";
+  const calculatedFee = transactionDetails ? (transactionDetails.amount * (transactionDetails.fee / 50000)).toFixed(8) : "0";
   const totalAmount = transactionDetails ? (transactionDetails.amount + parseFloat(calculatedFee)).toFixed(8) : "0";
 
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -5,8 +6,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   ArrowDownLeft,
-  Wallet,
-  TrendingUp,
 } from "lucide-react";
 import {
   Card,
@@ -36,6 +35,8 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { wallet, transactions, balanceHistory } from "@/lib/data";
 import { BitcoinIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const chartConfig = {
   balance: {
@@ -44,26 +45,62 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const BTC_TO_USD_RATE = 65000; // Mock exchange rate
+
 export default function DashboardPage() {
   const recentTransactions = transactions.slice(0, 4);
+  const [displayUnit, setDisplayUnit] = useState("btc");
+
+  const displayBalance = () => {
+    switch (displayUnit) {
+      case "sats":
+        return (wallet.balance * 100_000_000).toLocaleString("en-US", { maximumFractionDigits: 0 });
+      case "usd":
+        return (wallet.balance * BTC_TO_USD_RATE).toLocaleString("en-US", { style: "currency", currency: "USD" });
+      case "btc":
+      default:
+        return wallet.balance.toFixed(8);
+    }
+  };
+
+  const displayUnitLabel = () => {
+    switch (displayUnit) {
+      case "sats":
+        return "sats";
+      case "usd":
+        return "USD";
+      case "btc":
+      default:
+        return "BTC";
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="flex flex-col lg:col-span-2">
           <CardHeader>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Wallet className="size-4" />
-              <span>Total Balance</span>
-            </div>
-            <CardTitle className="flex items-baseline gap-2 text-4xl font-bold">
-              <BitcoinIcon className="size-7 text-primary" />
-              <span>{wallet.balance.toFixed(4)}</span>
-              <span className="text-xl font-medium text-muted-foreground">BTC</span>
-            </CardTitle>
+             <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-muted-foreground">Total Balance</CardTitle>
+                  <CardDescription>
+                    Your entire portfolio value.
+                  </CardDescription>
+                </div>
+                <ToggleGroup type="single" value={displayUnit} onValueChange={(value) => value && setDisplayUnit(value)} aria-label="Display Unit">
+                  <ToggleGroupItem value="btc" aria-label="Bitcoin">BTC</ToggleGroupItem>
+                  <ToggleGroupItem value="sats" aria-label="Satoshi">SATS</ToggleGroupItem>
+                  <ToggleGroupItem value="usd" aria-label="US Dollar">USD</ToggleGroupItem>
+                </ToggleGroup>
+             </div>
           </CardHeader>
           <CardContent className="flex-grow">
-            <div className="h-[200px]">
+            <div className="flex items-baseline gap-2 text-4xl font-bold">
+              {displayUnit !== 'usd' && <BitcoinIcon className="size-7 text-primary" />}
+              <span>{displayBalance()}</span>
+              <span className="text-xl font-medium text-muted-foreground">{displayUnitLabel()}</span>
+            </div>
+            <div className="h-[180px] pt-4">
               <ChartContainer config={chartConfig} className="h-full w-full">
                 <AreaChart
                   accessibilityLayer

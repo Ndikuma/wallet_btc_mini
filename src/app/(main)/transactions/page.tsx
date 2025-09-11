@@ -69,7 +69,7 @@ export default function TransactionsPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex flex-wrap items-center gap-4">
+        <div className="mb-6 flex flex-wrap items-center gap-4">
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Filter by type" />
@@ -130,68 +130,68 @@ export default function TransactionsPage() {
             </PopoverContent>
           </Popover>
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Type</TableHead>
-              <TableHead>Amount (BTC)</TableHead>
-              <TableHead className="hidden lg:table-cell">Address</TableHead>
-              <TableHead className="hidden sm:table-cell">Date</TableHead>
-              <TableHead className="text-right">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTransactions.map((tx) => (
-              <TableRow key={tx.id}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {tx.type === "sent" ? (
-                      <ArrowUpRight className="size-4 text-destructive" />
-                    ) : (
-                      <ArrowDownLeft className="size-4 text-primary" />
-                    )}
-                    <span className="capitalize">{tx.type}</span>
-                  </div>
-                </TableCell>
-                <TableCell
-                  className={
-                    tx.type === "sent" ? "text-destructive" : "text-primary"
-                  }
-                >
-                  {tx.type === "sent" ? "-" : "+"}
-                  {tx.amount.toFixed(4)}
-                </TableCell>
-                <TableCell className="hidden font-code lg:table-cell">
-                  {tx.address.slice(0, 12)}...
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {new Date(tx.date).toLocaleString()}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Badge
-                    variant={
-                      tx.status === "completed"
-                        ? "default"
-                        : tx.status === "pending"
-                        ? "secondary"
-                        : "destructive"
-                    }
-                    className="capitalize"
-                  >
-                    {tx.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-             {filteredTransactions.length === 0 && (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No transactions found for the selected filters.
-                </TableCell>
+                <TableHead>Details</TableHead>
+                <TableHead className="text-right">Amount (BTC)</TableHead>
+                <TableHead className="hidden text-right sm:table-cell">Status</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredTransactions.map((tx) => (
+                <TableRow key={tx.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                        {tx.type === "sent" ? (
+                          <ArrowUpRight className="size-5 text-destructive" />
+                        ) : (
+                          <ArrowDownLeft className="size-5 text-green-600" />
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-medium capitalize">{tx.type}</span>
+                        <span className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell
+                    className={cn(
+                      "text-right font-mono text-base",
+                      tx.type === "sent" ? "text-destructive" : "text-green-600"
+                    )}
+                  >
+                    {tx.type === "sent" ? "-" : "+"}
+                    {tx.amount.toFixed(4)}
+                  </TableCell>
+                  <TableCell className="hidden text-right sm:table-cell">
+                    <Badge
+                      variant={
+                        tx.status === "completed"
+                          ? "success"
+                          : tx.status === "pending"
+                          ? "secondary"
+                          : "destructive"
+                      }
+                      className="capitalize"
+                    >
+                      {tx.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredTransactions.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    No transactions found for the selected filters.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

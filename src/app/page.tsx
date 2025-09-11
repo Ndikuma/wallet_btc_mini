@@ -1,21 +1,21 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BitcoinIcon } from "@/components/icons";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle, ShieldCheck, Zap } from "lucide-react";
+import Image from "next/image";
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="container z-40 bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="container z-40">
         <div className="flex h-20 items-center justify-between py-6">
           <Link href="/" className="flex items-center gap-2">
             <BitcoinIcon className="size-8 text-primary" />
-            <h2 className="text-lg font-semibold tracking-tight">
+            <h2 className="text-xl font-bold tracking-tight">
               mini wallet
             </h2>
           </Link>
-          <nav className="flex items-center gap-4">
+          <nav className="hidden items-center gap-4 md:flex">
             <Button variant="ghost" asChild>
               <Link href="/login">Login</Link>
             </Button>
@@ -28,82 +28,86 @@ export default function LandingPage() {
         </div>
       </header>
       <main className="flex-1">
-        <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
-          <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center">
-            <h1 className="font-headline text-3xl font-bold sm:text-5xl md:text-6xl lg:text-7xl">
-              A secure & modern Bitcoin wallet.
-            </h1>
-            <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-              Take control of your Bitcoin with a simple, open-source wallet
-              built for everyone. Send, receive, and manage your assets with
-              ease.
-            </p>
-            <div className="flex gap-4">
-              <Button asChild size="lg">
-                <Link href="/register">Create New Wallet</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link href="/restore-wallet">Restore Wallet</Link>
-              </Button>
+        <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-24">
+          <div className="container flex max-w-5xl flex-col items-center gap-8 text-center lg:flex-row lg:text-left">
+            <div className="flex-1 space-y-6">
+              <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl">
+                Your Keys, Your Bitcoin.
+              </h1>
+              <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8 lg:max-w-none">
+                Take full control of your Bitcoin with a simple, secure, open-source wallet
+                built for everyone. Send, receive, and manage your assets with confidence.
+              </p>
+              <div className="flex justify-center gap-4 lg:justify-start">
+                <Button asChild size="lg">
+                  <Link href="/register">Create New Wallet</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link href="/restore-wallet">Restore Wallet</Link>
+                </Button>
+              </div>
+            </div>
+             <div className="flex-1">
+              <Image 
+                src="https://picsum.photos/seed/bitcoin/600/600" 
+                alt="Bitcoin wallet illustration"
+                width={600}
+                height={600}
+                className="rounded-xl shadow-2xl"
+                data-ai-hint="bitcoin crypto"
+              />
             </div>
           </div>
         </section>
         <section
           id="features"
-          className="container space-y-6 bg-slate-50 py-8 dark:bg-transparent md:py-12 lg:py-24"
+          className="container space-y-12 bg-secondary py-12 md:py-20 lg:py-24"
         >
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
-            <h2 className="font-headline text-3xl font-bold leading-[1.1] sm:text-3xl md:text-5xl">
-              Features
+            <h2 className="text-3xl font-bold leading-[1.1] sm:text-4xl md:text-5xl">
+              Why Choose mini wallet?
             </h2>
             <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-              Everything you need to manage your Bitcoin securely.
+              We provide the tools you need to manage your Bitcoin with security and ease.
             </p>
           </div>
-          <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
-            <div className="relative overflow-hidden rounded-lg border bg-background p-2">
-              <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
-                <div className="space-y-2">
-                  <h3 className="font-bold">Full Control</h3>
-                  <p className="text-sm text-muted-foreground">
-                    You are in complete control of your keys and your money. No
-                    third party can freeze or lose your funds.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="relative overflow-hidden rounded-lg border bg-background p-2">
-              <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
-                <div className="space-y-2">
-                  <h3 className="font-bold">Easy to Use</h3>
-                  <p className="text-sm text-muted-foreground">
-                    A clean and intuitive interface makes sending and receiving
-                    Bitcoin a breeze.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="relative overflow-hidden rounded-lg border bg-background p-2">
-              <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
-                <div className="space-y-2">
-                  <h3 className="font-bold">Secure</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Your wallet is protected with a 24-word recovery phrase and
-                    industry-standard encryption.
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="mx-auto grid justify-center gap-8 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
+             <CardFeature
+              icon={<ShieldCheck className="mb-4 size-12 text-primary" />}
+              title="Full Control"
+              description="You are in complete control of your keys and your money. No third party can freeze or lose your funds."
+            />
+             <CardFeature
+              icon={<Zap className="mb-4 size-12 text-primary" />}
+              title="Easy to Use"
+              description="A clean and intuitive interface makes sending and receiving Bitcoin a breeze, for beginners and experts alike."
+            />
+             <CardFeature
+              icon={<CheckCircle className="mb-4 size-12 text-primary" />}
+              title="Secure by Design"
+              description="Your wallet is protected with a 24-word recovery phrase and industry-standard encryption."
+            />
           </div>
         </section>
       </main>
-      <footer className="py-6 md:px-8 md:py-0">
+      <footer className="bg-secondary py-6 md:px-8 md:py-0">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Built by You.
+            Built by You. Powered by Open Source.
           </p>
         </div>
       </footer>
     </div>
   );
+}
+
+
+function CardFeature({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+  return (
+    <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-background shadow-sm">
+      {icon}
+      <h3 className="mb-2 text-xl font-bold">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
+    </div>
+  )
 }

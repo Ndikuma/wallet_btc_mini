@@ -6,15 +6,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SendForm } from "./send-form";
+import { Bitcoin } from "lucide-react";
 
 export default function SendPage() {
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-md">
       <Card>
         <CardHeader>
-          <CardTitle>Send Bitcoin</CardTitle>
+           <div className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <Bitcoin className="size-6 text-primary" />
+            </div>
+            <CardTitle>Send Bitcoin</CardTitle>
+          </div>
           <CardDescription>
-            Enter the recipient's address and amount to send, or scan a QR code. The optimal fee is suggested for you.
+            Enter the recipient's address and amount to send. The optimal fee will be suggested for you.
           </CardDescription>
         </CardHeader>
         <CardContent>

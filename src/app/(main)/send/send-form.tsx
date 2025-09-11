@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUpRight, ScanLine } from "lucide-react";
+import { ArrowUpRight, Bitcoin, ScanLine } from "lucide-react";
 import { wallet } from "@/lib/data";
 import {
   Dialog,
@@ -185,14 +185,17 @@ export function SendForm() {
             render={({ field }) => (
               <FormItem>
                  <div className="flex items-center justify-between">
-                    <FormLabel>Amount (BTC)</FormLabel>
+                    <FormLabel>Amount</FormLabel>
                     <span className="text-xs text-muted-foreground">
                         Balance: {wallet.balance.toFixed(4)} BTC
                     </span>
                  </div>
-                <FormControl>
-                  <Input type="number" step="0.00000001" placeholder="0.00" {...field} />
-                </FormControl>
+                 <div className="relative">
+                    <FormControl>
+                      <Input type="number" step="0.00000001" placeholder="0.00" {...field} className="pl-8"/>
+                    </FormControl>
+                    <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                 </div>
                  <div className="flex gap-2 pt-1">
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.25)}>25%</Button>
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.5)}>50%</Button>
@@ -209,7 +212,7 @@ export function SendForm() {
               <FormItem>
                 <FormLabel>
                   Transaction Fee (sats/vB) -{" "}
-                  <span className="text-primary">{feeValue}</span>
+                  <span className="font-bold text-primary">{feeValue}</span>
                 </FormLabel>
                 <FormControl>
                   <div className="relative pt-2">
@@ -223,7 +226,7 @@ export function SendForm() {
                         setFeeValue(value[0]);
                       }}
                     />
-                    <div className="absolute left-0 top-0 text-xs text-muted-foreground w-full flex justify-center">
+                    <div className="absolute left-0 -top-2.5 text-xs text-muted-foreground w-full flex justify-center">
                        <div style={{ left: `calc(${((recommendedFee - 10) / (200 - 10)) * 100}% - 12px)`}} className="absolute flex flex-col items-center">
                           <div className="h-2 w-px bg-primary"></div>
                           <span className="text-primary font-medium">Recommended</span>

@@ -44,10 +44,10 @@ export function MobileNav() {
             key={item.path}
             href={item.path}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 text-xs font-medium",
-              pathname === item.path
+              "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
+              pathname.startsWith(item.path)
                 ? "text-primary"
-                : "text-muted-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             <item.icon className="size-5" />

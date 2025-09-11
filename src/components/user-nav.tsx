@@ -3,7 +3,8 @@
 import Link from "next/link"
 import {
   LogOut,
-  User,
+  Settings,
+  User as UserIcon,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -26,7 +27,7 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage src="https://picsum.photos/seed/avatar/40/40" alt="Avatar" data-ai-hint="avatar" />
             <AvatarFallback>U</AvatarFallback>
@@ -44,9 +45,17 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+          <DropdownMenuItem asChild>
+            <Link href="/profile">
+              <UserIcon className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+             <Link href="/settings">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

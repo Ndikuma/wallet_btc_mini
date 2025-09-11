@@ -50,14 +50,14 @@ export function MainNav() {
   return (
     <>
       <SidebarHeader>
-        <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <BitcoinIcon className="size-8 text-primary" />
           <div className="flex flex-col">
-            <h2 className="text-lg font-semibold tracking-tight text-sidebar-foreground">
+            <h2 className="text-lg font-bold tracking-tight text-sidebar-foreground">
               mini wallet
             </h2>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
@@ -65,7 +65,7 @@ export function MainNav() {
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.path}
+                isActive={pathname.startsWith(item.path)}
                 tooltip={item.label}
               >
                 <Link href={item.path}>
@@ -83,7 +83,7 @@ export function MainNav() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              isActive={pathname === "/settings"}
+              isActive={pathname.startsWith("/settings")}
               tooltip="Settings"
             >
               <Link href="/settings">

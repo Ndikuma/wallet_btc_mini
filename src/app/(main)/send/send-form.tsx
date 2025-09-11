@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -16,8 +16,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ScanLine } from "lucide-react";
 import { wallet } from "@/lib/data";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 const formSchema = z.object({
   recipient: z
@@ -36,6 +46,42 @@ const recommendedFee = 50;
 export function SendForm() {
   const { toast } = useToast();
   const [feeValue, setFeeValue] = useState(recommendedFee);
+  const [isScanning, setIsScanning] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+
+  useEffect(() => {
+    if (isScanning) {
+      const getCameraPermission = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+          setHasCameraPermission(true);
+  
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (error) {
+          console.error('Error accessing camera:', error);
+          setHasCameraPermission(false);
+          toast({
+            variant: 'destructive',
+            title: 'Camera Access Denied',
+            description: 'Please enable camera permissions in your browser settings to use this app.',
+          });
+        }
+      };
+  
+      getCameraPermission();
+
+      return () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+          const stream = videoRef.current.srcObject as MediaStream;
+          stream.getTracks().forEach(track => track.stop());
+        }
+      }
+    }
+  }, [isScanning, toast]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -66,73 +112,122 @@ export function SendForm() {
     }, 2000);
   }
 
+  // A real implementation would use a QR code scanning library
+  const handleScan = () => {
+     // Placeholder for QR scan logic
+     const mockAddress = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
+     form.setValue("recipient", mockAddress);
+     toast({
+       title: "QR Code Scanned",
+       description: `Recipient address set to ${mockAddress.slice(0, 10)}...`
+     });
+     setIsScanning(false); // Close dialog after mock scan
+  };
+
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="recipient"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Recipient Address</FormLabel>
-              <FormControl>
-                <Input placeholder="bc1q..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="amount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Amount (BTC)</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.0001" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="fee"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Transaction Fee (sats/vB) -{" "}
-                <span className="text-primary">{feeValue}</span>
-              </FormLabel>
-              <FormControl>
-                <div className="relative pt-2">
-                  <Slider
-                    min={10}
-                    max={200}
-                    step={1}
-                    defaultValue={[recommendedFee]}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      setFeeValue(value[0]);
-                    }}
-                  />
-                  <div className="absolute left-0 top-0 text-xs text-muted-foreground w-full flex justify-center">
-                     <div style={{ left: `calc(${((recommendedFee - 10) / (200 - 10)) * 100}% - 12px)`}} className="absolute flex flex-col items-center">
-                        <div className="h-2 w-px bg-primary"></div>
-                        <span className="text-primary font-medium">Recommended</span>
-                     </div>
-                  </div>
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="recipient"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Recipient Address</FormLabel>
+                <div className="flex gap-2">
+                  <FormControl>
+                    <Input placeholder="bc1q..." {...field} />
+                  </FormControl>
+                  <Dialog open={isScanning} onOpenChange={setIsScanning}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="icon" type="button" onClick={() => setIsScanning(true)}>
+                        <ScanLine className="size-5" />
+                        <span className="sr-only">Scan QR Code</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Scan QR Code</DialogTitle>
+                      </DialogHeader>
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="relative w-full aspect-square bg-muted rounded-md overflow-hidden">
+                          <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                             <div className="w-2/3 h-2/3 border-4 border-primary rounded-lg" />
+                          </div>
+                        </div>
+                        {hasCameraPermission === false && (
+                          <Alert variant="destructive">
+                            <AlertTitle>Camera Access Required</AlertTitle>
+                            <AlertDescription>
+                              Please allow camera access to use this feature.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                         <Button onClick={handleScan} type="button" className="w-full">
+                           Simulate Scan
+                         </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" className="w-full" size="lg">
-          <ArrowUpRight className="mr-2 size-5" />
-          Send Bitcoin
-        </Button>
-      </form>
-    </Form>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amount (BTC)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.0001" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="fee"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Transaction Fee (sats/vB) -{" "}
+                  <span className="text-primary">{feeValue}</span>
+                </FormLabel>
+                <FormControl>
+                  <div className="relative pt-2">
+                    <Slider
+                      min={10}
+                      max={200}
+                      step={1}
+                      defaultValue={[recommendedFee]}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setFeeValue(value[0]);
+                      }}
+                    />
+                    <div className="absolute left-0 top-0 text-xs text-muted-foreground w-full flex justify-center">
+                       <div style={{ left: `calc(${((recommendedFee - 10) / (200 - 10)) * 100}% - 12px)`}} className="absolute flex flex-col items-center">
+                          <div className="h-2 w-px bg-primary"></div>
+                          <span className="text-primary font-medium">Recommended</span>
+                       </div>
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full" size="lg">
+            <ArrowUpRight className="mr-2 size-5" />
+            Send Bitcoin
+          </Button>
+        </form>
+      </Form>
+    </>
   );
 }

@@ -14,7 +14,7 @@ export default function SendPage() {
         <CardHeader>
           <CardTitle>Send Bitcoin</CardTitle>
           <CardDescription>
-            Enter the recipient's address and amount to send. The optimal fee is suggested for you.
+            Enter the recipient's address and amount to send, or scan a QR code. The optimal fee is suggested for you.
           </CardDescription>
         </CardHeader>
         <CardContent>

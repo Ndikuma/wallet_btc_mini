@@ -5,6 +5,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { UserNav } from "@/components/user-nav";
 
 export default function MainLayout({
   children,
@@ -22,6 +23,7 @@ export default function MainLayout({
           <div className="flex-1">
             {/* Can add page title here if needed */}
           </div>
+          <UserNav />
         </header>
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </SidebarInset>

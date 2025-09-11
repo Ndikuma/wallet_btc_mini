@@ -19,7 +19,7 @@ import {
   SidebarMenuButton,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 
 const menuItems = [
   {
@@ -93,20 +93,6 @@ export function MainNav() {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <div className="mt-4 flex items-center gap-3 px-2">
-          <Avatar className="size-9">
-            <AvatarImage src="https://picsum.photos/seed/avatar/40/40" alt="Avatar" data-ai-hint="avatar" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-sidebar-foreground">
-              User
-            </span>
-            <span className="text-xs text-sidebar-foreground/70">
-              user@email.com
-            </span>
-          </div>
-        </div>
       </SidebarFooter>
     </>
   );

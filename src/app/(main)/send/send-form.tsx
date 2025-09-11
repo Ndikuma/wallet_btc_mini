@@ -24,6 +24,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -245,18 +246,20 @@ export function SendForm() {
       </Form>
       <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
         <DialogContent>
-          <div className="flex flex-col items-center gap-6 py-6 text-center">
-             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-              <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
-            </div>
-            <div className="space-y-2">
-                <h3 className="text-2xl font-bold">Transaction Sent</h3>
-                <p className="text-muted-foreground">Your Bitcoin has been sent successfully. It may take a few moments to confirm on the network.</p>
-            </div>
+            <DialogHeader className="items-center text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+                    <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="space-y-2 pt-4">
+                    <DialogTitle className="text-2xl font-bold">Transaction Sent</DialogTitle>
+                    <DialogDescription className="text-muted-foreground">
+                        Your Bitcoin has been sent successfully. It may take a few moments to confirm on the network.
+                    </DialogDescription>
+                </div>
+            </DialogHeader>
             <DialogClose asChild>
-                <Button className="w-full max-w-xs">Done</Button>
+                <Button className="w-full max-w-xs mx-auto">Done</Button>
             </DialogClose>
-          </div>
         </DialogContent>
       </Dialog>
     </>

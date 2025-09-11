@@ -56,6 +56,7 @@ export function SettingsClient() {
                 <SelectItem value="usd">USD</SelectItem>
                 <SelectItem value="eur">EUR</SelectItem>
                 <SelectItem value="jpy">JPY</SelectItem>
+                <SelectItem value="bif">BIF</SelectItem>
               </SelectContent>
             </Select>
           </div>

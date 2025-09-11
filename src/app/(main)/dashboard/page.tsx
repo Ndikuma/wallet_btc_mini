@@ -46,6 +46,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const BTC_TO_USD_RATE = 65000; // Mock exchange rate
+const BTC_TO_BIF_RATE = 186550000; // Mock exchange rate
 
 export default function DashboardPage() {
   const recentTransactions = transactions.slice(0, 4);
@@ -57,6 +58,8 @@ export default function DashboardPage() {
         return (wallet.balance * 100_000_000).toLocaleString("en-US", { maximumFractionDigits: 0 });
       case "usd":
         return (wallet.balance * BTC_TO_USD_RATE).toLocaleString("en-US", { style: "currency", currency: "USD" });
+      case "bif":
+        return (wallet.balance * BTC_TO_BIF_RATE).toLocaleString("en-US", { style: "currency", currency: "BIF" });
       case "btc":
       default:
         return wallet.balance.toFixed(8);
@@ -69,6 +72,8 @@ export default function DashboardPage() {
         return "sats";
       case "usd":
         return "USD";
+      case "bif":
+        return "BIF";
       case "btc":
       default:
         return "BTC";
@@ -91,12 +96,13 @@ export default function DashboardPage() {
                   <ToggleGroupItem value="btc" aria-label="Bitcoin">BTC</ToggleGroupItem>
                   <ToggleGroupItem value="sats" aria-label="Satoshi">SATS</ToggleGroupItem>
                   <ToggleGroupItem value="usd" aria-label="US Dollar">USD</ToggleGroupItem>
+                  <ToggleGroupItem value="bif" aria-label="Burundian Franc">BIF</ToggleGroupItem>
                 </ToggleGroup>
              </div>
           </CardHeader>
           <CardContent className="flex-grow">
             <div className="flex items-baseline gap-2 text-4xl font-bold">
-              {displayUnit !== 'usd' && <BitcoinIcon className="size-7 text-primary" />}
+              {displayUnit !== 'usd' && displayUnit !== 'bif' && <BitcoinIcon className="size-7 text-primary" />}
               <span>{displayBalance()}</span>
               <span className="text-xl font-medium text-muted-foreground">{displayUnitLabel()}</span>
             </div>

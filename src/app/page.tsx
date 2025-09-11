@@ -35,8 +35,7 @@ export default function LandingPage() {
                 Your Keys, Your Bitcoin.
               </h1>
               <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8 lg:max-w-none">
-                Take full control of your Bitcoin with a simple, secure, open-source wallet
-                built for everyone. Send, receive, and manage your assets with confidence.
+                A beautifully simple, secure, and open-source wallet for managing your Bitcoin. Take full control of your digital assets with confidence.
               </p>
               <div className="flex justify-center gap-4 lg:justify-start">
                 <Button asChild size="lg">
@@ -65,27 +64,27 @@ export default function LandingPage() {
         >
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
             <h2 className="text-3xl font-bold leading-[1.1] sm:text-4xl md:text-5xl">
-              Why Choose mini wallet?
+              The Modern Standard for Your Bitcoin
             </h2>
             <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-              We provide the tools you need to manage your Bitcoin with security and ease.
+              mini wallet provides everything you need to manage your crypto assets with security and ease.
             </p>
           </div>
           <div className="mx-auto grid justify-center gap-8 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
              <CardFeature
               icon={<ShieldCheck className="mb-4 size-12 text-primary" />}
-              title="Full Control"
-              description="You are in complete control of your keys and your money. No third party can freeze or lose your funds."
+              title="Self-Custody Perfected"
+              description="You hold the keys, you control your crypto. No third party can ever access, freeze, or lose your funds."
             />
              <CardFeature
               icon={<Zap className="mb-4 size-12 text-primary" />}
-              title="Easy to Use"
-              description="A clean and intuitive interface makes sending and receiving Bitcoin a breeze, for beginners and experts alike."
+              title="Effortless Management"
+              description="Our clean, intuitive interface makes sending, receiving, and tracking your Bitcoin a breeze for everyone."
             />
              <CardFeature
               icon={<CheckCircle className="mb-4 size-12 text-primary" />}
               title="Secure by Design"
-              description="Your wallet is protected with a 24-word recovery phrase and industry-standard encryption."
+              description="Protected by a 24-word recovery phrase and cutting-edge encryption, your assets are safe and sound."
             />
           </div>
         </section>
@@ -93,7 +92,7 @@ export default function LandingPage() {
       <footer className="bg-secondary py-6 md:px-8 md:py-0">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Built by You. Powered by Open Source.
+            Proudly open source. Built for the community, by the community.
           </p>
         </div>
       </footer>

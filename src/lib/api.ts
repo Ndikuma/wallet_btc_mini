@@ -3,7 +3,7 @@ import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, W
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: '/api/', // Using relative URL to leverage Next.js proxy
+  baseURL: 'https://bacterial-entering-ready-ladies.trycloudflare.com/',
   headers: {
     'Content-Type': 'application/json',
   },

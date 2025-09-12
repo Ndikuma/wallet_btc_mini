@@ -76,7 +76,7 @@ export default function DashboardPage() {
           api.get("/transaction/?limit=4"),
         ]);
         setWallet(walletRes.data);
-        setRecentTransactions(transactionsRes.data.results);
+        setRecentTransactions(transactionsRes.data.results || []);
       } catch (err: any) {
         if (err instanceof AxiosError && err.response?.status === 403) {
             setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
@@ -283,7 +283,13 @@ export default function DashboardPage() {
         <CardContent>
           <Table>
             <TableBody>
-              {recentTransactions.map((tx) => (
+              {loading && Array.from({ length: 3 }).map((_, i) => (
+                <TableRow key={i}>
+                    <TableCell><Skeleton className="h-12 w-48" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                </TableRow>
+              ))}
+              {!loading && recentTransactions && recentTransactions.length > 0 && recentTransactions.map((tx) => (
                 <TableRow key={tx.id}>
                    <TableCell>
                     <div className="flex items-center gap-3">
@@ -311,7 +317,7 @@ export default function DashboardPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {recentTransactions.length === 0 && !loading && (
+              {!loading && (!recentTransactions || recentTransactions.length === 0) && (
                 <TableRow>
                     <TableCell colSpan={2} className="h-24 text-center">No recent transactions.</TableCell>
                 </TableRow>
@@ -323,5 +329,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     

@@ -56,9 +56,8 @@ const restoreWallet = (mnemonic: string) => axiosInstance.post('wallet/restore/'
 
 
 // Transactions
-const getTransactions = (limit?: number) => {
-    const params = limit ? { params: { limit } } : {};
-    return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/', params);
+const getTransactions = () => {
+    return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
 };
 const sendTransaction = (values: any) => axiosInstance.post('transaction/send/', values);
 

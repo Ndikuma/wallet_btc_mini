@@ -1,3 +1,4 @@
+
 import Link from "next/link"
 import {
   Card,
@@ -22,7 +23,7 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
           <CardDescription>
-            Enter your email and password to access your wallet.
+            Enter your username and password to access your wallet.
           </CardDescription>
         </CardHeader>
         <CardContent>

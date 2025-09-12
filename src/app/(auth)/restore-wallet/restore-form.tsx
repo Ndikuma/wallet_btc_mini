@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }),
+  username: z.string().min(1, { message: "Username is required." }),
   password: z.string().min(1, { message: "Password is required." }),
   mnemonic: z.string().min(20, { message: "Recovery phrase seems too short." })
     .refine(value => {
@@ -40,7 +40,7 @@ export function RestoreForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
       mnemonic: "",
     },
@@ -50,7 +50,7 @@ export function RestoreForm() {
     setIsLoading(true);
     try {
       // First, log in to get a token if the user is valid
-      const loginResponse = await api.post<AuthResponse>('/auth/login/', { email: values.email, password: values.password });
+      const loginResponse = await api.post<AuthResponse>('/auth/login/', { username: values.username, password: values.password });
       localStorage.setItem('authToken', loginResponse.data.token);
 
       // Then, restore the wallet with the new token
@@ -79,12 +79,12 @@ export function RestoreForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="email"
+          name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="m@example.com" {...field} />
+                <Input type="text" placeholder="yourusername" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

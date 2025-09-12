@@ -48,6 +48,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
+    if (!text) return 'an external address';
+    if (text.length <= start + end) return text;
+    return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
+  }
+
 
   useEffect(() => {
     async function fetchData() {
@@ -266,7 +272,10 @@ export default function DashboardPage() {
               recentTransactions.slice(0, 4).map((tx) => {
                 const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
                 const amountNum = parseFloat(tx.amount);
-                const usdValue = Math.abs(amountNum * (balance?.usd_value || 0) / (balance?.btc_value || 1));
+                const btcToUsdRate = (balance?.usd_value || 0) / (balance?.btc_value || 1);
+                const usdValue = Math.abs(amountNum * btcToUsdRate);
+                const relevantAddress = isSent ? tx.to_address : tx.from_address;
+
 
                 return (
                   <div key={tx.id} className="flex items-center gap-4">
@@ -278,13 +287,16 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium capitalize">{isSent ? "Sent" : "Received"} Bitcoin</p>
+                       <p className="font-medium truncate">
+                        {isSent ? "Sent to" : "Received from"}{' '}
+                        <span className="font-mono text-muted-foreground">{shortenText(relevantAddress)}</span>
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
+                       <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
                         {tx.amount_formatted}
                       </p>
                       <p className="text-xs text-muted-foreground font-mono">
@@ -306,5 +318,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

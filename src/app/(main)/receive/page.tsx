@@ -15,48 +15,86 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { ShareButton } from "./share-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bitcoin } from "lucide-react";
+import { Bitcoin, RefreshCw } from "lucide-react";
 import api from "@/lib/api";
-import type { Wallet } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ReceivePage() {
-  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const { toast } = useToast();
+  const [address, setAddress] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [amount, setAmount] = useState("");
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [paymentUri, setPaymentUri] = useState("");
 
-  useEffect(() => {
-    async function fetchWallet() {
-      try {
-        const response = await api.get("/wallets/");
-        setWallet(response.data);
-        setPaymentUri(response.data.address);
-      } catch (error) {
-        console.error("Failed to fetch wallet address", error);
-      } finally {
-        setLoading(false);
+  const fetchAddress = async () => {
+    try {
+      // First try to get the existing wallet address
+      const response = await api.get("/wallet/");
+      if (response.data && response.data.address) {
+        setAddress(response.data.address);
+      } else {
+        await generateNewAddress();
       }
+    } catch (error) {
+      console.error("Failed to fetch wallet address, generating new one.", error);
+      await generateNewAddress();
+    } finally {
+      setLoading(false);
     }
-    fetchWallet();
+  }
+  
+  const generateNewAddress = async () => {
+    setGenerating(true);
+    try {
+      const response = await api.post<{ address: string }>("/wallet/generate_address/");
+      setAddress(response.data.address);
+       toast({
+        title: "New Address Generated",
+        description: "A new receiving address has been created for you.",
+      });
+    } catch (error) {
+      console.error("Failed to generate new address", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not generate a new address. Please try again.",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+
+  useEffect(() => {
+    fetchAddress();
   }, []);
 
   useEffect(() => {
-    if (!wallet?.address) return;
+    if (!address) return;
 
-    let uri = `bitcoin:${wallet.address}`;
+    let uri = `bitcoin:${address}`;
     if (amount && parseFloat(amount) > 0) {
       uri += `?amount=${amount}`;
     }
     setPaymentUri(uri);
 
-    const fetchQrCode = () => {
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(uri)}&format=png&bgcolor=ffffff`;
-        setQrCode(qrApiUrl);
+    const generateQrCode = async () => {
+        try {
+            const response = await api.post('/wallet/generate_qr_code/', { data: uri });
+            // Assuming the backend returns the QR code as a base64 data URI
+            setQrCode(response.data.qr_code);
+        } catch (error) {
+            console.error("Failed to generate QR code from backend, using fallback.", error);
+            const fallbackQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(uri)}&format=png&bgcolor=ffffff`;
+            setQrCode(fallbackQrApiUrl);
+        }
     };
 
-    fetchQrCode();
-  }, [amount, wallet?.address]);
+    generateQrCode();
+  }, [amount, address]);
 
 
   return (
@@ -106,7 +144,7 @@ export default function ReceivePage() {
                 ) : (
                     <Input
                       id="wallet-address"
-                      value={wallet?.address || ''}
+                      value={address || ''}
                       readOnly
                       className="text-center font-code text-sm"
                     />
@@ -117,9 +155,15 @@ export default function ReceivePage() {
             </div>
           </div>
          
-          <div className="flex gap-4">
-             <CopyButton text={paymentUri} />
-             <ShareButton text={paymentUri} amount={amount} />
+          <div className="flex w-full max-w-sm flex-col gap-3">
+             <div className="flex gap-4">
+                <CopyButton text={paymentUri} />
+                <ShareButton text={paymentUri} amount={amount} />
+             </div>
+             <Button variant="outline" size="sm" onClick={generateNewAddress} disabled={generating}>
+                <RefreshCw className={cn("mr-2 size-4", generating && "animate-spin")} />
+                {generating ? 'Generating...' : 'Generate New Address'}
+             </Button>
           </div>
         </CardContent>
       </Card>

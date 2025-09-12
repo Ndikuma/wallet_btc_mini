@@ -66,7 +66,7 @@ export default function TransactionsPage() {
         if (date?.from) params.append('date_after', date.from.toISOString().split('T')[0]);
         if (date?.to) params.append('date_before', date.to.toISOString().split('T')[0]);
 
-        const response = await api.get(`/transactions/?${params.toString()}`);
+        const response = await api.get(`/transaction/?${params.toString()}`);
         setTransactions(response.data.results);
       } catch (error) {
         console.error("Failed to fetch transactions", error);

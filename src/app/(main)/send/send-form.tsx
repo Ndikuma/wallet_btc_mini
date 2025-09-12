@@ -64,7 +64,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   const [wallet, setWallet] = useState<Wallet | null>(null);
 
   useEffect(() => {
-    api.get('/wallets/').then(res => setWallet(res.data)).catch(console.error);
+    api.get('/wallet/').then(res => setWallet(res.data)).catch(console.error);
   }, []);
 
   const currentBalance = wallet?.balance || 0;
@@ -78,6 +78,8 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   });
 
    useEffect(() => {
+    if (!isScanning) return;
+
     let stream: MediaStream | null = null;
     let animationFrameId: number;
 
@@ -124,9 +126,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
       }
     };
 
-    if (isScanning) {
-      startScan();
-    }
+    startScan();
 
     return () => {
       if (stream) {
@@ -147,14 +147,14 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
     if (isConfirmationStep) {
         setIsLoading(true);
         try {
-            await api.post('/transactions/send/', values);
+            await api.post('/transaction/send/', values);
             toast({
                 title: "Transaction Submitted",
                 description: `Sending ${values.amount} BTC. You will be notified once confirmed.`,
             });
             setIsSuccessDialogOpen(true);
         } catch(error: any) {
-            const errorMsg = error.response?.data?.detail || "An unexpected error occurred.";
+            const errorMsg = error.response?.data?.detail || error.response?.data?.error || "An unexpected error occurred.";
             toast({
                 variant: "destructive",
                 title: "Transaction Failed",

@@ -35,23 +35,29 @@ export function UserNav() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await api.get<{user: User}>('/auth/user/');
-        setUser(response.data.user);
+        const response = await api.get<User>('/user/');
+        setUser(response.data);
       } catch (error) {
-        console.error("Not authenticated", error);
         // Silently fail if not authenticated
+        console.error("Not authenticated", error);
       }
     }
     fetchUser();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    router.push("/");
-    router.refresh();
+  const handleLogout = async () => {
+    try {
+        await api.post('/auth/logout/');
+    } catch(error) {
+        console.error("Logout failed", error);
+    } finally {
+        localStorage.removeItem("authToken");
+        router.push("/");
+        router.refresh();
+    }
   }
 
-  const fallback = user ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}` : 'U';
+  const fallback = user ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() : 'U';
 
   return (
     <DropdownMenu>

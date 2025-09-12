@@ -42,10 +42,7 @@ export function RegisterForm() {
     try {
       const response = await api.post<AuthResponse>('/auth/register/', values);
       localStorage.setItem('authToken', response.data.token);
-      toast({
-        title: "Registration Successful",
-        description: "Redirecting to wallet creation...",
-      });
+       // Wallet is created on backend, so we redirect to create-wallet to get the mnemonic
       router.push("/create-wallet");
     } catch (error: any) {
        const errorMsg = error.response?.data?.email?.[0] || error.response?.data?.password?.[0] || "An unexpected error occurred.";

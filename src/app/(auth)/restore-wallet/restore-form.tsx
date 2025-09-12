@@ -19,8 +19,12 @@ import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import type { AuthResponse } from "@/lib/types";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+
 
 const formSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email." }),
+  password: z.string().min(1, { message: "Password is required." }),
   mnemonic: z.string().min(20, { message: "Recovery phrase seems too short." })
     .refine(value => {
         const wordCount = value.trim().split(/\s+/).length;
@@ -36,6 +40,8 @@ export function RestoreForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      email: "",
+      password: "",
       mnemonic: "",
     },
   });
@@ -43,10 +49,13 @@ export function RestoreForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // This assumes you have an account and are restoring the wallet for it.
-      // A more complete flow might involve asking for email/password as well.
-      const response = await api.post<AuthResponse>('/wallets/restore/', values);
-      localStorage.setItem('authToken', response.data.token);
+      // First, log in to get a token if the user is valid
+      const loginResponse = await api.post<AuthResponse>('/auth/login/', { email: values.email, password: values.password });
+      localStorage.setItem('authToken', loginResponse.data.token);
+
+      // Then, restore the wallet with the new token
+      await api.post('/wallet/restore/', { mnemonic: values.mnemonic });
+      
       toast({
         title: "Wallet Restored",
         description: "Welcome back!",
@@ -54,7 +63,7 @@ export function RestoreForm() {
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || error.response?.data?.mnemonic?.[0] || "Failed to restore wallet. Please check your phrase.";
+      const errorMsg = error.response?.data?.detail || error.response?.data?.mnemonic?.[0] || "Failed to restore wallet. Please check your details.";
       toast({
         variant: "destructive",
         title: "Restore Failed",
@@ -67,7 +76,33 @@ export function RestoreForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="m@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="********" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="mnemonic"

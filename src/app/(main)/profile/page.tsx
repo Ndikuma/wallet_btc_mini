@@ -26,8 +26,8 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await api.get<{user: User}>("/auth/user/");
-        setUser(response.data.user);
+        const response = await api.get<User>("/user/profile/");
+        setUser(response.data);
       } catch (error) {
         toast({
           variant: "destructive",
@@ -71,6 +71,13 @@ export default function ProfilePage() {
     );
   }
 
+  const handleSaveChanges = () => {
+      toast({
+          title: "Coming Soon",
+          description: "Profile editing is not yet implemented.",
+      })
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="space-y-2">
@@ -110,7 +117,7 @@ export default function ProfilePage() {
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={user.email} readOnly disabled />
           </div>
-          <Button>Save Changes</Button>
+          <Button onClick={handleSaveChanges}>Save Changes</Button>
         </CardContent>
       </Card>
     </div>

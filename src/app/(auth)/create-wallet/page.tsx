@@ -24,25 +24,25 @@ export default function CreateWalletPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function createWallet() {
+    async function generateMnemonic() {
       try {
-        const response = await api.post<{ mnemonic: string }>("/wallets/create/");
+        const response = await api.post<{ mnemonic: string }>("/wallet/generate_mnemonic/");
         setMnemonic(response.data.mnemonic);
         localStorage.setItem("tempMnemonic", response.data.mnemonic);
       } catch (error) {
         toast({
           variant: "destructive",
           title: "Wallet Creation Failed",
-          description: "Could not create a new wallet. Please try again.",
+          description: "Could not generate a recovery phrase. Please try again.",
         });
       } finally {
         setLoading(false);
       }
     }
-    createWallet();
+    generateMnemonic();
   }, [toast]);
 
-  const mnemonicWords = mnemonic?.split(" ") || Array(24).fill(null);
+  const mnemonicWords = mnemonic?.split(" ") || Array(12).fill(null);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
@@ -50,7 +50,7 @@ export default function CreateWalletPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Your Recovery Phrase</CardTitle>
           <CardDescription>
-            This 24-word phrase is the only way to recover your wallet.
+            This 12-word phrase is the only way to recover your wallet.
             <br />
             Write them down in order and store them in a safe, offline place.
           </CardDescription>
@@ -65,13 +65,13 @@ export default function CreateWalletPage() {
           </Alert>
           <div className="rounded-lg border bg-background p-6">
             {loading ? (
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3 md:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3">
                 {mnemonicWords.map((_, index) => (
                   <Skeleton key={index} className="h-6 w-24" />
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3 md:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3">
                 {mnemonicWords.map((word, index) => (
                   <div key={index} className="flex items-baseline">
                     <span className="mr-3 text-sm text-muted-foreground">{index + 1}.</span>

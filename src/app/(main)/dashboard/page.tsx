@@ -66,8 +66,8 @@ export default function DashboardPage() {
     async function fetchData() {
       try {
         const [walletRes, transactionsRes] = await Promise.all([
-          api.get("/wallets/"),
-          api.get("/transactions/?limit=4"),
+          api.get("/wallet/"),
+          api.get("/transaction/?limit=4"),
         ]);
         setWallet(walletRes.data);
         setRecentTransactions(transactionsRes.data.results);
@@ -278,7 +278,7 @@ export default function DashboardPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {recentTransactions.length === 0 && (
+              {recentTransactions.length === 0 && !loading && (
                 <TableRow>
                     <TableCell colSpan={2} className="h-24 text-center">No recent transactions.</TableCell>
                 </TableRow>
@@ -290,5 +290,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

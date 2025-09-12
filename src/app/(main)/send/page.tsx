@@ -14,6 +14,7 @@ import { Bitcoin, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 function TransactionDetailRow({
   label,
@@ -39,25 +40,25 @@ function TransactionDetailRow({
 }
 
 export default function SendPage() {
+  const { toast } = useToast();
   const [step, setStep] = useState<"form" | "confirmation">("form");
   const [transactionDetails, setTransactionDetails] = useState<SendFormValues | null>(null);
   const [fee, setFee] = useState<number | null>(null);
   const [loadingFee, setLoadingFee] = useState(false);
 
-  const handleFormSubmit = async (values: SendFormValues) => {
+  const handleFormSubmit = (values: SendFormValues) => {
     setTransactionDetails(values);
     setLoadingFee(true);
     setStep("confirmation");
-    try {
-      const response = await api.post('/transactions/calculate-fee/', { amount: values.amount });
-      setFee(response.data.fee);
-    } catch (error) {
-      console.error("Failed to calculate fee", error);
-      // Use a fallback fee
-      setFee(0.00005);
-    } finally {
-      setLoadingFee(false);
-    }
+    
+    // Fee is now determined by backend, so we just set a placeholder here for display.
+    // The actual fee will be calculated during the final transaction submission.
+    // A mock fee is shown for UI purposes. In a real app, you might have an endpoint 
+    // to estimate fee before sending.
+    setTimeout(() => {
+        setFee(0.00005); // Using a fallback fee for display
+        setLoadingFee(false);
+    }, 1000);
   };
 
   const handleBack = () => {
@@ -83,7 +84,7 @@ export default function SendPage() {
               </div>
               <CardDescription>
                 Enter the recipient's address and amount to send. The optimal
-                fee will be suggested for you.
+                fee will be calculated for you.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -126,7 +127,7 @@ export default function SendPage() {
                        </div>
                     ) : (
                        <TransactionDetailRow
-                          label="Network Fee"
+                          label="Network Fee (est.)"
                           value={`${calculatedFee} BTC`}
                       />
                     )}

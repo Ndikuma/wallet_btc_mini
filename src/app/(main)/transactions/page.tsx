@@ -17,29 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowDownLeft,
   ArrowUpRight,
-  Calendar as CalendarIcon,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { DateRange } from "react-day-picker";
-import { addDays, format, parseISO } from "date-fns";
 import api from "@/lib/api";
 import type { Transaction, PaginatedResponse } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,24 +31,12 @@ const btcPrice = 65000; // Mock price
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterType, setFilterType] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: addDays(new Date(), -30),
-    to: new Date(),
-  });
 
   useEffect(() => {
     async function fetchTransactions() {
       setLoading(true);
       try {
-        const params = new URLSearchParams();
-        if (filterType !== 'all') params.append('type', filterType);
-        if (filterStatus !== 'all') params.append('status', filterStatus);
-        if (date?.from) params.append('date_after', date.from.toISOString().split('T')[0]);
-        if (date?.to) params.append('date_before', date.to.toISOString().split('T')[0]);
-
-        const response = await api.get<PaginatedResponse<Transaction>>(`/transaction/?${params.toString()}`);
+        const response = await api.get<PaginatedResponse<Transaction>>(`/transaction/`);
         setTransactions(response.data.results || []);
       } catch (error) {
         console.error("Failed to fetch transactions", error);
@@ -76,78 +46,17 @@ export default function TransactionsPage() {
       }
     }
     fetchTransactions();
-  }, [filterType, filterStatus, date]);
+  }, []);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Transaction History</CardTitle>
         <CardDescription>
-          View and filter all your wallet transactions.
+          View all your wallet transactions.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 flex flex-wrap items-center gap-4">
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="received">Received</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="date"
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-left font-normal sm:w-auto",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, "LLL dd, y")} -{" "}
-                      {format(date.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(date.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={date?.from}
-                selected={date}
-                onSelect={setDate}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -200,7 +109,7 @@ export default function TransactionsPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={3} className="h-24 text-center">
-                    No transactions found for the selected filters.
+                    No transactions found.
                   </TableCell>
                 </TableRow>
               )}

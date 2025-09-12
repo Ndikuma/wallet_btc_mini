@@ -20,6 +20,7 @@ import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Wallet } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export default function ReceivePage() {
   const { toast } = useToast();
@@ -32,9 +33,9 @@ export default function ReceivePage() {
 
   const fetchAddress = async () => {
     try {
-      const response = await api.get<Wallet>("/wallet/");
-      if (response.data && response.data.address) {
-        setAddress(response.data.address);
+      const response = await api.get<Wallet[]>("/wallet/");
+      if (response.data && Array.isArray(response.data) && response.data.length > 0 && response.data[0].address) {
+        setAddress(response.data[0].address);
       } else {
         await generateNewAddress();
       }

@@ -52,20 +52,30 @@ export interface Balance {
 
 export interface Transaction {
   id: number;
+  wallet: number;
+  wallet_owner: string;
   txid: string;
   transaction_type: 'internal' | 'receive' | 'send';
   amount: string;
   amount_formatted: string;
+  absolute_amount: string;
   fee: string;
+  fee_formatted: string;
+  service_fee: string;
+  service_fee_formatted: string;
+  from_address: string | null;
+  to_address: string | null;
   status: 'confirmed' | 'pending' | 'failed';
   is_confirmed: boolean;
   confirmations: number;
+  raw_tx: string;
+  tx_size_bytes: number;
   explorer_url: string;
+  comment: string;
   created_at: string;
   updated_at: string;
-  from_address?: string;
-  to_address?: string;
 }
+
 
 export interface ApiErrorDetails {
     [key: string]: string[] | string;

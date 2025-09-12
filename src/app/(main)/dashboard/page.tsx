@@ -13,6 +13,7 @@ import {
   TrendingDown,
   Clock,
   Repeat,
+  ExternalLink,
 } from "lucide-react";
 import {
   Card,
@@ -276,34 +277,41 @@ export default function DashboardPage() {
                     <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
                 </TableRow>
               ))}
-              {!loading && recentTransactions && recentTransactions.length > 0 ? recentTransactions.map((tx) => (
-                <TableRow key= {tx.id}>
-                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                        {tx.transaction_type === "internal" || tx.transaction_type === "send" ? (
-                          <ArrowUpRight className="size-5 text-destructive" />
-                        ) : (
-                          <ArrowDownLeft className="size-5 text-green-600" />
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                         <span className="font-medium">Bitcoin</span>
-                        <span className="text-sm text-muted-foreground">{tx.status} - {new Date(tx.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell
-                    className= {cn(
-                      "text-right font-mono text-base",
-                       tx.transaction_type === "internal" || tx.transaction_type === "send" ? "text-destructive" : "text-green-600"
-                    )}
-                  >
-                    {tx.transaction_type === "internal" || tx.transaction_type === "send" ? "-" : "+"}
-                    ${(Number(tx.amount) * (balance?.usd_value || 0) / (balance?.btc_value || 1)).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              )) : null}
+              {!loading && recentTransactions && recentTransactions.length > 0 ? recentTransactions.map((tx) => {
+                const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
+                const amountNum = parseFloat(tx.amount);
+                const usdValue = Math.abs(amountNum * (balance?.usd_value || 0) / (balance?.btc_value || 1));
+
+                return (
+                    <TableRow key={tx.id}>
+                    <TableCell>
+                        <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                            {isSent ? (
+                            <ArrowUpRight className="size-5 text-destructive" />
+                            ) : (
+                            <ArrowDownLeft className="size-5 text-green-600" />
+                            )}
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-medium capitalize">{isSent ? "Sent" : "Received"} Bitcoin</span>
+                            <span className="text-sm text-muted-foreground">
+                            {new Date(tx.created_at).toLocaleDateString()}
+                            </span>
+                        </div>
+                        </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                        <div className={cn("font-mono text-base", isSent ? "text-destructive" : "text-green-600")}>
+                        {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
+                        </div>
+                        <div className="text-xs text-muted-foreground font-mono">
+                        {tx.amount_formatted}
+                        </div>
+                    </TableCell>
+                    </TableRow>
+                )
+                }) : null}
               {!loading && (!recentTransactions || recentTransactions.length === 0) && (
                 <TableRow>
                     <TableCell colSpan={2} className="h-24 text-center">No recent transactions.</TableCell>
@@ -316,3 +324,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

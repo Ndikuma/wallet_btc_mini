@@ -8,6 +8,7 @@ import {
   ArrowDownLeft,
   ArrowUp,
   ArrowDown,
+  AlertCircle,
 } from "lucide-react";
 import {
   Card,
@@ -40,6 +41,8 @@ import api from "@/lib/api";
 import type { Wallet, Transaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AxiosError } from "axios";
 
 
 const chartConfig = {
@@ -57,6 +60,7 @@ export default function DashboardPage() {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [priceHistory, setPriceHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [btcPrice, setBtcPrice] = useState(INITIAL_BTC_TO_USD_RATE);
   const [btcToBifRate, setBtcToBifRate] = useState(INITIAL_BTC_TO_BIF_RATE);
@@ -64,6 +68,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function fetchData() {
+      setLoading(true);
+      setError(null);
       try {
         const [walletRes, transactionsRes] = await Promise.all([
           api.get("/wallet/"),
@@ -71,8 +77,13 @@ export default function DashboardPage() {
         ]);
         setWallet(walletRes.data);
         setRecentTransactions(transactionsRes.data.results);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data", error);
+      } catch (err: any) {
+        if (err instanceof AxiosError && err.response?.status === 403) {
+            setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
+        } else {
+            console.error("Failed to fetch dashboard data", err);
+            setError("Could not load dashboard data. Please try again later.");
+        }
       } finally {
         setLoading(false);
       }
@@ -149,6 +160,28 @@ export default function DashboardPage() {
         </div>
     )
   }
+  
+    if (error) {
+        const handleRefresh = () => {
+             window.location.reload();
+        };
+
+        return (
+            <div className="flex items-center justify-center h-full">
+                <Alert variant="destructive" className="max-w-lg">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Wallet Not Ready</AlertTitle>
+                    <AlertDescription>
+                        {error}
+                        <div className="mt-4">
+                            <Button onClick={handleRefresh}>Refresh</Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+            </div>
+        )
+    }
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -290,3 +323,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

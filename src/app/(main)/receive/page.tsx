@@ -19,6 +19,7 @@ import { Bitcoin, RefreshCw } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import type { Wallet } from "@/lib/types";
 
 export default function ReceivePage() {
   const { toast } = useToast();
@@ -31,8 +32,7 @@ export default function ReceivePage() {
 
   const fetchAddress = async () => {
     try {
-      // First try to get the existing wallet address
-      const response = await api.get("/wallet/");
+      const response = await api.get<Wallet>("/wallet/");
       if (response.data && response.data.address) {
         setAddress(response.data.address);
       } else {
@@ -55,12 +55,12 @@ export default function ReceivePage() {
         title: "New Address Generated",
         description: "A new receiving address has been created for you.",
       });
-    } catch (error) {
-      console.error("Failed to generate new address", error);
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error?.details?.detail || "Could not generate a new address. Please try again.";
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not generate a new address. Please try again.",
+        description: errorMsg,
       });
     } finally {
       setGenerating(false);
@@ -83,8 +83,7 @@ export default function ReceivePage() {
 
     const generateQrCode = async () => {
         try {
-            const response = await api.post('/wallet/generate_qr_code/', { data: uri });
-            // Assuming the backend returns the QR code as a base64 data URI
+            const response = await api.post<{ qr_code: string }>('/wallet/generate_qr_code/', { data: uri });
             setQrCode(response.data.qr_code);
         } catch (error) {
             console.error("Failed to generate QR code from backend, using fallback.", error);

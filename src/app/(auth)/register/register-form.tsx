@@ -48,7 +48,8 @@ export function RegisterForm() {
        // Wallet is created on backend, so we redirect to create-wallet to get the mnemonic
       router.push("/create-wallet");
     } catch (error: any) {
-       const errorMsg = error.response?.data?.email?.[0] || error.response?.data?.password?.[0] || error.response?.data?.username?.[0] || "An unexpected error occurred.";
+       const errorDetails = error.response?.data?.error?.details;
+       const errorMsg = errorDetails?.email?.[0] || errorDetails?.password?.[0] || errorDetails?.username?.[0] || error.response?.data?.message || "An unexpected error occurred.";
       toast({
         variant: "destructive",
         title: "Registration Failed",

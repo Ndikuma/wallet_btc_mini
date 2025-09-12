@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { addDays, format, parseISO } from "date-fns";
 import api from "@/lib/api";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, PaginatedResponse } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const btcPrice = 65000; // Mock price
@@ -66,7 +66,7 @@ export default function TransactionsPage() {
         if (date?.from) params.append('date_after', date.from.toISOString().split('T')[0]);
         if (date?.to) params.append('date_before', date.to.toISOString().split('T')[0]);
 
-        const response = await api.get(`/transaction/?${params.toString()}`);
+        const response = await api.get<PaginatedResponse<Transaction>>(`/transaction/?${params.toString()}`);
         setTransactions(response.data.results);
       } catch (error) {
         console.error("Failed to fetch transactions", error);

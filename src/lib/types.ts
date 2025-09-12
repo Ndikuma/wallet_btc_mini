@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: number;
   username: string;
@@ -10,6 +11,7 @@ export interface User {
 export interface AuthResponse {
   token: string;
   user: User;
+  wallet: Wallet;
 }
 
 export interface Wallet {
@@ -26,4 +28,29 @@ export interface Transaction {
   date: string;
   address: string;
   recipient?: string;
+}
+
+export interface ApiErrorDetails {
+    [key: string]: string[] | string;
+}
+
+export interface ApiError {
+    code: number;
+    message: string;
+    details: ApiErrorDetails;
+}
+
+export interface ApiResponse<T> {
+    success: boolean;
+    data: T;
+    message: string;
+    error?: ApiError;
+    timestamp?: string;
+}
+
+export interface PaginatedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
 }

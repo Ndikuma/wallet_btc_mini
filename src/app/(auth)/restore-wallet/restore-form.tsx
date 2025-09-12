@@ -63,7 +63,8 @@ export function RestoreForm() {
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || error.response?.data?.mnemonic?.[0] || "Failed to restore wallet. Please check your details.";
+      const errorDetails = error.response?.data?.error?.details;
+      const errorMsg = errorDetails?.detail || errorDetails?.mnemonic?.[0] || error.response?.data?.message || "Failed to restore wallet. Please check your details.";
       toast({
         variant: "destructive",
         title: "Restore Failed",

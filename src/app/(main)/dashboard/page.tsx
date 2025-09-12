@@ -196,7 +196,7 @@ export default function DashboardPage() {
                         labelKey="date"
                         formatter={(value, name, props) => (
                            <div className="flex flex-col">
-                                <span className="font-bold text-foreground">{(value as number).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
+                                <span className="font-bold text-foreground">BTC Price: {(value as number).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
                                 <span className="text-xs text-muted-foreground">{new Date(props.payload.date).toLocaleDateString()}</span>
                            </div>
                         )}

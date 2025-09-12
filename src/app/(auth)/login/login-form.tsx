@@ -50,7 +50,7 @@ export function LoginForm() {
       router.push("/dashboard");
       router.refresh(); // To update any server components that rely on auth state
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || "An unexpected error occurred.";
+      const errorMsg = error.response?.data?.error?.details?.non_field_errors?.[0] || error.response?.data?.message || "An unexpected error occurred.";
       toast({
         variant: "destructive",
         title: "Login Failed",

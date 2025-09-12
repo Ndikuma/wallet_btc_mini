@@ -64,7 +64,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   const [wallet, setWallet] = useState<Wallet | null>(null);
 
   useEffect(() => {
-    api.get('/wallet/').then(res => setWallet(res.data)).catch(console.error);
+    api.get<Wallet>('/wallet/').then(res => setWallet(res.data)).catch(console.error);
   }, []);
 
   const currentBalance = wallet?.balance || 0;
@@ -147,14 +147,15 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
     if (isConfirmationStep) {
         setIsLoading(true);
         try {
-            await api.post('/transaction/send/', values);
+            const response = await api.post('/transaction/send/', values);
             toast({
-                title: "Transaction Submitted",
+                title: response.data.message || "Transaction Submitted",
                 description: `Sending ${values.amount} BTC. You will be notified once confirmed.`,
             });
             setIsSuccessDialogOpen(true);
         } catch(error: any) {
-            const errorMsg = error.response?.data?.detail || error.response?.data?.error || "An unexpected error occurred.";
+            const errorDetails = error.response?.data?.error?.details;
+            const errorMsg = errorDetails?.error || errorDetails?.non_field_errors?.[0] || error.response?.data?.message || "An unexpected error occurred.";
             toast({
                 variant: "destructive",
                 title: "Transaction Failed",

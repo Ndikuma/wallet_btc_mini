@@ -28,11 +28,12 @@ export default function ProfilePage() {
       try {
         const response = await api.get<User>("/user/profile/");
         setUser(response.data);
-      } catch (error) {
+      } catch (error: any) {
+        const errorMsg = error.response?.data?.error?.details?.detail || "Could not fetch user data. Please try again later.";
         toast({
           variant: "destructive",
           title: "Failed to load profile",
-          description: "Could not fetch user data. Please try again later.",
+          description: errorMsg,
         });
       } finally {
         setLoading(false);

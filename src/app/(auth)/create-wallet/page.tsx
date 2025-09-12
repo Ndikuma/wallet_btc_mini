@@ -29,11 +29,12 @@ export default function CreateWalletPage() {
         const response = await api.post<{ mnemonic: string }>("/wallet/generate_mnemonic/");
         setMnemonic(response.data.mnemonic);
         localStorage.setItem("tempMnemonic", response.data.mnemonic);
-      } catch (error) {
+      } catch (error: any) {
+        const errorMsg = error.response?.data?.error?.details?.detail || "Could not generate a recovery phrase. Please try again.";
         toast({
           variant: "destructive",
           title: "Wallet Creation Failed",
-          description: "Could not generate a recovery phrase. Please try again.",
+          description: errorMsg,
         });
       } finally {
         setLoading(false);

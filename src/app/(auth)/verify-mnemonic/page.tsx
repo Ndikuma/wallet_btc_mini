@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { RefreshCcw } from "lucide-react";
-import api from "@/lib/api";
+import { Input } from "@/components/ui/input";
 
 // Function to shuffle an array
 const shuffle = <T,>(array: T[]): T[] => {
@@ -33,10 +33,8 @@ export default function VerifyMnemonicPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   
-  // State for verification logic
   const [verificationWords, setVerificationWords] = useState<{ index: number; word: string }[]>([]);
   const [userInputs, setUserInputs] = useState<string[]>([]);
-  const [options, setOptions] = useState<string[]>([]);
 
   useEffect(() => {
     const storedMnemonic = localStorage.getItem("tempMnemonic");
@@ -56,16 +54,9 @@ export default function VerifyMnemonicPage() {
     if (!mnemonic) return;
 
     const allWords = mnemonic.split(" ");
-    // Randomly select 4 words to verify
     const indices = shuffle([...Array(allWords.length).keys()]).slice(0, 4);
     const selected = indices.map(index => ({ index, word: allWords[index] })).sort((a, b) => a.index - b.index);
     setVerificationWords(selected);
-
-    // Create options for the user to choose from
-    const correctWords = selected.map(w => w.word);
-    const incorrectWords = shuffle(allWords.filter(w => !correctWords.includes(w))).slice(0, 4);
-    setOptions(shuffle([...correctWords, ...incorrectWords]));
-
     setUserInputs(Array(selected.length).fill(""));
   }, [mnemonic]);
 
@@ -78,7 +69,7 @@ export default function VerifyMnemonicPage() {
   const handleVerify = async () => {
     setIsLoading(true);
 
-    const isCorrect = verificationWords.every((v, i) => userInputs[i] === v.word);
+    const isCorrect = verificationWords.every((v, i) => userInputs[i].trim().toLowerCase() === v.word.toLowerCase());
 
     if (!isCorrect) {
        toast({
@@ -91,11 +82,6 @@ export default function VerifyMnemonicPage() {
     }
 
     try {
-        // Here you would typically associate the verified mnemonic with the user's wallet on the backend
-        // Since the wallet is already created on register, we can just finalize the process.
-        // For this example, we assume the backend knows the user from the auth token.
-        // A real implementation might have a specific endpoint to confirm the mnemonic backup.
-        
         toast({
             title: "Verification Successful",
             description: "Your wallet is ready and secured.",
@@ -104,7 +90,7 @@ export default function VerifyMnemonicPage() {
         router.push("/dashboard");
         router.refresh();
     } catch (error: any) {
-        const errorMsg = error.response?.data?.detail || "An error occurred during verification.";
+        const errorMsg = error.response?.data?.error?.details?.detail || "An error occurred during verification.";
         toast({
             variant: "destructive",
             title: "Verification Failed",
@@ -115,7 +101,7 @@ export default function VerifyMnemonicPage() {
     }
   };
 
-  const allWordsEntered = userInputs.every(input => input.length > 0);
+  const allWordsEntered = userInputs.every(input => input.trim().length > 0);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
@@ -128,20 +114,21 @@ export default function VerifyMnemonicPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4 rounded-lg border bg-background p-4">
-             {verificationWords.map(({index}, i) => (
-                <div key={index} className="flex items-center gap-4">
-                    <label htmlFor={`word-${index}`} className="w-16 text-right text-sm text-muted-foreground">Word #{index + 1}</label>
-                    <select
-                      id={`word-${index}`}
-                      value={userInputs[i]}
-                      onChange={(e) => handleInputChange(i, e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        <option value="" disabled>Select word...</option>
-                        {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                </div>
-            ))}
+             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {verificationWords.map(({index}, i) => (
+                    <div key={index} className="flex items-center gap-2">
+                        <Label htmlFor={`word-${index}`} className="w-16 text-right text-sm text-muted-foreground">Word #{index + 1}</Label>
+                        <Input
+                          id={`word-${index}`}
+                          type="text"
+                          value={userInputs[i]}
+                          onChange={(e) => handleInputChange(i, e.target.value)}
+                           className="w-full"
+                           autoComplete="off"
+                        />
+                    </div>
+                ))}
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
@@ -150,11 +137,10 @@ export default function VerifyMnemonicPage() {
           </Button>
            <Button variant="ghost" size="sm" onClick={() => setUserInputs(Array(verificationWords.length).fill(""))} disabled={isLoading}>
              <RefreshCcw className="mr-2 size-4" />
-            Clear Selection
+            Clear Inputs
           </Button>
         </CardFooter>
       </Card>
     </div>
   );
 }
-

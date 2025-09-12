@@ -34,7 +34,7 @@ export default function ReceivePage() {
 
   const fetchAddress = async () => {
     try {
-      const response = await api.get<Wallet[]>("/wallet/");
+      const response = await api.getWallets();
       if (response.data && Array.isArray(response.data) && response.data.length > 0 && response.data[0].address) {
         setAddress(response.data[0].address);
       } else {
@@ -48,10 +48,10 @@ export default function ReceivePage() {
     }
   }
   
-  const generateNewAddress = async (isInitial = false) => {
+  const generateNewAddressFn = async (isInitial = false) => {
     setGenerating(true);
     try {
-      const response = await api.post<{ address: string }>("/wallet/generate_address/");
+      const response = await api.generateNewAddress();
       setAddress(response.data.address);
       if (!isInitial) {
          toast({
@@ -85,9 +85,9 @@ export default function ReceivePage() {
     }
     setPaymentUri(uri);
 
-    const generateQrCode = async () => {
+    const generateQrCodeFn = async () => {
         try {
-            const response = await api.post<{ qr_code: string }>('/wallet/generate_qr_code/', { data: uri });
+            const response = await api.generateQrCode(uri);
             setQrCode(response.data.qr_code);
         } catch (error) {
             console.error("Failed to generate QR code from backend, using fallback.", error);
@@ -96,7 +96,7 @@ export default function ReceivePage() {
         }
     };
 
-    generateQrCode();
+    generateQrCodeFn();
   }, [amount, address]);
 
 
@@ -182,7 +182,7 @@ export default function ReceivePage() {
 
              <Separator />
              
-             <Button variant="ghost" size="sm" onClick={() => generateNewAddress(false)} disabled={generating || loading}>
+             <Button variant="ghost" size="sm" onClick={() => generateNewAddressFn(false)} disabled={generating || loading}>
                 <RefreshCw className={cn("mr-2 size-4", generating && "animate-spin")} />
                 {generating ? 'Generating...' : 'Generate New Address'}
              </Button>

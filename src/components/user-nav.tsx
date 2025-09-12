@@ -1,5 +1,5 @@
 
-"use client"
+"use client";
 
 import Link from "next/link"
 import {
@@ -36,7 +36,7 @@ export function UserNav() {
     const fetchUser = async () => {
       try {
         // The /user/ endpoint returns the user object directly in the `data` field
-        const response = await api.get<User>('/user/');
+        const response = await api.getUser();
         setUser(response.data);
       } catch (error) {
         // Silently fail if not authenticated
@@ -48,7 +48,7 @@ export function UserNav() {
 
   const handleLogout = async () => {
     try {
-        await api.post('/auth/logout/');
+        await api.logout();
     } catch(error) {
         console.error("Logout failed", error);
     } finally {

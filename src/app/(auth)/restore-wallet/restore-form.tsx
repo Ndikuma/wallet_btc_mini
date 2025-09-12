@@ -50,11 +50,11 @@ export function RestoreForm() {
     setIsLoading(true);
     try {
       // First, log in to get a token if the user is valid
-      const loginResponse = await api.post<AuthResponse>('/auth/login/', { username: values.username, password: values.password });
+      const loginResponse = await api.login({ username: values.username, password: values.password });
       localStorage.setItem('authToken', loginResponse.data.token);
 
       // Then, restore the wallet with the new token
-      await api.post('/wallet/restore/', { mnemonic: values.mnemonic });
+      await api.restoreWallet(values.mnemonic);
       
       toast({
         title: "Wallet Restored",

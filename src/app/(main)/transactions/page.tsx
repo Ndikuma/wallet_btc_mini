@@ -39,7 +39,7 @@ export default function TransactionsPage() {
     async function fetchTransactions() {
       setLoading(true);
       try {
-        const response = await api.get<PaginatedResponse<Transaction>>(`/transaction/`);
+        const response = await api.getTransactions();
         setTransactions(response.data.results || []);
       } catch (error) {
         console.error("Failed to fetch transactions", error);

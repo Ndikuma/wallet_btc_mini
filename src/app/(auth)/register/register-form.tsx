@@ -43,7 +43,7 @@ export function RegisterForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const response = await api.post<AuthResponse>('/auth/register/', values);
+      const response = await api.register(values);
       localStorage.setItem('authToken', response.data.token);
        // Wallet is created on backend, so we redirect to create-wallet to get the mnemonic
       router.push("/create-wallet");

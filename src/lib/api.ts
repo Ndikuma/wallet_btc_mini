@@ -1,15 +1,15 @@
 
-import type { ApiResponse } from '@/lib/types';
+import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
-const api = axios.create({
+const axiosInstance = axios.create({
   baseURL: '/api', // Using relative URL to leverage Next.js proxy
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-api.interceptors.request.use((config) => {
+axiosInstance.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('authToken');
     if (token) {
@@ -21,24 +21,57 @@ api.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
-api.interceptors.response.use(
-  // Unwrap the data from the custom API response on success
+axiosInstance.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<any>>) => {
-    // If the backend indicates success, return a response object with just the data.
     if (response.data && response.data.success) {
-      // The actual payload is inside the 'data' property of the response body
       return { ...response, data: response.data.data };
     }
-    // If 'success' is not explicitly true, it might be an issue or a different response structure.
     return response;
   },
   (error: AxiosError<ApiResponse<any>>) => {
-    // For errors, we pass the original error object along.
-    // The error structure can be accessed in the .catch() block of the API call.
-    // e.g., error.response.data.error.details
     return Promise.reject(error);
   }
 );
 
+
+// Authentication
+const login = (credentials: any) => axiosInstance.post<AuthResponse>('/auth/login/', credentials);
+const register = (userInfo: any) => axiosInstance.post<AuthResponse>('/auth/register/', userInfo);
+const logout = () => axiosInstance.post('/auth/logout/');
+
+// User Profile
+const getUserProfile = () => axiosInstance.get<User>('/user/profile/');
+const getUser = () => axiosInstance.get<User>('/user/');
+
+
+// Wallet
+const getWallets = () => axiosInstance.get<Wallet[]>('/wallet/');
+const getWalletBalance = () => axiosInstance.get<Balance>('/wallet/balance/');
+const generateMnemonic = () => axiosInstance.post<{ mnemonic: string }>("/wallet/generate_mnemonic/");
+const generateNewAddress = () => axiosInstance.post<{ address: string }>("/wallet/generate_address/");
+const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('/wallet/generate_qr_code/', { data });
+const restoreWallet = (mnemonic: string) => axiosInstance.post('/wallet/restore/', { mnemonic });
+
+
+// Transactions
+const getTransactions = (limit?: number) => axiosInstance.post<PaginatedResponse<Transaction>>('/transaction/', { limit });
+const sendTransaction = (values: any) => axiosInstance.post('/transaction/send/', values);
+
+
+const api = {
+    login,
+    register,
+    logout,
+    getUserProfile,
+    getUser,
+    getWallets,
+    getWalletBalance,
+    generateMnemonic,
+    generateNewAddress,
+    generateQrCode,
+    restoreWallet,
+    getTransactions,
+    sendTransaction
+};
 
 export default api;

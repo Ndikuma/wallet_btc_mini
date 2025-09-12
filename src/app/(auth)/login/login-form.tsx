@@ -41,7 +41,7 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const response = await api.post<AuthResponse>('/auth/login/', values);
+      const response = await api.login(values);
       localStorage.setItem('authToken', response.data.token);
       toast({
         title: "Login Successful",

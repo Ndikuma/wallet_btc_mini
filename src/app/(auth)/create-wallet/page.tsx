@@ -26,7 +26,7 @@ export default function CreateWalletPage() {
   useEffect(() => {
     async function generateMnemonic() {
       try {
-        const response = await api.post<{ mnemonic: string }>("/wallet/generate_mnemonic/");
+        const response = await api.generateMnemonic();
         setMnemonic(response.data.mnemonic);
         localStorage.setItem("tempMnemonic", response.data.mnemonic);
       } catch (error: any) {

@@ -66,7 +66,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   useEffect(() => {
     async function fetchWallet() {
       try {
-        const response = await api.get<Wallet[]>('/wallet/');
+        const response = await api.getWallets();
          if (response.data && Array.isArray(response.data) && response.data.length > 0) {
           setWallet(response.data[0]);
         } else {
@@ -159,9 +159,9 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
     if (isConfirmationStep) {
         setIsLoading(true);
         try {
-            const response = await api.post('/transaction/send/', values);
+            const response = await api.sendTransaction(values);
             toast({
-                title: response.data.message || "Transaction Submitted",
+                title: (response.data as any).message || "Transaction Submitted",
                 description: `Sending ${values.amount} BTC. You will be notified once confirmed.`,
             });
             setIsSuccessDialogOpen(true);

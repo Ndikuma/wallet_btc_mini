@@ -26,7 +26,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await api.get<User>("/user/profile/");
+        const response = await api.getUserProfile();
         setUser(response.data);
       } catch (error: any) {
         const errorMsg = error.response?.data?.error?.details?.detail || "Could not fetch user data. Please try again later.";

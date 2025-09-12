@@ -74,9 +74,9 @@ export default function DashboardPage() {
       setError(null);
       try {
         const [walletRes, balanceRes, transactionsRes] = await Promise.all([
-          api.get("/wallet/"),
-          api.get("/wallet/balance/"),
-          api.post<PaginatedResponse<Transaction>>("/transaction/", { limit: 4 }),
+          api.getWallets(),
+          api.getWalletBalance(),
+          api.getTransactions(4),
         ]);
         
         if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {

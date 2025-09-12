@@ -9,6 +9,10 @@ import {
   ArrowUp,
   ArrowDown,
   AlertCircle,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  Repeat,
 } from "lucide-react";
 import {
   Card,
@@ -156,6 +160,18 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
             </div>
+             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                 {Array.from({ length: 4 }).map((_, i) => (
+                    <Card key={i}>
+                        <CardHeader>
+                            <Skeleton className="h-5 w-24" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-8 w-32" />
+                        </CardContent>
+                    </Card>
+                ))}
+             </div>
             <Card>
                 <CardHeader>
                     <Skeleton className="h-8 w-40" />
@@ -277,6 +293,47 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+       {wallet?.stats && (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
+                        <Repeat className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{wallet.stats.total_transactions}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Sent</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{wallet.stats.total_sent.toFixed(8)} BTC</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Received</CardTitle>
+                        <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{wallet.stats.total_received.toFixed(8)} BTC</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Wallet Age</CardTitle>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{wallet.stats.wallet_age_days} days</div>
+                    </CardContent>
+                </Card>
+            </div>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

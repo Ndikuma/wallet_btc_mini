@@ -16,6 +16,16 @@ export interface AuthResponse {
   wallet: Wallet;
 }
 
+export interface WalletStats {
+    total_transactions: number;
+    sent_transactions: number;
+    received_transactions: number;
+    total_sent: number;
+    total_received: number;
+    current_balance: number;
+    wallet_age_days: number;
+}
+
 export interface Wallet {
   id?: number;
   address: string;
@@ -25,6 +35,7 @@ export interface Wallet {
   network?: string;
   status?: string;
   wallet_name?: string;
+  stats?: WalletStats;
 }
 
 export interface Transaction {

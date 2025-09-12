@@ -68,7 +68,7 @@ export default function DashboardPage() {
         
         setBalance(balanceRes.data);
 
-        setRecentTransactions((transactionsRes.data as PaginatedResponse<Transaction>).results || []);
+        setRecentTransactions((transactionsRes.data as Transaction[]) || []);
       } catch (err: any) {
         if (err instanceof AxiosError && err.response?.status === 403) {
             setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
@@ -306,5 +306,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

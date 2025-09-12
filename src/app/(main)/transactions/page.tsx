@@ -22,7 +22,7 @@ import type { Transaction, PaginatedResponse, Balance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Accordion,
@@ -161,7 +161,7 @@ export default function TransactionsPage() {
           api.getTransactions(),
           api.getWalletBalance(),
         ]);
-        setTransactions((transactionsRes.data as PaginatedResponse<Transaction>).results || []);
+        setTransactions((transactionsRes.data as Transaction[]) || []);
         setBalance(balanceRes.data);
       } catch (error) {
         console.error("Failed to fetch transactions", error);
@@ -207,5 +207,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    

@@ -75,7 +75,14 @@ export default function DashboardPage() {
           api.get("/wallet/"),
           api.get("/transaction/?limit=4"),
         ]);
-        setWallet(walletRes.data);
+        
+        // API returns an array with one wallet object
+        if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
+          setWallet(walletRes.data[0]);
+        } else {
+           setWallet(walletRes.data as Wallet);
+        }
+
         setRecentTransactions(transactionsRes.data.results || []);
       } catch (err: any) {
         if (err instanceof AxiosError && err.response?.status === 403) {
@@ -121,8 +128,10 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const balanceUsd = useMemo(() => (wallet?.balance || 0) * btcPrice, [wallet, btcPrice]);
-  const balanceBif = useMemo(() => (wallet?.balance || 0) * btcToBifRate, [wallet, btcToBifRate]);
+  const numericBalance = useMemo(() => Number(wallet?.balance) || 0, [wallet]);
+  const balanceUsd = useMemo(() => numericBalance * btcPrice, [numericBalance, btcPrice]);
+  const balanceBif = useMemo(() => numericBalance * btcToBifRate, [numericBalance, btcToBifRate]);
+
 
   if (loading) {
     return (
@@ -191,7 +200,7 @@ export default function DashboardPage() {
              <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
              <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">{balanceUsd.toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
-                <div className={cn("flex items-center gap-1 text-sm font-medium", {
+                <div className= {cn("flex items-center gap-1 text-sm font-medium", {
                     "text-green-600": priceMovement === 'up',
                     "text-destructive": priceMovement === 'down',
                 })}>
@@ -199,11 +208,11 @@ export default function DashboardPage() {
                     {priceMovement === 'down' && <ArrowDown className="size-4" />}
                 </div>
              </div>
-             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>{(wallet?.balance || 0).toFixed(8)} BTC</span>
-                <Separator orientation="vertical" className="h-4" />
-                <span>≈ {((wallet?.balance || 0) * 100000000).toLocaleString()} Sats</span>
-                 <Separator orientation="vertical" className="h-4" />
+             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <span>{numericBalance.toFixed(8)} BTC</span>
+                <Separator orientation="vertical" className="h-4 hidden sm:block" />
+                <span>≈ {(numericBalance * 100000000).toLocaleString()} Sats</span>
+                 <Separator orientation="vertical" className="h-4 hidden sm:block" />
                 <span>≈ {balanceBif.toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
              </div>
           </CardHeader>
@@ -224,10 +233,10 @@ export default function DashboardPage() {
                   <YAxis domain={['dataMin - 1000', 'dataMax + 1000']} hide />
                   <ChartTooltip
                     cursor={{stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3'}}
-                    content={<ChartTooltipContent 
+                    content= {<ChartTooltipContent 
                         indicator="dot" 
                         labelKey="date"
-                        formatter={(value, name, props) => (
+                        formatter= {(value, name, props) => (
                            <div className="flex flex-col">
                                 <span className="font-bold text-foreground">BTC Price: {(value as number).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
                                 <span className="text-xs text-muted-foreground">{new Date(props.payload.date).toLocaleDateString()}</span>
@@ -284,13 +293,13 @@ export default function DashboardPage() {
           <Table>
             <TableBody>
               {loading && Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>
+                <TableRow key= {i}>
                     <TableCell><Skeleton className="h-12 w-48" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
                 </TableRow>
               ))}
-              {!loading && recentTransactions && recentTransactions.length > 0 && recentTransactions.map((tx) => (
-                <TableRow key={tx.id}>
+              {!loading && recentTransactions && recentTransactions.length > 0 ? recentTransactions.map((tx) => (
+                <TableRow key= {tx.id}>
                    <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
@@ -307,7 +316,7 @@ export default function DashboardPage() {
                     </div>
                   </TableCell>
                   <TableCell
-                    className={cn(
+                    className= {cn(
                       "text-right font-mono text-base",
                       tx.type === "sent" ? "text-destructive" : "text-green-600"
                     )}
@@ -316,7 +325,7 @@ export default function DashboardPage() {
                     ${(tx.amount * btcPrice).toFixed(2)}
                   </TableCell>
                 </TableRow>
-              ))}
+              )) : null}
               {!loading && (!recentTransactions || recentTransactions.length === 0) && (
                 <TableRow>
                     <TableCell colSpan={2} className="h-24 text-center">No recent transactions.</TableCell>
@@ -329,7 +338,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    

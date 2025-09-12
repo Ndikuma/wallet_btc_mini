@@ -36,14 +36,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `https://aye-apparatus-command-southwest.trycloudflare.com/api/:path*`,
-      },
-    ]
-  },
 };
 
 export default nextConfig;

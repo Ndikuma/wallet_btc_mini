@@ -29,7 +29,7 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/badge";
 import { BitcoinIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
@@ -68,7 +68,7 @@ export default function DashboardPage() {
         
         setBalance(balanceRes.data);
 
-        setRecentTransactions((transactionsRes.data as Transaction[]) || []);
+        setRecentTransactions(transactionsRes.data as Transaction[] || []);
       } catch (err: any) {
         if (err instanceof AxiosError && err.response?.status === 403) {
             setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
@@ -285,10 +285,10 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-right">
                       <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
-                        {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
+                        {tx.amount_formatted}
                       </p>
                       <p className="text-xs text-muted-foreground font-mono">
-                        {tx.amount_formatted}
+                         {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -306,3 +306,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

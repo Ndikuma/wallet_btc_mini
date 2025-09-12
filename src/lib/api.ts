@@ -3,7 +3,7 @@ import type { ApiResponse } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://aye-apparatus-command-southwest.trycloudflare.com/api/',
+  baseURL: '/api', // Using relative URL to leverage Next.js proxy
   headers: {
     'Content-Type': 'application/json',
   },

@@ -71,7 +71,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input type="text" placeholder="yourusername" {...field} />
+                <Input type="text" placeholder="yourusername" {...field} autoComplete="username" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -84,7 +84,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="********" {...field} />
+                <Input type="password" placeholder="********" {...field} autoComplete="current-password"/>
               </FormControl>
               <FormMessage />
             </FormItem>

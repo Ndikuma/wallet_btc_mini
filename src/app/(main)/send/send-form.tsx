@@ -31,6 +31,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { Wallet } from "@/lib/types";
+import { AxiosError } from "axios";
 
 const formSchema = (balance: number) => z.object({
   recipient: z
@@ -73,11 +74,25 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
            setWallet(response.data as any);
         }
       } catch (error) {
-        console.error("Failed to fetch wallet data for send form", error);
+        if (error instanceof AxiosError && error.response?.status === 401) {
+            toast({
+                variant: "destructive",
+                title: "Authentication Error",
+                description: "You need to be logged in to send Bitcoin. Redirecting to login...",
+            });
+            router.push("/login");
+        } else {
+            console.error("Failed to fetch wallet data for send form", error);
+             toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Could not fetch wallet data. Please try again later.",
+            });
+        }
       }
     }
     fetchWallet();
-  }, []);
+  }, [router, toast]);
 
   const currentBalance = Number(wallet?.balance) || 0;
 

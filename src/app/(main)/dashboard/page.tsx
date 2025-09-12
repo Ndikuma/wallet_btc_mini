@@ -61,12 +61,10 @@ const INITIAL_BTC_TO_USD_RATE = 65000;
 export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [priceHistory, setPriceHistory] = useState<any[]>([]);
+  const [recentTransactions, setRecentTransactions]  = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [priceMovement, setPriceMovement] = useState<"up" | "down" | "neutral">("neutral");
 
   useEffect(() => {
     async function fetchData() {
@@ -101,33 +99,6 @@ export default function DashboardPage() {
     }
     fetchData();
 
-    const generatePriceHistory = () => {
-        let history = [];
-        let price = INITIAL_BTC_TO_USD_RATE;
-        const now = new Date();
-        for (let i = 30; i >= 0; i--) {
-            const date = new Date(now);
-            date.setDate(now.getDate() - i);
-            price += (Math.random() - 0.5) * 1000;
-            history.push({
-                date: date.toISOString().split('T')[0],
-                price: price
-            });
-        }
-        setPriceHistory(history);
-    }
-    generatePriceHistory();
-
-    const interval = setInterval(() => {
-      setBalance(prevBalance => {
-          if (!prevBalance) return null;
-          const change = (Math.random() - 0.5) * 200;
-          const newUsdValue = prevBalance.usd_value + change;
-          setPriceMovement(newUsdValue > prevBalance.usd_value ? "up" : "down");
-          return {...prevBalance, usd_value: newUsdValue};
-      });
-    }, 3000);
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -209,13 +180,6 @@ export default function DashboardPage() {
              <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
              <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">{(balance?.usd_value || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
-                <div className= {cn("flex items-center gap-1 text-sm font-medium", {
-                    "text-green-600": priceMovement === 'up',
-                    "text-destructive": priceMovement === 'down',
-                })}>
-                    {priceMovement === 'up' && <ArrowUp className="size-4" />}
-                    {priceMovement === 'down' && <ArrowDown className="size-4" />}
-                </div>
              </div>
              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 <span>{(balance?.btc_value || 0).toFixed(8)} BTC</span>
@@ -225,45 +189,9 @@ export default function DashboardPage() {
                 <span>≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
              </div>
           </CardHeader>
-          <CardContent className="h-[120px] w-full pt-4">
-              <ChartContainer config={chartConfig} className="h-full w-full">
-                <AreaChart
-                  accessibilityLayer
-                  data={priceHistory}
-                  margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="fillPrice" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-price)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="var(--color-price)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="date" hide />
-                  <YAxis domain={['dataMin - 1000', 'dataMax + 1000']} hide />
-                  <ChartTooltip
-                    cursor={{stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3'}}
-                    content= {<ChartTooltipContent 
-                        indicator="dot" 
-                        labelKey="date"
-                        formatter= {(value, name, props) => (
-                           <div className="flex flex-col">
-                                <span className="font-bold text-foreground">BTC Price: {(value as number).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
-                                <span className="text-xs text-muted-foreground">{new Date(props.payload.date).toLocaleDateString()}</span>
-                           </div>
-                        )}
-                    />}
-                  />
-                  <Area
-                    dataKey="price"
-                    type="monotone"
-                    fill="url(#fillPrice)"
-                    stroke="var(--color-price)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </CardContent>
+          <CardContent className="h-[120px] w-full pt-4 flex items-center justify-center text-muted-foreground">
+              Price chart data is not available at the moment.
+          </CardContent>
         </Card>
         
         <Card className="flex flex-col">

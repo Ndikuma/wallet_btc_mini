@@ -9,14 +9,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/:path*',
-        destination: 'https://bacterial-entering-ready-ladies.trycloudflare.com/:path*',
-      },
-    ]
-  },
   images: {
     remotePatterns: [
       {

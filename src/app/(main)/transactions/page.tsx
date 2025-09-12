@@ -67,9 +67,10 @@ export default function TransactionsPage() {
         if (date?.to) params.append('date_before', date.to.toISOString().split('T')[0]);
 
         const response = await api.get<PaginatedResponse<Transaction>>(`/transaction/?${params.toString()}`);
-        setTransactions(response.data.results);
+        setTransactions(response.data.results || []);
       } catch (error) {
         console.error("Failed to fetch transactions", error);
+        setTransactions([]);
       } finally {
         setLoading(false);
       }
@@ -165,7 +166,7 @@ export default function TransactionsPage() {
                         <TableCell className="text-right"><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
                     </TableRow>
                 ))
-              ) : transactions.length > 0 ? (
+              ) : transactions && transactions.length > 0 ? (
                 transactions.map((tx) => (
                     <TableRow key={tx.id}>
                     <TableCell>

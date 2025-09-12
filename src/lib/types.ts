@@ -30,12 +30,24 @@ export interface Wallet {
   id?: number;
   address: string;
   primary_address?: string;
-  balance: number;
+  balance: number | string; // Can be string from some endpoints
   balance_formatted?: string;
   network?: string;
   status?: string;
   wallet_name?: string;
   stats?: WalletStats;
+}
+
+export interface Balance {
+  id: number;
+  wallet_name: string;
+  bitcoin_address: string;
+  balance: string;
+  btc_value: number;
+  sats_value: number;
+  usd_value: number;
+  bif_value: number;
+  last_updated: string;
 }
 
 export interface Transaction {
@@ -73,3 +85,5 @@ export interface PaginatedResponse<T> {
     previous: string | null;
     results: T[];
 }
+
+    

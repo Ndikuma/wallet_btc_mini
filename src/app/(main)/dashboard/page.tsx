@@ -42,7 +42,7 @@ import { BitcoinIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/api";
-import type { Wallet, Transaction } from "@/lib/types";
+import type { Wallet, Transaction, Balance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -57,17 +57,15 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const INITIAL_BTC_TO_USD_RATE = 65000;
-const INITIAL_BTC_TO_BIF_RATE = 200000000; // Mock rate for BTC to BIF
 
 export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [balance, setBalance] = useState<Balance | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [priceHistory, setPriceHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [btcPrice, setBtcPrice] = useState(INITIAL_BTC_TO_USD_RATE);
-  const [btcToBifRate, setBtcToBifRate] = useState(INITIAL_BTC_TO_BIF_RATE);
   const [priceMovement, setPriceMovement] = useState<"up" | "down" | "neutral">("neutral");
 
   useEffect(() => {
@@ -75,17 +73,19 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
       try {
-        const [walletRes, transactionsRes] = await Promise.all([
+        const [walletRes, balanceRes, transactionsRes] = await Promise.all([
           api.get("/wallet/"),
+          api.get("/wallet/balance/"),
           api.get("/transaction/?limit=4"),
         ]);
         
-        // API returns an array with one wallet object
         if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
           setWallet(walletRes.data[0]);
         } else {
            setWallet(walletRes.data as Wallet);
         }
+        
+        setBalance(balanceRes.data);
 
         setRecentTransactions(transactionsRes.data.results || []);
       } catch (err: any) {
@@ -101,7 +101,6 @@ export default function DashboardPage() {
     }
     fetchData();
 
-    // Simulate price history for the chart
     const generatePriceHistory = () => {
         let history = [];
         let price = INITIAL_BTC_TO_USD_RATE;
@@ -120,22 +119,16 @@ export default function DashboardPage() {
     generatePriceHistory();
 
     const interval = setInterval(() => {
-      setBtcPrice(prevPrice => {
-        const change = (Math.random() - 0.5) * 200;
-        const newPrice = prevPrice + change;
-        setPriceMovement(newPrice > prevPrice ? "up" : "down");
-        // Also update BIF rate proportionally
-        setBtcToBifRate(prevBifRate => prevBifRate * (newPrice / prevPrice));
-        return newPrice;
+      setBalance(prevBalance => {
+          if (!prevBalance) return null;
+          const change = (Math.random() - 0.5) * 200;
+          const newUsdValue = prevBalance.usd_value + change;
+          setPriceMovement(newUsdValue > prevBalance.usd_value ? "up" : "down");
+          return {...prevBalance, usd_value: newUsdValue};
       });
     }, 3000);
     return () => clearInterval(interval);
   }, []);
-
-  const numericBalance = useMemo(() => Number(wallet?.balance) || 0, [wallet]);
-  const balanceUsd = useMemo(() => numericBalance * btcPrice, [numericBalance, btcPrice]);
-  const balanceBif = useMemo(() => numericBalance * btcToBifRate, [numericBalance, btcToBifRate]);
-
 
   if (loading) {
     return (
@@ -215,7 +208,7 @@ export default function DashboardPage() {
           <CardHeader>
              <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold">{balanceUsd.toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
+                <span className="text-4xl font-bold">{(balance?.usd_value || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
                 <div className= {cn("flex items-center gap-1 text-sm font-medium", {
                     "text-green-600": priceMovement === 'up',
                     "text-destructive": priceMovement === 'down',
@@ -225,11 +218,11 @@ export default function DashboardPage() {
                 </div>
              </div>
              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                <span>{numericBalance.toFixed(8)} BTC</span>
+                <span>{(balance?.btc_value || 0).toFixed(8)} BTC</span>
                 <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                <span>≈ {(numericBalance * 100000000).toLocaleString()} Sats</span>
+                <span>≈ {(balance?.sats_value || 0).toLocaleString()} Sats</span>
                  <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                <span>≈ {balanceBif.toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
+                <span>≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
              </div>
           </CardHeader>
           <CardContent className="h-[120px] w-full pt-4">
@@ -379,7 +372,7 @@ export default function DashboardPage() {
                     )}
                   >
                     {tx.type === "sent" ? "-" : "+"}
-                    ${(tx.amount * btcPrice).toFixed(2)}
+                    ${(tx.amount * (balance?.usd_value || 0) / (balance?.btc_value || 1)).toFixed(2)}
                   </TableCell>
                 </TableRow>
               )) : null}
@@ -395,3 +388,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

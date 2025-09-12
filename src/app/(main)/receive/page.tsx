@@ -140,9 +140,9 @@ export default function ReceivePage() {
                 />
              </div>
              
-            <p className="text-sm text-muted-foreground break-all font-code p-3 rounded-md bg-secondary border text-center">
+            <div className="text-sm text-muted-foreground break-all font-code p-3 rounded-md bg-secondary border text-center">
                 {loading ? <Skeleton className="h-5 w-4/5 mx-auto" /> : address || '...'}
-            </p>
+            </div>
           </div>
          
           <div className="flex w-full max-w-sm flex-col gap-3">

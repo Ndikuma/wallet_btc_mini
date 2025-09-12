@@ -26,10 +26,10 @@ api.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<any>>) => {
     // If the backend indicates success, return a response object with just the data.
     if (response.data && response.data.success) {
-      return { ...response, data: response.data };
+      // The actual payload is inside the 'data' property of the response body
+      return { ...response, data: response.data.data };
     }
     // If 'success' is not explicitly true, it might be an issue or a different response structure.
-    // For now, we pass it through, but you could add more handling here.
     return response;
   },
   (error: AxiosError<ApiResponse<any>>) => {

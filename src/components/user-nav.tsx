@@ -35,6 +35,7 @@ export function UserNav() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        // The /user/ endpoint returns the user object directly in the `data` field
         const response = await api.get<User>('/user/');
         setUser(response.data);
       } catch (error) {
@@ -58,6 +59,8 @@ export function UserNav() {
   }
 
   const fallback = user ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() : 'U';
+  const displayName = user?.full_name || user?.username;
+
 
   return (
     <DropdownMenu>
@@ -72,7 +75,7 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.first_name} {user?.last_name}</p>
+            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user?.email}
             </p>

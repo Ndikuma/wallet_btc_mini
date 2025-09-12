@@ -6,6 +6,8 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  full_name?: string;
+  wallet_created?: boolean;
 }
 
 export interface AuthResponse {
@@ -15,8 +17,14 @@ export interface AuthResponse {
 }
 
 export interface Wallet {
+  id?: number;
   address: string;
+  primary_address?: string;
   balance: number;
+  balance_formatted?: string;
+  network?: string;
+  status?: string;
+  wallet_name?: string;
 }
 
 export interface Transaction {

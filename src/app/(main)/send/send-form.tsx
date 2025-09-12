@@ -64,10 +64,22 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   const [wallet, setWallet] = useState<Wallet | null>(null);
 
   useEffect(() => {
-    api.get<Wallet>('/wallet/').then(res => setWallet(res.data)).catch(console.error);
+    async function fetchWallet() {
+      try {
+        const response = await api.get<Wallet[]>('/wallet/');
+         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          setWallet(response.data[0]);
+        } else {
+           setWallet(response.data as any);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wallet data for send form", error);
+      }
+    }
+    fetchWallet();
   }, []);
 
-  const currentBalance = wallet?.balance || 0;
+  const currentBalance = Number(wallet?.balance) || 0;
 
   const form = useForm<SendFormValues>({
     resolver: zodResolver(formSchema(currentBalance)),

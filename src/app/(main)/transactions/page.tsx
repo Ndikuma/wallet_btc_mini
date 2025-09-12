@@ -10,18 +10,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   ArrowDownLeft,
   ArrowUpRight,
-  ExternalLink,
+  ChevronDown,
   Copy,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
@@ -31,6 +24,128 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
+const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: number }) => {
+  const { toast } = useToast();
+  const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
+  const amountNum = parseFloat(tx.amount);
+  const usdValue = Math.abs(amountNum * btcToUsdRate);
+  
+  const relevantAddress = isSent ? tx.to_address : tx.from_address;
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: `${label} Copied`,
+    });
+  };
+  
+  const shortenText = (text: string | null | undefined, start = 6, end = 6) => {
+    if (!text) return 'N/A';
+    if (text.length <= start + end) return text;
+    return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
+  }
+
+  const getStatusVariant = (status: string): "success" | "warning" | "destructive" => {
+    switch (status.toLowerCase()) {
+      case 'confirmed': return 'success';
+      case 'pending': return 'warning';
+      case 'failed': return 'destructive';
+      default: return 'secondary';
+    }
+  }
+
+  return (
+    <Card className={cn(
+      "shadow-sm transition-all",
+      isSent ? 'bg-destructive/5' : 'bg-green-500/5'
+    )}>
+      <CardContent className="p-4">
+        <Accordion type="single" collapsible>
+          <AccordionItem value={tx.txid} className="border-b-0">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+              <div className="flex items-center gap-4 flex-1">
+                <div className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                    isSent ? "bg-destructive/10" : "bg-green-600/10"
+                    )}>
+                    {isSent ? (
+                        <ArrowUpRight className="size-5 text-destructive" />
+                    ) : (
+                        <ArrowDownLeft className="size-5 text-green-600" />
+                    )}
+                </div>
+                <div className="flex-1 grid gap-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono text-sm text-muted-foreground">{shortenText(tx.txid)}</p>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.txid, 'TXID')}>
+                      <Copy className="size-3.5" />
+                    </Button>
+                  </div>
+                  <p className={cn(
+                      "font-semibold text-lg font-mono",
+                      isSent ? "text-destructive" : "text-green-600"
+                    )}>
+                      {tx.amount_formatted}
+                  </p>
+                  <div className="flex gap-4 text-xs text-muted-foreground">
+                    <span>Fee: {tx.fee_formatted}</span>
+                    <span>Service Fee: {tx.service_fee_formatted}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-2 text-sm sm:w-48 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={getStatusVariant(tx.status)} className="capitalize">{tx.status}</Badge>
+                    <AccordionTrigger className="p-1 hover:no-underline [&[data-state=open]>svg]:text-primary">
+                        <ChevronDown className="size-4" />
+                    </AccordionTrigger>
+                  </div>
+                 <div className="text-xs text-muted-foreground text-right">
+                    {tx.confirmations} Confirmations
+                </div>
+                <div className="text-xs text-muted-foreground text-right">
+                    {new Date(tx.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+            <AccordionContent className="pt-4 space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                    <span className="font-medium text-muted-foreground">From:</span>
+                    <div className="flex items-center gap-2 font-code">
+                        <span>{shortenText(tx.from_address)}</span>
+                        {tx.from_address && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.from_address!, 'Address')}><Copy className="size-3.5" /></Button>}
+                    </div>
+                </div>
+                <div className="flex justify-between items-center">
+                    <span className="font-medium text-muted-foreground">To:</span>
+                     <div className="flex items-center gap-2 font-code">
+                        <span>{shortenText(tx.to_address)}</span>
+                        {tx.to_address && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.to_address!, 'Address')}><Copy className="size-3.5" /></Button>}
+                    </div>
+                </div>
+                {tx.explorer_url && (
+                    <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                        <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
+                            View on Block Explorer <ExternalLink className="ml-2 size-3.5" />
+                        </Link>
+                    </Button>
+                )}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
+}
+
 
 export default function TransactionsPage() {
   const { toast } = useToast();
@@ -63,122 +178,33 @@ export default function TransactionsPage() {
     fetchTransactions();
   }, [toast]);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied to clipboard",
-    });
-  };
 
   const btcToUsdRate = (balance?.usd_value || 0) / (balance?.btc_value || 1);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Transaction History</CardTitle>
-        <CardDescription>
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Transaction History</h1>
+        <p className="text-muted-foreground">
           View all your wallet transactions.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Transaction</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Address</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-10 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
-                    </TableRow>
-                ))
-              ) : transactions && transactions.length > 0 ? (
-                transactions.map((tx) => {
-                  const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
-                  const amountNum = parseFloat(tx.amount);
-                  const usdValue = Math.abs(amountNum * btcToUsdRate);
-                  const relevantAddress = isSent ? tx.to_address : tx.from_address;
-
-                  return (
-                    <TableRow key={tx.id}>
-                        <TableCell>
-                            <div className="flex items-center gap-3">
-                                <div className={cn(
-                                    "flex h-8 w-8 items-center justify-center rounded-full",
-                                    isSent ? "bg-destructive/10" : "bg-green-500/10"
-                                    )}>
-                                    {isSent ? (
-                                        <ArrowUpRight className="size-4 text-destructive" />
-                                    ) : (
-                                        <ArrowDownLeft className="size-4 text-green-600" />
-                                    )}
-                                </div>
-                                <div className="font-medium capitalize">{isSent ? "Sent" : "Received"}</div>
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                           <div className="text-sm">{new Date(tx.created_at).toLocaleDateString()}</div>
-                           <div className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</div>
-                        </TableCell>
-                         <TableCell>
-                           {relevantAddress && (
-                             <div className="flex items-center gap-2 font-code text-sm">
-                               <span className="truncate max-w-[120px] sm:max-w-[200px]">{relevantAddress}</span>
-                               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyToClipboard(relevantAddress)}>
-                                 <Copy className="size-3.5" />
-                               </Button>
-                               {tx.explorer_url && (
-                                <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="View on Block Explorer">
-                                    <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
-                                        <ExternalLink className="size-3.5" />
-                                    </Link>
-                                </Button>
-                               )}
-                             </div>
-                           )}
-                        </TableCell>
-                        <TableCell>
-                            <Badge variant={tx.is_confirmed ? "success" : "secondary"} className="capitalize">
-                                {tx.status}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                           <div className={cn(
-                              "font-mono font-medium",
-                              isSent ? "text-destructive" : "text-green-600"
-                            )}>
-                                {isSent ? "-" : "+"}${usdValue.toFixed(2)}
-                            </div>
-                             <div className="text-xs text-muted-foreground font-mono">
-                                {tx.amount_formatted}
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                  )
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    No transactions found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+        </p>
+      </div>
+      <div className="space-y-4">
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-xl" />
+          ))
+        ) : transactions && transactions.length > 0 ? (
+          transactions.map((tx) => (
+            <TransactionCard key={tx.id} tx={tx} btcToUsdRate={btcToUsdRate} />
+          ))
+        ) : (
+          <Card className="flex h-48 items-center justify-center">
+            <p className="text-muted-foreground">No transactions found.</p>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }
 

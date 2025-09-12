@@ -27,18 +27,9 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { BitcoinIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
@@ -49,15 +40,6 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AxiosError } from "axios";
 
-
-const chartConfig = {
-  price: {
-    label: "Price (USD)",
-    color: "hsl(var(--primary))",
-  },
-} satisfies ChartConfig;
-
-const INITIAL_BTC_TO_USD_RATE = 65000;
 
 export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
@@ -260,7 +242,7 @@ export default function DashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
             <div>
-                <CardTitle>Transactions</CardTitle>
+                <CardTitle>Recent Transactions</CardTitle>
             </div>
             <Button variant="link" size="sm" asChild className="text-primary">
               <Link href="/transactions">
@@ -269,56 +251,56 @@ export default function DashboardPage() {
             </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableBody>
-              {loading && Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key= {i}>
-                    <TableCell><Skeleton className="h-12 w-48" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
-                </TableRow>
-              ))}
-              {!loading && recentTransactions && recentTransactions.length > 0 ? recentTransactions.map((tx) => {
+          <div className="space-y-4">
+            {loading && Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-1">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-4 w-1/3" />
+                </div>
+                <Skeleton className="h-6 w-1/4" />
+              </div>
+            ))}
+            {!loading && recentTransactions && recentTransactions.length > 0 ? (
+              recentTransactions.slice(0, 4).map((tx) => {
                 const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
                 const amountNum = parseFloat(tx.amount);
                 const usdValue = Math.abs(amountNum * (balance?.usd_value || 0) / (balance?.btc_value || 1));
 
                 return (
-                    <TableRow key={tx.id}>
-                    <TableCell>
-                        <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                            {isSent ? (
-                            <ArrowUpRight className="size-5 text-destructive" />
-                            ) : (
-                            <ArrowDownLeft className="size-5 text-green-600" />
-                            )}
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-medium capitalize">{isSent ? "Sent" : "Received"} Bitcoin</span>
-                            <span className="text-sm text-muted-foreground">
-                            {new Date(tx.created_at).toLocaleDateString()}
-                            </span>
-                        </div>
-                        </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                        <div className={cn("font-mono text-base", isSent ? "text-destructive" : "text-green-600")}>
+                  <div key={tx.id} className="flex items-center gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+                      {isSent ? (
+                        <ArrowUpRight className="size-5 text-destructive" />
+                      ) : (
+                        <ArrowDownLeft className="size-5 text-green-600" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium capitalize">{isSent ? "Sent" : "Received"} Bitcoin</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
                         {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
-                        </div>
-                        <div className="text-xs text-muted-foreground font-mono">
+                      </p>
+                      <p className="text-xs text-muted-foreground font-mono">
                         {tx.amount_formatted}
-                        </div>
-                    </TableCell>
-                    </TableRow>
-                )
-                }) : null}
-              {!loading && (!recentTransactions || recentTransactions.length === 0) && (
-                <TableRow>
-                    <TableCell colSpan={2} className="h-24 text-center">No recent transactions.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : null}
+            {!loading && (!recentTransactions || recentTransactions.length === 0) && (
+              <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
+                No recent transactions.
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

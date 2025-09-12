@@ -3,7 +3,7 @@ import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, W
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: '/api', // Using relative URL to leverage Next.js proxy
+  baseURL: '/api/', // Using relative URL to leverage Next.js proxy
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,27 +35,27 @@ axiosInstance.interceptors.response.use(
 
 
 // Authentication
-const login = (credentials: any) => axiosInstance.post<AuthResponse>('/auth/login/', credentials);
-const register = (userInfo: any) => axiosInstance.post<AuthResponse>('/auth/register/', userInfo);
-const logout = () => axiosInstance.post('/auth/logout/');
+const login = (credentials: any) => axiosInstance.post<AuthResponse>('auth/login/', credentials);
+const register = (userInfo: any) => axiosInstance.post<AuthResponse>('auth/register/', userInfo);
+const logout = () => axiosInstance.post('auth/logout/');
 
 // User Profile
-const getUserProfile = () => axiosInstance.get<User>('/user/profile/');
-const getUser = () => axiosInstance.get<User>('/user/');
+const getUserProfile = () => axiosInstance.get<User>('user/profile/');
+const getUser = () => axiosInstance.get<User>('user/');
 
 
 // Wallet
-const getWallets = () => axiosInstance.get<Wallet[]>('/wallet/');
-const getWalletBalance = () => axiosInstance.get<Balance>('/wallet/balance/');
-const generateMnemonic = () => axiosInstance.post<{ mnemonic: string }>("/wallet/generate_mnemonic/");
-const generateNewAddress = () => axiosInstance.post<{ address: string }>("/wallet/generate_address/");
-const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('/wallet/generate_qr_code/', { data });
-const restoreWallet = (mnemonic: string) => axiosInstance.post('/wallet/restore/', { mnemonic });
+const getWallets = () => axiosInstance.get<Wallet[]>('wallet/');
+const getWalletBalance = () => axiosInstance.get<Balance>('wallet/balance/');
+const generateMnemonic = () => axiosInstance.post<{ mnemonic: string }>('wallet/generate_mnemonic/');
+const generateNewAddress = () => axiosInstance.post<{ address: string }>('wallet/generate_address/');
+const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('wallet/generate_qr_code/', { data });
+const restoreWallet = (mnemonic: string) => axiosInstance.post('wallet/restore/', { mnemonic });
 
 
 // Transactions
-const getTransactions = (limit?: number) => axiosInstance.post<PaginatedResponse<Transaction>>('/transaction/', { limit });
-const sendTransaction = (values: any) => axiosInstance.post('/transaction/send/', values);
+const getTransactions = (limit?: number) => axiosInstance.post<PaginatedResponse<Transaction>>('transaction/', { limit });
+const sendTransaction = (values: any) => axiosInstance.post('transaction/send/', values);
 
 
 const api = {

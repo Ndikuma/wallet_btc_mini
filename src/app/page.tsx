@@ -15,7 +15,7 @@ export default function LandingPage() {
               mini wallet
             </h2>
           </Link>
-          <nav className="hidden items-center gap-4 md:flex">
+          <nav className="hidden items-center gap-2 md:flex">
             <Button variant="ghost" asChild>
               <Link href="/login">Login</Link>
             </Button>
@@ -25,23 +25,28 @@ export default function LandingPage() {
               </Link>
             </Button>
           </nav>
+           <Button asChild className="md:hidden">
+              <Link href="/register">
+                Get Started
+              </Link>
+            </Button>
         </div>
       </header>
       <main className="flex-1">
         <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-24">
-          <div className="container flex max-w-5xl flex-col items-center gap-8 text-center lg:flex-row lg:text-left">
+          <div className="container flex max-w-5xl flex-col items-center gap-8 text-center lg:flex-row lg:gap-16 lg:text-left">
             <div className="flex-1 space-y-6">
-              <h1 className="text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl">
+              <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
                 Your Keys, Your Bitcoin.
               </h1>
-              <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8 lg:max-w-none">
-                A beautifully simple, secure, and open-source wallet for managing your Bitcoin. Take full control of your digital assets with confidence.
+              <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+                Take full control of your Bitcoin with a simple, secure, open-source wallet built for everyone. Send, receive, and manage your assets with confidence.
               </p>
-              <div className="flex justify-center gap-4 lg:justify-start">
-                <Button asChild size="lg">
+              <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+                <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="/register">Create New Wallet</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline">
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                   <Link href="/restore-wallet">Restore Wallet</Link>
                 </Button>
               </div>
@@ -63,28 +68,28 @@ export default function LandingPage() {
           className="container space-y-12 bg-secondary py-12 md:py-20 lg:py-24"
         >
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
-            <h2 className="text-3xl font-bold leading-[1.1] sm:text-4xl md:text-5xl">
-              The Modern Standard for Your Bitcoin
+            <h2 className="text-3xl font-bold leading-[1.1] tracking-tighter sm:text-4xl md:text-5xl">
+              Why Choose mini wallet?
             </h2>
             <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-              mini wallet provides everything you need to manage your crypto assets with security and ease.
+             We provide the tools you need to manage your Bitcoin with security and ease.
             </p>
           </div>
           <div className="mx-auto grid justify-center gap-8 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
              <CardFeature
               icon={<ShieldCheck className="mb-4 size-12 text-primary" />}
-              title="Self-Custody Perfected"
-              description="You hold the keys, you control your crypto. No third party can ever access, freeze, or lose your funds."
+              title="Full Control"
+              description="You are in complete control of your keys and your money. No third party can freeze or lose your funds."
             />
              <CardFeature
               icon={<Zap className="mb-4 size-12 text-primary" />}
-              title="Effortless Management"
-              description="Our clean, intuitive interface makes sending, receiving, and tracking your Bitcoin a breeze for everyone."
+              title="Easy to Use"
+              description="A clean and intuitive interface makes sending and receiving Bitcoin a breeze, for beginners and experts alike."
             />
              <CardFeature
               icon={<CheckCircle className="mb-4 size-12 text-primary" />}
               title="Secure by Design"
-              description="Protected by a 24-word recovery phrase and cutting-edge encryption, your assets are safe and sound."
+              description="Your wallet is protected with a 24-word recovery phrase and industry-standard encryption."
             />
           </div>
         </section>
@@ -92,7 +97,7 @@ export default function LandingPage() {
       <footer className="bg-secondary py-6 md:px-8 md:py-0">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Proudly open source. Built for the community, by the community.
+            Built by You. Powered by Open Source.
           </p>
         </div>
       </footer>

@@ -41,7 +41,7 @@ export function SettingsClient() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <Label htmlFor="currency" className="flex flex-col space-y-1">
               <span>Fiat Currency</span>
               <span className="font-normal leading-snug text-muted-foreground">
@@ -49,7 +49,7 @@ export function SettingsClient() {
               </span>
             </Label>
             <Select defaultValue="usd">
-              <SelectTrigger id="currency" className="w-40">
+              <SelectTrigger id="currency" className="w-full sm:w-40">
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
               <SelectContent>
@@ -63,22 +63,22 @@ export function SettingsClient() {
           <div>
             <Label className="font-medium">Primary Display Unit</Label>
             <p className="text-sm text-muted-foreground pt-1">Select the main unit for displaying your balance.</p>
-            <RadioGroup defaultValue="btc" className="mt-3 grid grid-cols-3 gap-4">
+            <RadioGroup defaultValue="btc" className="mt-3 grid grid-cols-3 gap-2 sm:gap-4">
               <div>
                 <RadioGroupItem value="btc" id="btc" className="peer sr-only" />
-                <Label htmlFor="btc" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                <Label htmlFor="btc" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:text-base">
                   BTC
                 </Label>
               </div>
                <div>
                 <RadioGroupItem value="sats" id="sats" className="peer sr-only" />
-                <Label htmlFor="sats" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                <Label htmlFor="sats" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:text-base">
                   Sats
                 </Label>
               </div>
                <div>
                 <RadioGroupItem value="usd" id="usd" className="peer sr-only" />
-                <Label htmlFor="usd" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover-text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                <Label htmlFor="usd" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:text-base">
                   USD
                 </Label>
               </div>
@@ -95,7 +95,7 @@ export function SettingsClient() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <Label htmlFor="2fa" className="flex flex-col space-y-1">
               <span>Two-Factor Authentication (2FA)</span>
               <span className="font-normal leading-snug text-muted-foreground">
@@ -113,23 +113,23 @@ export function SettingsClient() {
           <CardDescription>Backup or restore your wallet data.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex flex-col space-y-1">
               <span>Backup Wallet</span>
               <span className="font-normal leading-snug text-muted-foreground">
                 Download a secure backup of your wallet.
               </span>
             </div>
-            <Button onClick={handleBackup}>Backup Now</Button>
+            <Button onClick={handleBackup} className="w-full sm:w-auto">Backup Now</Button>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex flex-col space-y-1">
               <span>Restore Wallet</span>
               <span className="font-normal leading-snug text-muted-foreground">
                 Restore your wallet from a backup file.
               </span>
             </div>
-            <Button variant="outline">Restore</Button>
+            <Button variant="outline" className="w-full sm:w-auto">Restore</Button>
           </div>
         </CardContent>
       </Card>

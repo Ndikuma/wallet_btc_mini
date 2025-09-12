@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -20,11 +20,14 @@ import {
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
-import type { Transaction, PaginatedResponse } from "@/lib/types";
+import type { Transaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const btcPrice = 65000; // Mock price
 
@@ -36,8 +39,8 @@ export default function TransactionsPage() {
     async function fetchTransactions() {
       setLoading(true);
       try {
-        const response = await api.get<PaginatedResponse<Transaction>>(`/transaction/`);
-        setTransactions(response.data.results || []);
+        const response = await api.get<Transaction[]>(`/transaction/`);
+        setTransactions(response.data || []);
       } catch (error) {
         console.error("Failed to fetch transactions", error);
         setTransactions([]);
@@ -61,9 +64,10 @@ export default function TransactionsPage() {
           <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Transaction Status</TableHead>
+                    <TableHead>Details</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -73,42 +77,60 @@ export default function TransactionsPage() {
                         <TableCell><Skeleton className="h-10 w-32" /></TableCell>
                         <TableCell><Skeleton className="h-10 w-40" /></TableCell>
                         <TableCell className="text-right"><Skeleton className="h-6 w-24 ml-auto" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-10 w-10 ml-auto" /></TableCell>
                     </TableRow>
                 ))
               ) : transactions && transactions.length > 0 ? (
-                transactions.map((tx) => (
+                transactions.map((tx) => {
+                  const isSent = tx.transaction_type === "internal"; // Assuming 'internal' means sent
+                  const amountNum = parseFloat(tx.amount);
+                  return (
                     <TableRow key={tx.id}>
-                    <TableCell>
-                        <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                            {tx.type === "sent" ? (
-                            <ArrowUpRight className="size-5 text-destructive" />
-                            ) : (
-                            <ArrowDownLeft className="size-5 text-green-600" />
-                            )}
-                        </div>
-                        <div className="font-medium">Bitcoin</div>
-                        </div>
-                    </TableCell>
-                    <TableCell>
-                        <div className="flex flex-col">
-                            <span className="font-medium capitalize">{tx.status}</span>
-                            <span className="text-sm text-muted-foreground">{new Date(tx.date).toLocaleString()}</span>
-                        </div>
-                    </TableCell>
-                    <TableCell
-                        className={cn(
-                        "text-right font-mono text-base",
-                        tx.type === "sent" ? "text-destructive" : "text-green-600"
-                        )}
-                    >
-                        {tx.type === "sent" ? "-" : "+"}${(tx.amount * btcPrice).toFixed(2)}
-                    </TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                                    {isSent ? (
+                                        <ArrowUpRight className="size-5 text-destructive" />
+                                    ) : (
+                                        <ArrowDownLeft className="size-5 text-green-600" />
+                                    )}
+                                </div>
+                                <div className="font-medium capitalize">{isSent ? "Sent" : "Received"}</div>
+                            </div>
+                        </TableCell>
+                        <TableCell>
+                            <div className="flex flex-col">
+                                <span className="font-medium capitalize">{tx.status}</span>
+                                <span className="text-sm text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</span>
+                            </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                           <div className={cn(
+                              "font-mono text-base",
+                              isSent ? "text-destructive" : "text-green-600"
+                            )}>
+                                {isSent ? "-" : "+"}${Math.abs(amountNum * btcPrice).toFixed(2)}
+                            </div>
+                             <div className="text-xs text-muted-foreground font-mono">
+                                {isSent ? "-" : "+"}
+                                {Math.abs(amountNum).toFixed(8)} BTC
+                            </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                           {tx.explorer_url && (
+                                <Button asChild variant="ghost" size="icon" title="View on Block Explorer">
+                                    <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="size-4" />
+                                    </Link>
+                                </Button>
+                           )}
+                        </TableCell>
                     </TableRow>
-                ))
+                  )
+                })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
+                  <TableCell colSpan={4} className="h-24 text-center">
                     No transactions found.
                   </TableCell>
                 </TableRow>

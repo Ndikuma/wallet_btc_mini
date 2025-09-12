@@ -51,14 +51,20 @@ export interface Balance {
 }
 
 export interface Transaction {
-  id: string;
-  type: "sent" | "received";
-  amount: number;
-  fee: number;
-  status: "completed" | "pending" | "failed";
-  date: string;
-  address: string;
-  recipient?: string;
+  id: number;
+  txid: string;
+  transaction_type: 'internal' | 'receive' | 'send';
+  amount: string;
+  amount_formatted: string;
+  fee: string;
+  status: 'confirmed' | 'pending' | 'failed';
+  is_confirmed: boolean;
+  confirmations: number;
+  explorer_url: string;
+  created_at: string;
+  updated_at: string;
+  from_address?: string;
+  to_address?: string;
 }
 
 export interface ApiErrorDetails {

@@ -3,7 +3,7 @@ import type { ApiResponse } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://damaged-gabriel-huntington-lenses.trycloudflare.com/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://night-ga-save-movies.trycloudflare.com/api',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -38,11 +38,11 @@ export default function ReceivePage() {
       if (response.data && Array.isArray(response.data) && response.data.length > 0 && response.data[0].address) {
         setAddress(response.data[0].address);
       } else {
-        await generateNewAddress(true); // First time generation
+        await generateNewAddressFn(true); // First time generation
       }
     } catch (error) {
       console.error("Failed to fetch wallet address, generating new one.", error);
-      await generateNewAddress(true);
+      await generateNewAddressFn(true);
     } finally {
       setLoading(false);
     }

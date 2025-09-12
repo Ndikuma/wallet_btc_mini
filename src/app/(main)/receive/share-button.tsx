@@ -1,26 +1,27 @@
+
 "use client";
 
 import { Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
-export function ShareButton({ text, amount }: { text: string, amount: string }) {
+interface ShareButtonProps extends ButtonProps {
+  shareData: ShareData;
+}
+
+
+export function ShareButton({ shareData, children, className, ...props }: ShareButtonProps) {
   const { toast } = useToast();
   const [canShare, setCanShare] = useState(false);
 
   useEffect(() => {
-    setCanShare(!!navigator.share);
-  }, []);
+    setCanShare(!!navigator.share && navigator.canShare(shareData));
+  }, [shareData]);
 
 
   const handleShare = async () => {
-    const shareData = {
-        title: "Bitcoin Payment Request",
-        text: `Please send ${amount ? amount + ' BTC' : 'Bitcoin'} to the following address: ${text}`,
-        url: text
-    };
-
     if (navigator.share && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
@@ -28,7 +29,6 @@ export function ShareButton({ text, amount }: { text: string, amount: string }) 
           title: "Shared successfully",
         });
       } catch (error) {
-        // Silently fail if user cancels share dialog
         if ((error as DOMException).name !== 'AbortError') {
              toast({
                 variant: "destructive",
@@ -41,7 +41,7 @@ export function ShareButton({ text, amount }: { text: string, amount: string }) 
          toast({
             variant: "destructive",
             title: "Sharing not supported",
-            description: "Your browser does not support the Web Share API.",
+            description: "Your browser cannot share this content.",
         });
     }
   };
@@ -51,9 +51,9 @@ export function ShareButton({ text, amount }: { text: string, amount: string }) 
   }
 
   return (
-    <Button onClick={handleShare}>
+    <Button onClick={handleShare} className={cn("w-full", className)} {...props}>
       <Share2 className="mr-2 size-4" />
-      Share
+      {children}
     </Button>
   );
 }

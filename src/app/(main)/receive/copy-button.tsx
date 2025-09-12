@@ -1,24 +1,30 @@
+
 "use client";
 
 import { Copy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-export function CopyButton({ text }: { text: string }) {
+interface CopyButtonProps extends ButtonProps {
+  textToCopy: string;
+  toastMessage?: string;
+}
+
+export function CopyButton({ textToCopy, toastMessage, children, className, ...props }: CopyButtonProps) {
   const { toast } = useToast();
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(textToCopy);
     toast({
-      title: "Copied to clipboard",
-      description: "Payment details have been copied.",
+      title: toastMessage || "Copied to clipboard",
     });
   };
 
   return (
-    <Button onClick={handleCopy} variant="outline">
+    <Button onClick={handleCopy} className={cn("w-full", className)} {...props}>
       <Copy className="mr-2 size-4" />
-      Copy
+      {children}
     </Button>
   );
 }

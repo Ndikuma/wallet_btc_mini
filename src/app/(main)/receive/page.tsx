@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { Wallet } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 export default function ReceivePage() {
   const { toast } = useToast();
@@ -37,25 +38,27 @@ export default function ReceivePage() {
       if (response.data && Array.isArray(response.data) && response.data.length > 0 && response.data[0].address) {
         setAddress(response.data[0].address);
       } else {
-        await generateNewAddress();
+        await generateNewAddress(true); // First time generation
       }
     } catch (error) {
       console.error("Failed to fetch wallet address, generating new one.", error);
-      await generateNewAddress();
+      await generateNewAddress(true);
     } finally {
       setLoading(false);
     }
   }
   
-  const generateNewAddress = async () => {
+  const generateNewAddress = async (isInitial = false) => {
     setGenerating(true);
     try {
       const response = await api.post<{ address: string }>("/wallet/generate_address/");
       setAddress(response.data.address);
-       toast({
-        title: "New Address Generated",
-        description: "A new receiving address has been created for you.",
-      });
+      if (!isInitial) {
+         toast({
+          title: "New Address Generated",
+          description: "A new receiving address has been created for you.",
+        });
+      }
     } catch (error: any) {
       const errorMsg = error.response?.data?.error?.details?.detail || "Could not generate a new address. Please try again.";
       toast({
@@ -106,7 +109,7 @@ export default function ReceivePage() {
             Share your address to receive BTC. You can specify an amount.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col items-center gap-6 text-center">
+        <CardContent className="flex flex-col items-center gap-6">
           <div className="rounded-lg border bg-white p-4 shadow-sm">
             {loading || !qrCode ? (
                 <Skeleton className="h-[256px] w-[256px] rounded-md" />
@@ -121,6 +124,7 @@ export default function ReceivePage() {
               />
             )}
           </div>
+          
           <div className="w-full max-w-sm space-y-4">
              <div className="relative">
                 <Label htmlFor="amount" className="sr-only" >Amount (BTC)</Label>
@@ -129,38 +133,56 @@ export default function ReceivePage() {
                     id="amount"
                     type="number"
                     step="0.00000001"
-                    placeholder="0.00 (Optional)"
+                    placeholder="Set an amount (optional)"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="pl-10 text-center"
                 />
              </div>
-             <div className="space-y-2">
-                <Label htmlFor="wallet-address" className="sr-only">
-                Wallet Address
-                </Label>
-                {loading ? (
-                    <Skeleton className="h-10 w-full" />
-                ) : (
-                    <Input
-                      id="wallet-address"
-                      value={address || ''}
-                      readOnly
-                      className="text-center font-code text-sm"
-                    />
-                )}
-                <p className="text-xs text-muted-foreground">
-                  This is your unique Bitcoin address.
-                </p>
-            </div>
+             
+            <p className="text-sm text-muted-foreground break-all font-code p-3 rounded-md bg-secondary border text-center">
+                {loading ? <Skeleton className="h-5 w-4/5 mx-auto" /> : address || '...'}
+            </p>
           </div>
          
           <div className="flex w-full max-w-sm flex-col gap-3">
-             <div className="flex gap-4">
-                <CopyButton text={paymentUri} />
-                <ShareButton text={paymentUri} amount={amount} />
+             <div className="grid grid-cols-2 gap-3">
+                <CopyButton 
+                  textToCopy={address || ''} 
+                  disabled={loading || !address} 
+                  toastMessage="Address copied to clipboard"
+                  variant="outline"
+                >
+                  Copy Address
+                </CopyButton>
+                <ShareButton 
+                  shareData={{ title: "My Bitcoin Address", text: address || '' }} 
+                  disabled={loading || !address}
+                  variant="outline"
+                >
+                  Share Address
+                </ShareButton>
              </div>
-             <Button variant="outline" size="sm" onClick={generateNewAddress} disabled={generating}>
+
+             <Separator />
+
+             <CopyButton 
+                textToCopy={paymentUri}
+                disabled={loading || !address || !amount}
+                toastMessage="Payment request copied"
+              >
+                  Copy Payment Request
+             </CopyButton>
+              <ShareButton 
+                shareData={{ title: "Bitcoin Payment Request", text: `Please pay ${amount} BTC to this address`, url: paymentUri }}
+                disabled={loading || !address || !amount}
+              >
+                  Share Payment Request
+             </ShareButton>
+
+             <Separator />
+             
+             <Button variant="ghost" size="sm" onClick={() => generateNewAddress(false)} disabled={generating || loading}>
                 <RefreshCw className={cn("mr-2 size-4", generating && "animate-spin")} />
                 {generating ? 'Generating...' : 'Generate New Address'}
              </Button>

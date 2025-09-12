@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://aye-apparatus-command-southwest.trycloudflare.com/api/:path*',
+        destination: 'https://bacterial-entering-ready-ladies.trycloudflare.com/:path*',
       },
     ]
   },

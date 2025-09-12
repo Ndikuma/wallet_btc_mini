@@ -2,15 +2,18 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
+const isServer = typeof window === 'undefined';
+const BACKEND_URL = 'https://bacterial-entering-ready-ladies.trycloudflare.com/';
+
 const axiosInstance = axios.create({
-  baseURL: 'https://bacterial-entering-ready-ladies.trycloudflare.com/',
+  baseURL: isServer ? BACKEND_URL : '/',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
+  if (!isServer) {
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Token ${token}`;

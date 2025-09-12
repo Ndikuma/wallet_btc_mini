@@ -108,9 +108,7 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
                         <ChevronDown className="size-4" />
                     </AccordionTrigger>
                   </div>
-                 <div className="text-xs text-muted-foreground text-right">
-                    {tx.confirmations} Confirmations
-                </div>
+                 
                 <div className="text-xs text-muted-foreground text-right">
                     {new Date(tx.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
                 </div>

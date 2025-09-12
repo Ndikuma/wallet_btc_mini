@@ -40,7 +40,7 @@ export default function TransactionsPage() {
       setLoading(true);
       try {
         const response = await api.getTransactions();
-        setTransactions(response.data.results || []);
+        setTransactions((response.data as PaginatedResponse<Transaction>).results || []);
       } catch (error) {
         console.error("Failed to fetch transactions", error);
         setTransactions([]);

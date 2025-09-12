@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, PaginatedResponse } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -39,8 +39,8 @@ export default function TransactionsPage() {
     async function fetchTransactions() {
       setLoading(true);
       try {
-        const response = await api.get<Transaction[]>(`/transaction/`);
-        setTransactions(response.data || []);
+        const response = await api.get<PaginatedResponse<Transaction>>(`/transaction/`);
+        setTransactions(response.data.results || []);
       } catch (error) {
         console.error("Failed to fetch transactions", error);
         setTransactions([]);
@@ -82,7 +82,7 @@ export default function TransactionsPage() {
                 ))
               ) : transactions && transactions.length > 0 ? (
                 transactions.map((tx) => {
-                  const isSent = tx.transaction_type === "internal"; // Assuming 'internal' means sent
+                  const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
                   const amountNum = parseFloat(tx.amount);
                   return (
                     <TableRow key={tx.id}>
@@ -142,3 +142,5 @@ export default function TransactionsPage() {
     </Card>
   );
 }
+
+    

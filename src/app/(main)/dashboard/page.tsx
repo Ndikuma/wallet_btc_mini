@@ -42,7 +42,7 @@ import { BitcoinIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
 import api from "@/lib/api";
-import type { Wallet, Transaction, Balance } from "@/lib/types";
+import type { Wallet, Transaction, Balance, PaginatedResponse } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -76,7 +76,7 @@ export default function DashboardPage() {
         const [walletRes, balanceRes, transactionsRes] = await Promise.all([
           api.get("/wallet/"),
           api.get("/wallet/balance/"),
-          api.get("/transaction/?limit=4"),
+          api.post<PaginatedResponse<Transaction>>("/transaction/", { limit: 4 }),
         ]);
         
         if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
@@ -353,7 +353,7 @@ export default function DashboardPage() {
                    <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                        {tx.type === "sent" ? (
+                        {tx.transaction_type === "internal" || tx.transaction_type === "send" ? (
                           <ArrowUpRight className="size-5 text-destructive" />
                         ) : (
                           <ArrowDownLeft className="size-5 text-green-600" />
@@ -361,18 +361,18 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex flex-col">
                          <span className="font-medium">Bitcoin</span>
-                        <span className="text-sm text-muted-foreground">{tx.status} - {new Date(tx.date).toLocaleDateString()}</span>
+                        <span className="text-sm text-muted-foreground">{tx.status} - {new Date(tx.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell
                     className= {cn(
                       "text-right font-mono text-base",
-                      tx.type === "sent" ? "text-destructive" : "text-green-600"
+                       tx.transaction_type === "internal" || tx.transaction_type === "send" ? "text-destructive" : "text-green-600"
                     )}
                   >
-                    {tx.type === "sent" ? "-" : "+"}
-                    ${(tx.amount * (balance?.usd_value || 0) / (balance?.btc_value || 1)).toFixed(2)}
+                    {tx.transaction_type === "internal" || tx.transaction_type === "send" ? "-" : "+"}
+                    ${(Number(tx.amount) * (balance?.usd_value || 0) / (balance?.btc_value || 1)).toFixed(2)}
                   </TableCell>
                 </TableRow>
               )) : null}
@@ -389,4 +389,5 @@ export default function DashboardPage() {
   );
 }
 
+    
     

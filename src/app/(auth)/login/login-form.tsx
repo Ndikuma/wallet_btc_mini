@@ -22,7 +22,7 @@ import { useState } from "react";
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "Please enter your username." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  password: z.string().min(1, { message: "Please enter your password." }),
 });
 
 export function LoginForm() {

@@ -29,19 +29,23 @@ import api from "@/lib/api";
 import type { Wallet, Transaction, Balance } from "@/lib/types";
 import { AxiosError } from "axios";
 import PriceStats from "./price-stats";
+import PriceChart from "./price-chart";
 
 export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
-  const [recentTransactions, setRecentTransactions]  = useState<Transaction[]>([]);
-  
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [cryptoData, setCryptoData] = useState<any>(null);
+
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
+  const [loadingCryptoData, setLoadingCryptoData] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
+  const [cryptoError, setCryptoError] = useState<string | null>(null);
 
   const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
     if (!text) return 'an external address';
@@ -49,6 +53,24 @@ export default function DashboardPage() {
     return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
   }
 
+  useEffect(() => {
+    async function fetchCryptoData() {
+      setLoadingCryptoData(true);
+      setCryptoError(null);
+      try {
+        const res = await fetch("/api/crypto-stats");
+        if (!res.ok) throw new Error("Failed to fetch crypto stats");
+        const data = await res.json();
+        setCryptoData(data.data);
+      } catch (e: any) {
+        console.error("Failed to fetch crypto stats:", e);
+        setCryptoError("Could not load market data.");
+      } finally {
+        setLoadingCryptoData(false);
+      }
+    }
+    fetchCryptoData();
+  }, []);
 
   useEffect(() => {
     async function fetchBalance() {
@@ -142,7 +164,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-3">
           <CardHeader>
              <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
              {loadingBalance ? (
@@ -166,33 +188,21 @@ export default function DashboardPage() {
              )}
           </CardHeader>
            <CardContent className="pt-4">
-             <PriceStats />
-          </CardContent>
-        </Card>
-        
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-grow grid grid-cols-2 gap-4">
-            <Button size="lg" asChild className="h-auto py-4">
-              <Link href="/send" className="flex flex-col items-center gap-2">
-                <ArrowUpRight className="size-6" /> 
-                <span>Send</span>
-              </Link>
-            </Button>
-            <Button size="lg" variant="secondary" asChild className="h-auto py-4">
-              <Link href="/receive" className="flex flex-col items-center gap-2">
-                <ArrowDownLeft className="size-6" /> 
-                <span>Receive</span>
-              </Link>
-            </Button>
+             {loadingCryptoData && <Skeleton className="h-64 w-full" />}
+             {cryptoError && (
+                 <div className="h-64 w-full flex items-center justify-center text-destructive">
+                    <AlertCircle className="mr-2 size-4" /> {cryptoError}
+                </div>
+             )}
+             {cryptoData && <PriceChart data={cryptoData.chart} />}
           </CardContent>
         </Card>
       </div>
 
+       <PriceStats stats={cryptoData?.price} loading={loadingCryptoData} error={cryptoError} />
+
        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {loadingWallet && (
+           {loadingWallet && (
             Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                   <CardHeader>
@@ -251,81 +261,102 @@ export default function DashboardPage() {
           ) : null}
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle>Recent Transactions</CardTitle>
-            </div>
-            <Button variant="link" size="sm" asChild className="text-primary">
-              <Link href="/transactions">
-                See All
-              </Link>
-            </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {loadingTransactions && Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="flex-1 space-y-1">
-                  <Skeleton className="h-5 w-2/3" />
-                  <Skeleton className="h-4 w-1/3" />
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="md:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Recent Transactions</CardTitle>
                 </div>
-                <Skeleton className="h-6 w-1/4" />
-              </div>
-            ))}
-            {transactionsError && (
-                 <div className="h-24 text-center flex items-center justify-center text-destructive">
-                    <AlertCircle className="mr-2 size-4" /> {transactionsError}
-                </div>
-            )}
-            {!loadingTransactions && !transactionsError && recentTransactions && recentTransactions.length > 0 ? (
-              recentTransactions.slice(0, 4).map((tx) => {
-                const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
-                const amountNum = parseFloat(tx.amount);
-                const btcToUsdRate = (balance?.usd_value || 0) / (balance?.btc_value || 1);
-                const usdValue = Math.abs(amountNum * btcToUsdRate);
-                const relevantAddress = isSent ? tx.to_address : tx.from_address;
-
-
-                return (
-                  <div key={tx.id} className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-                      {isSent ? (
-                        <ArrowUpRight className="size-5 text-destructive" />
-                      ) : (
-                        <ArrowDownLeft className="size-5 text-green-600" />
-                      )}
+                <Button variant="link" size="sm" asChild className="text-primary">
+                  <Link href="/transactions">
+                    See All
+                  </Link>
+                </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {loadingTransactions && Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-5 w-2/3" />
+                      <Skeleton className="h-4 w-1/3" />
                     </div>
-                    <div className="flex-1">
-                       <p className="font-medium truncate">
-                        {isSent ? "Sent to" : "Received from"}{' '}
-                        <span className="font-mono text-muted-foreground">{shortenText(relevantAddress)}</span>
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                       <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
-                        {tx.amount_formatted}
-                      </p>
-                       <p className="text-xs text-muted-foreground font-mono">
-                         {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
-                      </p>
-                    </div>
+                    <Skeleton className="h-6 w-1/4" />
                   </div>
-                );
-              })
-            ) : null}
-            {!loadingTransactions && !transactionsError && (!recentTransactions || recentTransactions.length === 0) && (
-              <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
-                No recent transactions.
+                ))}
+                {transactionsError && (
+                     <div className="h-24 text-center flex items-center justify-center text-destructive">
+                        <AlertCircle className="mr-2 size-4" /> {transactionsError}
+                    </div>
+                )}
+                {!loadingTransactions && !transactionsError && recentTransactions && recentTransactions.length > 0 ? (
+                  recentTransactions.slice(0, 4).map((tx) => {
+                    const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
+                    const amountNum = parseFloat(tx.amount);
+                    const btcToUsdRate = (balance?.usd_value || 0) / (balance?.btc_value || 1);
+                    const usdValue = Math.abs(amountNum * btcToUsdRate);
+                    const relevantAddress = isSent ? tx.to_address : tx.from_address;
+
+
+                    return (
+                      <div key={tx.id} className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+                          {isSent ? (
+                            <ArrowUpRight className="size-5 text-destructive" />
+                          ) : (
+                            <ArrowDownLeft className="size-5 text-green-600" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                           <p className="font-medium truncate">
+                            {isSent ? "Sent to" : "Received from"}{' '}
+                            <span className="font-mono text-muted-foreground">{shortenText(relevantAddress)}</span>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                           <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
+                            {tx.amount_formatted}
+                          </p>
+                           <p className="text-xs text-muted-foreground font-mono">
+                             {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : null}
+                {!loadingTransactions && !transactionsError && (!recentTransactions || recentTransactions.length === 0) && (
+                  <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
+                    No recent transactions.
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+          <Card className="flex flex-col">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow grid grid-rows-2 gap-4">
+              <Button size="lg" asChild className="h-auto py-4">
+                <Link href="/send" className="flex items-center justify-center gap-2">
+                  <ArrowUpRight className="size-6" /> 
+                  <span>Send</span>
+                </Link>
+              </Button>
+              <Button size="lg" variant="secondary" asChild className="h-auto py-4">
+                <Link href="/receive" className="flex items-center justify-center gap-2">
+                  <ArrowDownLeft className="size-6" /> 
+                  <span>Receive</span>
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+       </div>
     </div>
   );
 }

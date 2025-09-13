@@ -3,78 +3,94 @@ import fs from 'fs-extra';
 import path from 'path';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
-
-// Ensure data directory exists
 fs.ensureDirSync(DATA_DIR);
 
-async function saveJSON(filePath: string, data: any) {
-  await fs.writeJson(filePath, data, {spaces: 2});
-}
-
-async function appendWeeklyData(filePath: string, data: any, date: Date) {
-  let weekData: any[] = [];
-  if (await fs.pathExists(filePath)) {
-    weekData = await fs.readJson(filePath);
+async function saveData(filePath: string, data: any) {
+  try {
+    await fs.writeJson(filePath, {data, timestamp: Date.now()}, {spaces: 2});
+    return {success: true};
+  } catch (error) {
+    console.error(`Failed to save data to ${filePath}:`, error);
+    return {success: false, error: (error as Error).message};
   }
-  weekData.push({date: date.toISOString(), data});
-  await fs.writeJson(filePath, weekData, {spaces: 2});
 }
 
-function getWeekNumber(d: Date) {
-  const date = new Date(d.getTime());
-  date.setHours(0, 0, 0, 0);
-  date.setDate(date.getDate() + 4 - (date.getDay() || 7));
-  const yearStart = new Date(date.getFullYear(), 0, 1);
-  const weekNo = Math.ceil(
-    ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
-  );
-  return weekNo;
+async function readData(filePath: string) {
+  try {
+    if (await fs.pathExists(filePath)) {
+      return await fs.readJson(filePath);
+    }
+    return null;
+  } catch (error) {
+    console-error(`Failed to read data from ${filePath}:`, error);
+    return null;
+  }
 }
 
-export async function GET(request: Request) {
-  const {searchParams} = new URL(request.url);
-  const ids = searchParams.get('ids') || 'bitcoin';
-  const vs_currencies = searchParams.get('vs_currencies') || 'usd';
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
-  const params = new URLSearchParams({
-    ids,
-    vs_currencies,
-    include_market_cap: 'true',
-    include_24hr_vol: 'true',
-    include_24hr_change: 'true',
-    include_last_updated_at: 'true',
-  });
+export async function GET() {
+  const priceFilePath = path.join(DATA_DIR, 'crypto-price.json');
+  const chartFilePath = path.join(DATA_DIR, 'crypto-chart.json');
 
-  const url = `https://api.coingecko.com/api/v3/simple/price?${params.toString()}`;
+  const cachedPrice = await readData(priceFilePath);
+  const cachedChart = await readData(chartFilePath);
+
+  if (
+    cachedPrice &&
+    cachedChart &&
+    Date.now() - cachedPrice.timestamp < CACHE_DURATION
+  ) {
+    return NextResponse.json({
+      success: true,
+      data: {price: cachedPrice.data, chart: cachedChart.data},
+    });
+  }
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch from CoinGecko: ${response.statusText}`);
+    // Fetch both endpoints concurrently
+    const [priceResponse, chartResponse] = await Promise.all([
+      fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true'
+      ),
+      fetch(
+        'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=7&interval=daily'
+      ),
+    ]);
+
+    if (!priceResponse.ok) {
+      throw new Error(
+        `Failed to fetch price from CoinGecko: ${priceResponse.statusText}`
+      );
     }
-    const data = await response.json();
+    if (!chartResponse.ok) {
+      throw new Error(
+        `Failed to fetch chart from CoinGecko: ${chartResponse.statusText}`
+      );
+    }
 
-    const date = new Date();
-    const dayFile = path.join(
-      DATA_DIR,
-      `${date.toISOString().slice(0, 10)}.json`
-    );
-    const weekFile = path.join(
-      DATA_DIR,
-      `week-${getWeekNumber(date)}.json`
-    );
+    const priceData = await priceResponse.json();
+    const chartData = await chartResponse.json();
 
-    // Save daily data
-    await saveJSON(dayFile, data);
+    // Save new data
+    await saveData(priceFilePath, priceData);
+    await saveData(chartFilePath, chartData);
 
-    // Append weekly data
-    await appendWeeklyData(weekFile, data, date);
-
-    return NextResponse.json({success: true, data});
+    return NextResponse.json({
+      success: true,
+      data: {price: priceData, chart: chartData},
+    });
   } catch (error: any) {
-    return NextResponse.json(
-      {error: error.message},
-      {status: 500}
-    );
+    console.error('API fetch error:', error.message);
+    // If fetching fails, serve stale data if available
+    if (cachedPrice && cachedChart) {
+      console.warn('Serving stale data due to API error.');
+      return NextResponse.json({
+        success: true,
+        data: {price: cachedPrice.data, chart: cachedChart.data},
+        stale: true,
+      });
+    }
+    return NextResponse.json({error: error.message}, {status: 500});
   }
 }

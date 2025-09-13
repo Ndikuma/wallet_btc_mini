@@ -108,7 +108,7 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
                  </div>
                  <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-muted-foreground">Fee:</span>
-                    <span>{tx.fee_formatted}</span>
+                    <span className="font-mono">{tx.fee_formatted}</span>
                  </div>
                  <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-muted-foreground">From:</span>
@@ -162,7 +162,7 @@ export default function TransactionsPage() {
       setLoadingTransactions(true);
       try {
         const transactionsRes = await api.getTransactions();
-        setTransactions((transactionsRes.data as Transaction[]) || []);
+        setTransactions((transactionsRes as any as Transaction[]) || []);
       } catch (error) {
         console.error("Failed to fetch transactions", error);
         setTransactions([]);

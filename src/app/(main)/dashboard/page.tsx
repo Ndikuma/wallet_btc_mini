@@ -6,14 +6,11 @@ import {
   ArrowRight,
   ArrowUpRight,
   ArrowDownLeft,
-  ArrowUp,
-  ArrowDown,
   AlertCircle,
   TrendingUp,
   TrendingDown,
   Clock,
   Repeat,
-  ExternalLink,
 } from "lucide-react";
 import {
   Card,
@@ -23,22 +20,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/badge";
-import { BitcoinIcon } from "@/components/icons";
-import { cn } from "@/lib/utils";
-import { useState, useEffect, useMemo } from "react";
-import api from "@/lib/api";
-import type { Wallet, Transaction, Balance, PaginatedResponse } from "@/lib/types";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import api from "@/lib/api";
+import type { Wallet, Transaction, Balance } from "@/lib/types";
 import { AxiosError } from "axios";
+import { PriceStats } from "./price-stats";
 
 
 export default function DashboardPage() {
@@ -166,8 +156,8 @@ export default function DashboardPage() {
                 </>
              )}
           </CardHeader>
-          <CardContent className="h-[120px] w-full pt-4 flex items-center justify-center text-muted-foreground">
-              Price chart data is not available at the moment.
+           <CardContent className="pt-4">
+            <PriceStats />
           </CardContent>
         </Card>
         
@@ -305,7 +295,7 @@ export default function DashboardPage() {
                        <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
                         {tx.amount_formatted}
                       </p>
-                      <p className="text-xs text-muted-foreground font-mono">
+                       <p className="text-xs text-muted-foreground font-mono">
                          {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
                       </p>
                     </div>
@@ -325,3 +315,4 @@ export default function DashboardPage() {
   );
 }
 
+    

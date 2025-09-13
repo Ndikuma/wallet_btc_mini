@@ -2,7 +2,7 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
-const BACKEND_URL = 'https://syntax-guam-colour-affiliate.trycloudflare.com/';
+const BACKEND_URL = 'https://find-radius-adoption-sandra.trycloudflare.com/';
 
 // Main instance for authenticated requests
 const axiosInstance = axios.create({

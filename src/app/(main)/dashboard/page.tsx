@@ -45,7 +45,11 @@ export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
   const [recentTransactions, setRecentTransactions]  = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  const [loadingBalance, setLoadingBalance] = useState(true);
+  const [loadingWallet, setLoadingWallet] = useState(true);
+  const [loadingTransactions, setLoadingTransactions] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
 
   const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
@@ -56,88 +60,60 @@ export default function DashboardPage() {
 
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
+    async function fetchBalance() {
+      setLoadingBalance(true);
       try {
-        const [walletRes, balanceRes, transactionsRes] = await Promise.all([
-          api.getWallets(),
-          api.getWalletBalance(),
-          api.getTransactions(),
-        ]);
-        
+        const balanceRes = await api.getWalletBalance();
+        setBalance(balanceRes.data);
+      } catch (err: any) {
+         if (err instanceof AxiosError && err.response?.status === 403) {
+            setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
+        } else {
+            console.error("Failed to fetch balance data", err);
+            setError("Could not load balance data. Please try again later.");
+        }
+      } finally {
+        setLoadingBalance(false);
+      }
+    }
+    fetchBalance();
+  }, []);
+
+  useEffect(() => {
+    async function fetchWallet() {
+      setLoadingWallet(true);
+      try {
+        const walletRes = await api.getWallets();
         if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
           setWallet(walletRes.data[0]);
         } else {
            setWallet(walletRes.data as Wallet);
         }
-        
-        setBalance(balanceRes.data);
-
-        setRecentTransactions(transactionsRes.data as Transaction[] || []);
       } catch (err: any) {
-        if (err instanceof AxiosError && err.response?.status === 403) {
-            setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
-        } else {
-            console.error("Failed to fetch dashboard data", err);
-            setError("Could not load dashboard data. Please try again later.");
-        }
+        console.error("Failed to fetch wallet stats", err);
+        // Don't set a page-level error for this non-critical data
       } finally {
-        setLoading(false);
+        setLoadingWallet(false);
       }
     }
-    fetchData();
-
+    fetchWallet();
   }, []);
 
-  if (loading) {
-    return (
-        <div className="flex flex-col gap-6">
-            <div className="grid gap-6 md:grid-cols-3">
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="h-10 w-48" />
-                    </CardHeader>
-                    <CardContent>
-                        <Skeleton className="h-[120px] w-full" />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-6 w-24" />
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-4">
-                        <Skeleton className="h-24 w-full" />
-                        <Skeleton className="h-24 w-full" />
-                    </CardContent>
-                </Card>
-            </div>
-             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                 {Array.from({ length: 4 }).map((_, i) => (
-                    <Card key={i}>
-                        <CardHeader>
-                            <Skeleton className="h-5 w-24" />
-                        </CardHeader>
-                        <CardContent>
-                            <Skeleton className="h-8 w-32" />
-                        </CardContent>
-                    </Card>
-                ))}
-             </div>
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-8 w-40" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                    <Skeleton className="h-16 w-full" />
-                </CardContent>
-            </Card>
-        </div>
-    )
-  }
+  useEffect(() => {
+    async function fetchTransactions() {
+      setLoadingTransactions(true);
+      try {
+        const transactionsRes = await api.getTransactions();
+        setRecentTransactions(transactionsRes.data as Transaction[] || []);
+      } catch (err: any) {
+         console.error("Failed to fetch recent transactions", err);
+      } finally {
+        setLoadingTransactions(false);
+      }
+    }
+    fetchTransactions();
+  }, []);
+
   
     if (error) {
         const handleRefresh = () => {
@@ -167,16 +143,25 @@ export default function DashboardPage() {
         <Card className="md:col-span-2">
           <CardHeader>
              <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
-             <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold">{(balance?.usd_value || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
-             </div>
-             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                <span>{(balance?.btc_value || 0).toFixed(8)} BTC</span>
-                <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                <span>≈ {(balance?.sats_value || 0).toLocaleString()} Sats</span>
-                 <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                <span>≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
-             </div>
+             {loadingBalance ? (
+                <div className="space-y-2">
+                    <Skeleton className="h-10 w-48" />
+                    <Skeleton className="h-4 w-full max-w-xs" />
+                </div>
+             ) : (
+                <>
+                <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold">{(balance?.usd_value || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <span>{(balance?.btc_value || 0).toFixed(8)} BTC</span>
+                    <Separator orientation="vertical" className="h-4 hidden sm:block" />
+                    <span>≈ {(balance?.sats_value || 0).toLocaleString()} Sats</span>
+                    <Separator orientation="vertical" className="h-4 hidden sm:block" />
+                    <span>≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
+                </div>
+                </>
+             )}
           </CardHeader>
           <CardContent className="h-[120px] w-full pt-4 flex items-center justify-center text-muted-foreground">
               Price chart data is not available at the moment.
@@ -204,8 +189,20 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-       {wallet?.stats && (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {loadingWallet ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                  <CardHeader>
+                      <Skeleton className="h-5 w-24" />
+                  </CardHeader>
+                  <CardContent>
+                      <Skeleton className="h-8 w-32" />
+                  </CardContent>
+              </Card>
+            ))
+          ) : wallet?.stats ? (
+            <>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
@@ -242,8 +239,9 @@ export default function DashboardPage() {
                         <div className="text-2xl font-bold">{wallet.stats.wallet_age_days} days</div>
                     </CardContent>
                 </Card>
-            </div>
-      )}
+            </>
+          ) : null}
+      </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -258,7 +256,7 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {loading && Array.from({ length: 3 }).map((_, i) => (
+            {loadingTransactions && Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="flex items-center gap-4">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="flex-1 space-y-1">
@@ -268,7 +266,7 @@ export default function DashboardPage() {
                 <Skeleton className="h-6 w-1/4" />
               </div>
             ))}
-            {!loading && recentTransactions && recentTransactions.length > 0 ? (
+            {!loadingTransactions && recentTransactions && recentTransactions.length > 0 ? (
               recentTransactions.slice(0, 4).map((tx) => {
                 const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
                 const amountNum = parseFloat(tx.amount);
@@ -307,7 +305,7 @@ export default function DashboardPage() {
                 );
               })
             ) : null}
-            {!loading && (!recentTransactions || recentTransactions.length === 0) && (
+            {!loadingTransactions && (!recentTransactions || recentTransactions.length === 0) && (
               <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
                 No recent transactions.
               </div>

@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
+  Download,
   History,
   LayoutDashboard,
+  Send,
   Settings,
   User
 } from "lucide-react";
@@ -25,8 +25,8 @@ import {
 
 const mainNavItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/send", icon: ArrowUpRight, label: "Send" },
-  { path: "/receive", icon: ArrowDownLeft, label: "Receive" },
+  { path: "/send", icon: Send, label: "Send" },
+  { path: "/receive", icon: Download, label: "Receive" },
   { path: "/transactions", icon: History, label: "Transactions" },
 ];
 

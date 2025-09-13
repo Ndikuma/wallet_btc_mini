@@ -29,7 +29,7 @@ export default function MainLayout({
           </div>
           <UserNav />
         </header>
-        <main className="flex-1 p-4 md:p-6 lg:p-8 mb-16 md:mb-0">{children}</main>
+        <main className="flex-1 p-4 md:p-6 lg:p-8 mb-20 md:mb-0">{children}</main>
         <MobileNav />
       </SidebarInset>
     </SidebarProvider>

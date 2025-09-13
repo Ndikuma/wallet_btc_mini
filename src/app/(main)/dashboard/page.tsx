@@ -76,7 +76,7 @@ export default function DashboardPage() {
         const walletRes = await api.getWallets();
         if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
           setWallet(walletRes.data[0]);
-        } else {
+        } else if (walletRes.data) {
            setWallet(walletRes.data as Wallet);
         }
       } catch (err: any) {

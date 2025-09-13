@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BitcoinIcon } from "@/components/icons";
+import { BitcoinIcon, ScanIcon } from "@/components/icons";
 import { ArrowRight, CheckCircle, ShieldCheck, Zap } from "lucide-react";
 import Image from "next/image";
 
@@ -34,15 +34,15 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-24">
-          <div className="container flex max-w-5xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:gap-16 lg:text-left">
-            <div className="flex flex-1 flex-col items-center space-y-6 lg:items-start">
+          <div className="container flex max-w-5xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:gap-16">
+            <div className="flex flex-1 flex-col items-center space-y-6">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
                 Your Keys, Your Bitcoin.
               </h1>
               <p className="max-w-2xl leading-normal text-muted-foreground sm:text-xl sm:leading-8">
                 Take full control of your Bitcoin with a simple, secure, open-source wallet built for everyone. Send, receive, and manage your assets with confidence.
               </p>
-              <div className="flex w-full flex-col justify-center gap-4 sm:max-w-md sm:flex-row lg:w-auto lg:justify-start">
+              <div className="flex w-full flex-col justify-center gap-4 sm:max-w-md sm:flex-row lg:w-auto">
                 <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="/register">Create New Wallet</Link>
                 </Button>

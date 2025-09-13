@@ -106,7 +106,7 @@ export default function DashboardPage() {
       setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
-        setRecentTransactions(transactionsRes.data as Transaction[] || []);
+        setRecentTransactions((transactionsRes.data as Transaction[]) || []);
       } catch (err: any) {
          console.error("Failed to fetch recent transactions", err);
          setTransactionsError("Could not load recent transactions.");

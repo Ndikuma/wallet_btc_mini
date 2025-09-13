@@ -101,7 +101,7 @@ export default function ReceivePage() {
 
 
   return (
-    <div className="mx-auto max-w-md">
+    <div className="mx-auto max-w-lg">
       <Card>
         <CardHeader className="text-center">
           <CardTitle>Receive Bitcoin</CardTitle>
@@ -125,7 +125,7 @@ export default function ReceivePage() {
             )}
           </div>
           
-          <div className="w-full max-w-sm space-y-4">
+          <div className="w-full space-y-4">
              <div className="relative">
                 <Label htmlFor="amount" className="sr-only" >Amount (BTC)</Label>
                 <Bitcoin className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
@@ -145,7 +145,7 @@ export default function ReceivePage() {
             </div>
           </div>
          
-          <div className="flex w-full max-w-sm flex-col gap-3">
+          <div className="flex w-full flex-col gap-3">
              <div className="grid grid-cols-2 gap-3">
                 <CopyButton 
                   textToCopy={address || ''} 

@@ -49,7 +49,7 @@ export function SettingsClient() {
               </span>
             </Label>
             <Select defaultValue="usd">
-              <SelectTrigger id="currency" className="w-full sm:w-40">
+              <SelectTrigger id="currency" className="w-full sm:w-48">
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
               <SelectContent>
@@ -66,19 +66,19 @@ export function SettingsClient() {
             <RadioGroup defaultValue="btc" className="mt-3 grid grid-cols-3 gap-2 sm:gap-4">
               <div>
                 <RadioGroupItem value="btc" id="btc" className="peer sr-only" />
-                <Label htmlFor="btc" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:text-base">
+                <Label htmlFor="btc" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:py-4 sm:text-base">
                   BTC
                 </Label>
               </div>
                <div>
                 <RadioGroupItem value="sats" id="sats" className="peer sr-only" />
-                <Label htmlFor="sats" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:text-base">
+                <Label htmlFor="sats" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:py-4 sm:text-base">
                   Sats
                 </Label>
               </div>
                <div>
                 <RadioGroupItem value="usd" id="usd" className="peer sr-only" />
-                <Label htmlFor="usd" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:text-base">
+                <Label htmlFor="usd" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:py-4 sm:text-base">
                   USD
                 </Label>
               </div>

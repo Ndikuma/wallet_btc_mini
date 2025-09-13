@@ -29,7 +29,7 @@ function TransactionDetailRow({
     <div className="flex items-start justify-between">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span
-        className={`max-w-[70%] text-right text-sm font-medium ${
+        className={`max-w-[60%] text-right text-sm font-medium ${
           isAddress ? "break-all font-code" : ""
         }`}
       >
@@ -71,7 +71,7 @@ export default function SendPage() {
   const totalAmount = transactionDetails ? (transactionDetails.amount + (fee || 0)).toFixed(8) : "0";
 
   return (
-    <div className="mx-auto max-w-md">
+    <div className="mx-auto max-w-lg">
       <Card>
         {step === "form" && (
           <>

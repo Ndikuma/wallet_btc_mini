@@ -139,8 +139,8 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-3">
+      <div className="grid gap-6">
+        <Card>
           <CardHeader>
              <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
              {loadingBalance ? (
@@ -156,9 +156,9 @@ export default function DashboardPage() {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     <span>{(balance?.btc_value || 0).toFixed(8)} BTC</span>
                     <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                    <span>≈ {(balance?.sats_value || 0).toLocaleString()} Sats</span>
-                    <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                    <span>≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
+                    <span className="hidden sm:inline">≈ {(balance?.sats_value || 0).toLocaleString()} Sats</span>
+                    <Separator orientation="vertical" className="h-4 hidden md:block" />
+                    <span className="hidden md:inline">≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
                 </div>
                 </>
              )}
@@ -226,8 +226,8 @@ export default function DashboardPage() {
           ) : null}
       </div>
 
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="md:col-span-2">
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Recent Transactions</CardTitle>
@@ -306,7 +306,7 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="flex-grow grid grid-rows-2 gap-4">
+            <CardContent className="flex-grow grid grid-cols-2 lg:grid-cols-1 lg:grid-rows-2 gap-4">
               <Button size="lg" asChild className="h-auto py-4">
                 <Link href="/send" className="flex items-center justify-center gap-2">
                   <ArrowUpRight className="size-6" /> 
@@ -325,5 +325,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

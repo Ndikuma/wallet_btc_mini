@@ -80,7 +80,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-xl space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">My Profile</h1>
         <p className="text-muted-foreground">
@@ -104,7 +104,7 @@ export default function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="first-name">First Name</Label>
                     <Input id="first-name" defaultValue={user.first_name || ""} />

@@ -4,12 +4,22 @@ import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
 const BACKEND_URL = 'https://syntax-guam-colour-affiliate.trycloudflare.com/';
 
+// Main instance for authenticated requests
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Public instance for requests that should NOT send a token
+const publicAxiosInstance = axios.create({
+  baseURL: BACKEND_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 
 axiosInstance.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
@@ -23,22 +33,27 @@ axiosInstance.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
-axiosInstance.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse<any>>) => {
-    if (response.data && response.data.success) {
-      return { ...response, data: response.data.data };
-    }
-    return response;
-  },
-  (error: AxiosError<ApiResponse<any>>) => {
-    return Promise.reject(error);
-  }
-);
+const createResponseInterceptor = (instance: typeof axiosInstance) => {
+    instance.interceptors.response.use(
+        (response: AxiosResponse<ApiResponse<any>>) => {
+            if (response.data && response.data.success) {
+            return { ...response, data: response.data.data };
+            }
+            return response;
+        },
+        (error: AxiosError<ApiResponse<any>>) => {
+            return Promise.reject(error);
+        }
+    );
+}
+
+createResponseInterceptor(axiosInstance);
+createResponseInterceptor(publicAxiosInstance);
 
 
-// Authentication
-const login = (credentials: any) => axiosInstance.post<AuthResponse>('auth/login/', credentials);
-const register = (userInfo: any) => axiosInstance.post<AuthResponse>('auth/register/', userInfo);
+// Authentication - Use public instance
+const login = (credentials: any) => publicAxiosInstance.post<AuthResponse>('auth/login/', credentials);
+const register = (userInfo: any) => publicAxiosInstance.post<AuthResponse>('auth/register/', userInfo);
 const logout = () => axiosInstance.post('auth/logout/');
 
 // User Profile

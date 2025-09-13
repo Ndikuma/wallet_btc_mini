@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const [loadingTransactions, setLoadingTransactions] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
+  const [walletError, setWalletError] = useState<string | null>(null);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
   const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
@@ -73,6 +74,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchWallet() {
       setLoadingWallet(true);
+      setWalletError(null);
       try {
         const walletRes = await api.getWallets();
         if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
@@ -82,7 +84,11 @@ export default function DashboardPage() {
         }
       } catch (err: any) {
         console.error("Failed to fetch wallet stats", err);
-        // Don't set a page-level error for this non-critical data
+        if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
+            setWalletError("Network error loading stats.");
+        } else {
+            setWalletError("Could not load wallet stats.");
+        }
       } finally {
         setLoadingWallet(false);
       }
@@ -187,7 +193,7 @@ export default function DashboardPage() {
       </div>
 
        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {loadingWallet ? (
+          {loadingWallet && (
             Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                   <CardHeader>
@@ -198,7 +204,13 @@ export default function DashboardPage() {
                   </CardContent>
               </Card>
             ))
-          ) : wallet?.stats ? (
+          )}
+          {walletError && !loadingWallet && (
+             <div className="lg:col-span-4 text-center text-destructive">
+                <AlertCircle className="mr-2 size-4 inline-block" /> {walletError}
+            </div>
+          )}
+          {!loadingWallet && !walletError && wallet?.stats ? (
             <>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -318,7 +330,5 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
 
     

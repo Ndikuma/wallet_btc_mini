@@ -224,8 +224,8 @@ export default function DashboardPage() {
           ) : null}
       </div>
 
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          <Card className="lg:col-span-2">
+       <div className="grid grid-cols-1 gap-4 md:gap-6">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Recent Transactions</CardTitle>
@@ -294,25 +294,6 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
-          <Card className="flex flex-col">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow grid grid-cols-2 lg:grid-cols-1 lg:grid-rows-2 gap-4">
-              <Button size="lg" asChild className="h-auto py-6 text-base">
-                <Link href="/send" className="flex flex-col items-center justify-center gap-2">
-                  <ArrowUpRight className="size-6" /> 
-                  <span>Send</span>
-                </Link>
-              </Button>
-              <Button size="lg" variant="secondary" asChild className="h-auto py-6 text-base">
-                <Link href="/receive" className="flex flex-col items-center justify-center gap-2">
-                  <ArrowDownLeft className="size-6" /> 
-                  <span>Receive</span>
-                </Link>
-              </Button>
             </CardContent>
           </Card>
        </div>

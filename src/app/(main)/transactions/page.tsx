@@ -166,7 +166,7 @@ export default function TransactionsPage() {
       setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
-        setTransactions((transactionsRes as any as Transaction[]) || []);
+        setTransactions((transactionsRes as any).results || []);
       } catch (err: any) {
         console.error("Failed to fetch transactions", err);
         if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {

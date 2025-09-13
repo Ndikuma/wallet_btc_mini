@@ -28,48 +28,25 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import type { Wallet, Transaction, Balance } from "@/lib/types";
 import { AxiosError } from "axios";
-import PriceChart from "./price-chart";
 
 export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [cryptoData, setCryptoData] = useState<any>(null);
 
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
-  const [loadingCryptoData, setLoadingCryptoData] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
-  const [cryptoError, setCryptoError] = useState<string | null>(null);
 
   const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
     if (!text) return 'an external address';
     if (text.length <= start + end) return text;
     return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
   }
-
-  useEffect(() => {
-    async function fetchCryptoData() {
-      setLoadingCryptoData(true);
-      setCryptoError(null);
-      try {
-        const res = await fetch("/api/crypto-stats");
-        if (!res.ok) throw new Error("Failed to fetch crypto stats");
-        const data = await res.json();
-        setCryptoData(data.data);
-      } catch (e: any) {
-        console.error("Failed to fetch crypto stats:", e);
-        setCryptoError("Could not load market data.");
-      } finally {
-        setLoadingCryptoData(false);
-      }
-    }
-    fetchCryptoData();
-  }, []);
 
   useEffect(() => {
     async function fetchBalance() {
@@ -186,15 +163,6 @@ export default function DashboardPage() {
                 </>
              )}
           </CardHeader>
-           <CardContent className="pt-4">
-             {loadingCryptoData && <Skeleton className="h-64 w-full" />}
-             {cryptoError && (
-                 <div className="h-64 w-full flex items-center justify-center text-destructive">
-                    <AlertCircle className="mr-2 size-4" /> {cryptoError}
-                </div>
-             )}
-             {cryptoData && <PriceChart data={cryptoData.chart} />}
-          </CardContent>
         </Card>
       </div>
 
@@ -357,3 +325,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

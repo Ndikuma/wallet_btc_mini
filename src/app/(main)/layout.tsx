@@ -16,7 +16,7 @@ export default function MainLayout({
 }) {
   return (
     <SidebarProvider>
-      <Sidebar collapsible="offcanvas">
+      <Sidebar collapsible="icon" variant="inset">
         <Suspense>
           <MainNav />
         </Suspense>

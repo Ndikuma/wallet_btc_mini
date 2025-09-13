@@ -74,10 +74,10 @@ export default function DashboardPage() {
       setWalletError(null);
       try {
         const walletRes = await api.getWallets();
-        if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
-          setWallet(walletRes.data[0]);
-        } else if (walletRes.data) {
-           setWallet(walletRes.data as Wallet);
+        if (Array.isArray(walletRes) && walletRes.length > 0) {
+          setWallet(walletRes[0]);
+        } else if (walletRes) {
+           setWallet(walletRes as Wallet);
         }
       } catch (err: any) {
         console.error("Failed to fetch wallet stats", err);

@@ -46,26 +46,26 @@ export default function LandingPage() {
                 <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="/register">Create New Wallet</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                   <Link href="/restore-wallet">Restore Wallet</Link>
                 </Button>
               </div>
             </div>
              <div className="flex-1">
               <Image 
-                src="https://picsum.photos/seed/bitcoin/600/600" 
+                src="https://picsum.photos/seed/bitcoin-dark/600/600" 
                 alt="Bitcoin wallet illustration"
                 width={600}
                 height={600}
-                className="rounded-xl shadow-2xl"
-                data-ai-hint="bitcoin crypto"
+                className="rounded-xl shadow-2xl shadow-primary/10"
+                data-ai-hint="bitcoin crypto dark"
               />
             </div>
           </div>
         </section>
         <section
           id="features"
-          className="container space-y-12 bg-secondary py-12 md:py-20 lg:py-24"
+          className="container space-y-12 bg-secondary/20 py-12 md:py-20 lg:py-24"
         >
           <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
             <h2 className="text-3xl font-bold leading-[1.1] tracking-tighter sm:text-4xl md:text-5xl">
@@ -94,7 +94,7 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="bg-secondary py-6 md:px-8 md:py-0">
+      <footer className="bg-secondary/20 py-6 md:px-8 md:py-0">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
             Built by You. Powered by Open Source.
@@ -108,7 +108,7 @@ export default function LandingPage() {
 
 function CardFeature({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-background shadow-sm">
+    <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card shadow-sm">
       {icon}
       <h3 className="mb-2 text-xl font-bold">{title}</h3>
       <p className="text-muted-foreground">{description}</p>

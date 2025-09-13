@@ -43,7 +43,7 @@ export function MainNav() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2">
           <BitcoinIcon className="size-8 text-primary" />
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
+          <h2 className="text-xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
             mini wallet
           </h2>
         </Link>
@@ -60,7 +60,7 @@ export function MainNav() {
                 >
                   <Link href={item.path}>
                     <item.icon />
-                    <span>{item.label}</span>
+                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -81,7 +81,7 @@ export function MainNav() {
                         >
                         <Link href={item.path}>
                             <item.icon />
-                            <span>{item.label}</span>
+                            <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                         </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

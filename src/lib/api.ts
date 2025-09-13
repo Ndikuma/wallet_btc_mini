@@ -2,7 +2,7 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
-const BACKEND_URL = 'https://bacterial-entering-ready-ladies.trycloudflare.com/';
+const BACKEND_URL = 'https://syntax-guam-colour-affiliate.trycloudflare.com/';
 
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,
@@ -57,7 +57,7 @@ const restoreWallet = (mnemonic: string) => axiosInstance.post('wallet/restore/'
 
 // Transactions
 const getTransactions = () => {
-    return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
+    return axiosInstance.get<Transaction[]>('transaction/');
 };
 const sendTransaction = (values: any) => axiosInstance.post('transaction/send/', values);
 

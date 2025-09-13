@@ -138,35 +138,33 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-             <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
-             {loadingBalance ? (
-                <div className="space-y-2">
-                    <Skeleton className="h-10 w-48" />
-                    <Skeleton className="h-4 w-full max-w-xs" />
-                </div>
-             ) : (
-                <>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold">{(balance?.usd_value || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                    <span>{(balance?.btc_value || 0).toFixed(8)} BTC</span>
-                    <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                    <span className="hidden sm:inline">≈ {(balance?.sats_value || 0).toLocaleString()} Sats</span>
-                    <Separator orientation="vertical" className="h-4 hidden md:block" />
-                    <span className="hidden md:inline">≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
-                </div>
-                </>
-             )}
-          </CardHeader>
-        </Card>
-      </div>
+    <div className="flex flex-col gap-4 md:gap-6">
+      <Card>
+        <CardHeader>
+           <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
+           {loadingBalance ? (
+              <div className="space-y-2">
+                  <Skeleton className="h-10 w-48" />
+                  <Skeleton className="h-4 w-full max-w-xs" />
+              </div>
+           ) : (
+              <>
+              <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-4xl font-bold">{(balance?.usd_value || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  <span>{(balance?.btc_value || 0).toFixed(8)} BTC</span>
+                  <Separator orientation="vertical" className="h-4 hidden sm:block" />
+                  <span className="hidden sm:inline">≈ {(balance?.sats_value || 0).toLocaleString()} Sats</span>
+                  <Separator orientation="vertical" className="h-4 hidden md:block" />
+                  <span className="hidden md:inline">≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
+              </div>
+              </>
+           )}
+        </CardHeader>
+      </Card>
 
-       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+       <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
            {loadingWallet && (
             Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
@@ -226,7 +224,7 @@ export default function DashboardPage() {
           ) : null}
       </div>
 
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -325,3 +323,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

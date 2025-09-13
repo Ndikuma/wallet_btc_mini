@@ -271,7 +271,7 @@ export default function DashboardPage() {
                             <ArrowDownLeft className="size-5 text-green-600" />
                           )}
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 grid gap-1">
                            <p className="font-medium truncate">
                             {isSent ? "Sent to" : "Received from"}{' '}
                             <span className="font-mono text-muted-foreground">{shortenText(relevantAddress)}</span>
@@ -323,5 +323,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

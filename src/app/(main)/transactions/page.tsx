@@ -22,7 +22,7 @@ import type { Transaction, PaginatedResponse, Balance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Badge } from "@/components/badge";
+import { Badge, badgeVariants } from "@/components/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Accordion,
@@ -52,7 +52,7 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
     return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
   }
 
-  const getStatusVariant = (status: string): "success" | "warning" | "destructive" => {
+  const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'success';
       case 'pending': return 'warning';

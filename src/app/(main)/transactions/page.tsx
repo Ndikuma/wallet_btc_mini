@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  AlertCircle,
   ArrowDownLeft,
   ArrowUpRight,
   ChevronDown,
@@ -31,6 +32,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { type VariantProps } from "class-variance-authority";
+import { AxiosError } from "axios";
 
 const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: number }) => {
   const { toast } = useToast();
@@ -156,16 +158,22 @@ export default function TransactionsPage() {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [loadingBalance, setLoadingBalance] = useState(true);
+  const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchTransactions() {
       setLoadingTransactions(true);
+      setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
         setTransactions((transactionsRes as any as Transaction[]) || []);
-      } catch (error) {
-        console.error("Failed to fetch transactions", error);
-        setTransactions([]);
+      } catch (err: any) {
+        console.error("Failed to fetch transactions", err);
+        if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
+            setTransactionsError("Network error. Could not connect to the server.");
+         } else {
+            setTransactionsError("Could not load transaction history.");
+         }
         toast({
           variant: "destructive",
           title: "Error",
@@ -210,6 +218,14 @@ export default function TransactionsPage() {
           Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-24 w-full rounded-xl" />
           ))
+        ) : transactionsError ? (
+            <Card className="flex h-48 items-center justify-center">
+                <div className="text-center text-destructive">
+                    <AlertCircle className="mx-auto h-8 w-8" />
+                    <p className="mt-2 font-semibold">{transactionsError}</p>
+                    <p className="text-sm text-muted-foreground">Please try again later.</p>
+                </div>
+            </Card>
         ) : transactions && transactions.length > 0 ? (
           transactions.map((tx) => (
             <TransactionCard key={tx.id} tx={tx} btcToUsdRate={btcToUsdRate} />

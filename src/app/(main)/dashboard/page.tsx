@@ -28,8 +28,6 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import type { Wallet, Transaction, Balance } from "@/lib/types";
 import { AxiosError } from "axios";
-import { PriceStats } from "./price-stats";
-
 
 export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
@@ -167,7 +165,7 @@ export default function DashboardPage() {
              )}
           </CardHeader>
            <CardContent className="pt-4">
-            <PriceStats />
+             {/* Price stats were here */}
           </CardContent>
         </Card>
         

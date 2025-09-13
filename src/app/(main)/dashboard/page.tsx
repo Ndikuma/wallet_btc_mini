@@ -28,7 +28,6 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import type { Wallet, Transaction, Balance } from "@/lib/types";
 import { AxiosError } from "axios";
-import PriceStats from "./price-stats";
 import PriceChart from "./price-chart";
 
 export default function DashboardPage() {
@@ -199,8 +198,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-       <PriceStats stats={cryptoData?.price} loading={loadingCryptoData} error={cryptoError} />
-
        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
            {loadingWallet && (
             Array.from({ length: 4 }).map((_, i) => (
@@ -360,5 +357,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

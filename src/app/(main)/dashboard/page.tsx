@@ -99,7 +99,7 @@ export default function DashboardPage() {
       setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
-        setRecentTransactions((transactionsRes.data as Transaction[]) || []);
+        setRecentTransactions((transactionsRes as Transaction[]) || []);
       } catch (err: any) {
          console.error("Failed to fetch recent transactions", err);
          if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
@@ -256,11 +256,7 @@ export default function DashboardPage() {
                 {!loadingTransactions && !transactionsError && recentTransactions && recentTransactions.length > 0 ? (
                   recentTransactions.slice(0, 4).map((tx) => {
                     const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
-                    const amountNum = parseFloat(tx.amount);
-                    const btcToUsdRate = (balance?.usd_value || 0) / (balance?.btc_value || 1);
-                    const usdValue = Math.abs(amountNum * btcToUsdRate);
                     const relevantAddress = isSent ? tx.to_address : tx.from_address;
-
 
                     return (
                       <div key={tx.id} className="flex items-center gap-4">
@@ -285,7 +281,7 @@ export default function DashboardPage() {
                             {tx.amount_formatted}
                           </p>
                            <p className="text-xs text-muted-foreground font-mono">
-                             {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
+                             Fee: {tx.fee_formatted}
                           </p>
                         </div>
                       </div>

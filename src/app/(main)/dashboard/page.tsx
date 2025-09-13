@@ -51,6 +51,7 @@ export default function DashboardPage() {
   const [loadingTransactions, setLoadingTransactions] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
+  const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
   const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
     if (!text) return 'an external address';
@@ -102,11 +103,13 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchTransactions() {
       setLoadingTransactions(true);
+      setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
         setRecentTransactions(transactionsRes.data as Transaction[] || []);
       } catch (err: any) {
          console.error("Failed to fetch recent transactions", err);
+         setTransactionsError("Could not load recent transactions.");
       } finally {
         setLoadingTransactions(false);
       }
@@ -266,7 +269,12 @@ export default function DashboardPage() {
                 <Skeleton className="h-6 w-1/4" />
               </div>
             ))}
-            {!loadingTransactions && recentTransactions && recentTransactions.length > 0 ? (
+            {transactionsError && (
+                 <div className="h-24 text-center flex items-center justify-center text-destructive">
+                    <AlertCircle className="mr-2 size-4" /> {transactionsError}
+                </div>
+            )}
+            {!loadingTransactions && !transactionsError && recentTransactions && recentTransactions.length > 0 ? (
               recentTransactions.slice(0, 4).map((tx) => {
                 const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
                 const amountNum = parseFloat(tx.amount);
@@ -305,7 +313,7 @@ export default function DashboardPage() {
                 );
               })
             ) : null}
-            {!loadingTransactions && (!recentTransactions || recentTransactions.length === 0) && (
+            {!loadingTransactions && !transactionsError && (!recentTransactions || recentTransactions.length === 0) && (
               <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
                 No recent transactions.
               </div>
@@ -316,3 +324,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

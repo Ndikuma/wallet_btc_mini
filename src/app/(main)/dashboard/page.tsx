@@ -74,10 +74,12 @@ export default function DashboardPage() {
       setWalletError(null);
       try {
         const walletRes = await api.getWallets();
-        if (Array.isArray(walletRes) && walletRes.length > 0) {
-          setWallet(walletRes[0]);
-        } else if (walletRes) {
-           setWallet(walletRes as Wallet);
+        if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
+          setWallet(walletRes.data[0]);
+        } else if (walletRes.data) {
+           setWallet(walletRes.data as Wallet);
+        } else {
+          setWallet(null);
         }
       } catch (err: any) {
         console.error("Failed to fetch wallet stats", err);
@@ -99,7 +101,7 @@ export default function DashboardPage() {
       setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
-        setRecentTransactions((transactionsRes as any).results || []);
+        setRecentTransactions((transactionsRes as any) || []);
       } catch (err: any) {
          console.error("Failed to fetch recent transactions", err);
          if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {

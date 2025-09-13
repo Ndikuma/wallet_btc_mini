@@ -29,7 +29,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import { type VariantProps } from "class-variance-authority";
 
 const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: number }) => {
   const { toast } = useToast();
@@ -46,8 +47,8 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
     });
   };
   
-  const shortenText = (text: string | null | undefined, start = 6, end = 6) => {
-    if (!text) return 'N/A';
+  const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
+    if (!text) return 'an external address';
     if (text.length <= start + end) return text;
     return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
   }
@@ -62,80 +63,84 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
   }
 
   return (
-    <Card className={cn(
-      "shadow-sm transition-all",
-      isSent ? 'bg-destructive/5' : 'bg-green-500/5'
-    )}>
-      <CardContent className="p-4">
+    <Card className="shadow-sm">
+      <CardContent className="p-0">
         <Accordion type="single" collapsible>
           <AccordionItem value={tx.txid} className="border-b-0">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-              <div className="flex items-center gap-4 flex-1">
-                <div className={cn(
-                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
-                    isSent ? "bg-destructive/10" : "bg-green-600/10"
-                    )}>
+             <div className="flex items-start p-4">
+                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
                     {isSent ? (
                         <ArrowUpRight className="size-5 text-destructive" />
                     ) : (
                         <ArrowDownLeft className="size-5 text-green-600" />
                     )}
                 </div>
-                <div className="flex-1 grid gap-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-mono text-sm text-muted-foreground">{shortenText(tx.txid)}</p>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.txid, 'TXID')}>
-                      <Copy className="size-3.5" />
-                    </Button>
-                  </div>
-                  <p className={cn(
-                      "font-semibold text-lg font-mono",
-                      isSent ? "text-destructive" : "text-green-600"
-                    )}>
-                      {tx.amount_formatted}
+                <div className="ml-4 flex-1">
+                   <p className="font-medium truncate">
+                      {isSent ? "Sent to" : "Received from"}{' '}
+                      <span className="font-mono text-muted-foreground">{shortenText(relevantAddress, 4, 4)}</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                </div>
+                 <div className="text-right">
+                   <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
+                    {tx.amount_formatted}
                   </p>
-                  <div className="flex gap-4 text-xs text-muted-foreground">
-                    <span>Fee: {tx.fee_formatted}</span>
-                    <span>Service Fee: {tx.service_fee_formatted}</span>
-                  </div>
+                   <p className="text-xs text-muted-foreground font-mono">
+                     {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
+                  </p>
                 </div>
-              </div>
+             </div>
 
-              <div className="flex flex-col items-end gap-2 text-sm sm:w-48 shrink-0">
-                  <div className="flex items-center gap-2">
+            <AccordionContent className="pt-0 px-4 pb-4 space-y-3">
+                 <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-muted-foreground">Status:</span>
                     <Badge variant={getStatusVariant(tx.status)} className="capitalize">{tx.status}</Badge>
-                    <AccordionTrigger className="p-1 hover:no-underline [&[data-state=open]>svg]:text-primary">
-                        <ChevronDown className="size-4" />
-                    </AccordionTrigger>
-                  </div>
-                 
-                <div className="text-xs text-muted-foreground text-right">
-                    {new Date(tx.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                </div>
-              </div>
-            </div>
-            <AccordionContent className="pt-4 space-y-2 text-sm">
-                <div className="flex justify-between items-center">
+                 </div>
+                 <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-muted-foreground">TXID:</span>
+                    <div className="flex items-center gap-2 font-code">
+                        <span>{shortenText(tx.txid)}</span>
+                        {tx.txid && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.txid, 'TXID')}><Copy className="size-3.5" /></Button>}
+                    </div>
+                 </div>
+                 <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-muted-foreground">Fee:</span>
+                    <span>{tx.fee_formatted}</span>
+                 </div>
+                 <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-muted-foreground">From:</span>
                     <div className="flex items-center gap-2 font-code">
                         <span>{shortenText(tx.from_address)}</span>
                         {tx.from_address && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.from_address!, 'Address')}><Copy className="size-3.5" /></Button>}
                     </div>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-muted-foreground">To:</span>
                      <div className="flex items-center gap-2 font-code">
                         <span>{shortenText(tx.to_address)}</span>
                         {tx.to_address && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.to_address!, 'Address')}><Copy className="size-3.5" /></Button>}
                     </div>
                 </div>
-                {tx.explorer_url && (
-                    <Button asChild variant="link" size="sm" className="p-0 h-auto">
-                        <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
-                            View on Block Explorer <ExternalLink className="ml-2 size-3.5" />
-                        </Link>
-                    </Button>
-                )}
+                <div className="flex justify-between items-center">
+                    <span className="font-medium text-muted-foreground">Date:</span>
+                    <span className="text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                    {tx.explorer_url && (
+                        <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                            <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
+                                View on Block Explorer <ExternalLink className="ml-2 size-3.5" />
+                            </Link>
+                        </Button>
+                    )}
+                     <AccordionTrigger className="p-1 hover:no-underline [&[data-state=open]>svg]:text-primary w-auto">
+                        <span className="text-sm mr-1">Details</span>
+                        <ChevronDown className="size-4" />
+                    </AccordionTrigger>
+                </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>

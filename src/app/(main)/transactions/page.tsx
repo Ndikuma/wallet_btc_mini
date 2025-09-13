@@ -149,18 +149,15 @@ export default function TransactionsPage() {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState<Balance | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingTransactions, setLoadingTransactions] = useState(true);
+  const [loadingBalance, setLoadingBalance] = useState(true);
 
   useEffect(() => {
     async function fetchTransactions() {
-      setLoading(true);
+      setLoadingTransactions(true);
       try {
-        const [transactionsRes, balanceRes] = await Promise.all([
-          api.getTransactions(),
-          api.getWalletBalance(),
-        ]);
+        const transactionsRes = await api.getTransactions();
         setTransactions((transactionsRes.data as Transaction[]) || []);
-        setBalance(balanceRes.data);
       } catch (error) {
         console.error("Failed to fetch transactions", error);
         setTransactions([]);
@@ -170,11 +167,27 @@ export default function TransactionsPage() {
           description: "Could not fetch transaction history."
         })
       } finally {
-        setLoading(false);
+        setLoadingTransactions(false);
       }
     }
     fetchTransactions();
   }, [toast]);
+  
+  useEffect(() => {
+    async function fetchBalance() {
+      setLoadingBalance(true);
+      try {
+        const balanceRes = await api.getWalletBalance();
+        setBalance(balanceRes.data);
+      } catch (error) {
+        console.error("Failed to fetch balance", error);
+        setBalance(null);
+      } finally {
+        setLoadingBalance(false);
+      }
+    }
+    fetchBalance();
+  }, []);
 
 
   const btcToUsdRate = (balance?.usd_value || 0) / (balance?.btc_value || 1);
@@ -188,7 +201,7 @@ export default function TransactionsPage() {
         </p>
       </div>
       <div className="space-y-4">
-        {loading ? (
+        {loadingTransactions ? (
           Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-24 w-full rounded-xl" />
           ))

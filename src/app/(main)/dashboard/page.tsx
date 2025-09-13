@@ -138,10 +138,10 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
+    <div className="flex flex-col gap-4 md:gap-8">
       <Card>
         <CardHeader>
-           <CardTitle className="text-muted-foreground">Current Balance</CardTitle>
+           <CardTitle className="text-sm font-medium text-muted-foreground">Current Balance</CardTitle>
            {loadingBalance ? (
               <div className="space-y-2">
                   <Skeleton className="h-10 w-48" />
@@ -237,7 +237,7 @@ export default function DashboardPage() {
                 </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-8">
                 {loadingTransactions && Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-4">
                     <Skeleton className="h-10 w-10 rounded-full" />
@@ -301,14 +301,14 @@ export default function DashboardPage() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow grid grid-cols-2 lg:grid-cols-1 lg:grid-rows-2 gap-4">
-              <Button size="lg" asChild className="h-auto py-4">
-                <Link href="/send" className="flex items-center justify-center gap-2">
+              <Button size="lg" asChild className="h-auto py-6 text-base">
+                <Link href="/send" className="flex flex-col items-center justify-center gap-2">
                   <ArrowUpRight className="size-6" /> 
                   <span>Send</span>
                 </Link>
               </Button>
-              <Button size="lg" variant="secondary" asChild className="h-auto py-4">
-                <Link href="/receive" className="flex items-center justify-center gap-2">
+              <Button size="lg" variant="secondary" asChild className="h-auto py-6 text-base">
+                <Link href="/receive" className="flex flex-col items-center justify-center gap-2">
                   <ArrowDownLeft className="size-6" /> 
                   <span>Receive</span>
                 </Link>

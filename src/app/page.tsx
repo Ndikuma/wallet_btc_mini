@@ -34,15 +34,15 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-24">
-          <div className="container flex max-w-5xl flex-col items-center gap-8 text-center lg:flex-row lg:gap-16 lg:text-left">
-            <div className="flex-1 space-y-6">
+          <div className="container flex max-w-5xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:gap-16 lg:text-left">
+            <div className="flex flex-1 flex-col items-center space-y-6 lg:items-start">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
                 Your Keys, Your Bitcoin.
               </h1>
-              <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+              <p className="max-w-2xl leading-normal text-muted-foreground sm:text-xl sm:leading-8">
                 Take full control of your Bitcoin with a simple, secure, open-source wallet built for everyone. Send, receive, and manage your assets with confidence.
               </p>
-              <div className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
+              <div className="flex w-full flex-col justify-center gap-4 sm:max-w-md sm:flex-row lg:w-auto lg:justify-start">
                 <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="/register">Create New Wallet</Link>
                 </Button>
@@ -51,12 +51,12 @@ export default function LandingPage() {
                 </Button>
               </div>
             </div>
-             <div className="flex-1">
+             <div className="flex flex-1 justify-center">
               <Image 
                 src="https://picsum.photos/seed/bitcoin-dark/600/600" 
                 alt="Bitcoin wallet illustration"
-                width={600}
-                height={600}
+                width={500}
+                height={500}
                 className="rounded-xl shadow-2xl shadow-primary/10"
                 data-ai-hint="bitcoin crypto dark"
               />

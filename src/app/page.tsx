@@ -33,10 +33,10 @@ export default function LandingPage() {
             </Button>
         </div>
       </header>
-      <main className="flex-1">
-        <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-24">
+      <main className="flex flex-1 flex-col items-center justify-center">
+        <section className="w-full py-12 md:py-24 lg:py-32">
           <div className="container flex max-w-5xl flex-col items-center gap-12 text-center">
-             <div className="flex flex-1 justify-center lg:order-last">
+            <div className="flex flex-1 justify-center lg:order-last">
               <Image 
                 src="https://picsum.photos/seed/bitcoin-dark/600/600" 
                 alt="Bitcoin wallet illustration"
@@ -66,32 +66,34 @@ export default function LandingPage() {
         </section>
         <section
           id="features"
-          className="container space-y-12 bg-secondary/20 py-12 md:py-20 lg:py-24"
+          className="w-full bg-secondary/20 py-12 md:py-20 lg:py-24"
         >
-          <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
-            <h2 className="text-3xl font-bold leading-[1.1] tracking-tighter sm:text-4xl md:text-5xl">
-              Why Choose mini wallet?
-            </h2>
-            <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-             We provide the tools you need to manage your Bitcoin with security and ease.
-            </p>
-          </div>
-          <div className="mx-auto grid justify-center gap-8 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
-             <CardFeature
-              icon={<ShieldCheck className="mb-4 size-12 text-primary" />}
-              title="Full Control"
-              description="You are in complete control of your keys and your money. No third party can freeze or lose your funds."
-            />
-             <CardFeature
-              icon={<Zap className="mb-4 size-12 text-primary" />}
-              title="Easy to Use"
-              description="A clean and intuitive interface makes sending and receiving Bitcoin a breeze, for beginners and experts alike."
-            />
-             <CardFeature
-              icon={<CheckCircle className="mb-4 size-12 text-primary" />}
-              title="Secure by Design"
-              description="Your wallet is protected with a 24-word recovery phrase and industry-standard encryption."
-            />
+          <div className="container space-y-12">
+            <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
+                <h2 className="text-3xl font-bold leading-[1.1] tracking-tighter sm:text-4xl md:text-5xl">
+                Why Choose mini wallet?
+                </h2>
+                <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
+                We provide the tools you need to manage your Bitcoin with security and ease.
+                </p>
+            </div>
+            <div className="mx-auto grid justify-center gap-8 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
+                <CardFeature
+                icon={<ShieldCheck className="mb-4 size-12 text-primary" />}
+                title="Full Control"
+                description="You are in complete control of your keys and your money. No third party can freeze or lose your funds."
+                />
+                <CardFeature
+                icon={<Zap className="mb-4 size-12 text-primary" />}
+                title="Easy to Use"
+                description="A clean and intuitive interface makes sending and receiving Bitcoin a breeze, for beginners and experts alike."
+                />
+                <CardFeature
+                icon={<CheckCircle className="mb-4 size-12 text-primary" />}
+                title="Secure by Design"
+                description="Your wallet is protected with a 24-word recovery phrase and industry-standard encryption."
+                />
+            </div>
           </div>
         </section>
       </main>

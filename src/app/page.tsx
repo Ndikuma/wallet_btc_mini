@@ -1,6 +1,7 @@
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BitcoinIcon, ScanIcon } from "@/components/icons";
+import { BitcoinIcon } from "@/components/icons";
 import { ArrowRight, CheckCircle, ShieldCheck, Zap } from "lucide-react";
 import Image from "next/image";
 
@@ -34,7 +35,17 @@ export default function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-24">
-          <div className="container flex max-w-5xl flex-col-reverse items-center gap-12 text-center lg:flex-row lg:gap-16">
+          <div className="container flex max-w-5xl flex-col items-center gap-12 text-center">
+             <div className="flex flex-1 justify-center lg:order-last">
+              <Image 
+                src="https://picsum.photos/seed/bitcoin-dark/600/600" 
+                alt="Bitcoin wallet illustration"
+                width={500}
+                height={500}
+                className="rounded-xl shadow-2xl shadow-primary/10"
+                data-ai-hint="bitcoin crypto dark"
+              />
+            </div>
             <div className="flex flex-1 flex-col items-center space-y-6">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
                 Your Keys, Your Bitcoin.
@@ -50,16 +61,6 @@ export default function LandingPage() {
                   <Link href="/restore-wallet">Restore Wallet</Link>
                 </Button>
               </div>
-            </div>
-             <div className="flex flex-1 justify-center">
-              <Image 
-                src="https://picsum.photos/seed/bitcoin-dark/600/600" 
-                alt="Bitcoin wallet illustration"
-                width={500}
-                height={500}
-                className="rounded-xl shadow-2xl shadow-primary/10"
-                data-ai-hint="bitcoin crypto dark"
-              />
             </div>
           </div>
         </section>

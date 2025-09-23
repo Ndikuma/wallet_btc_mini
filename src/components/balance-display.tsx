@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { AxiosError } from "axios";
 import { cn } from "@/lib/utils";
-import { Separator } from "./ui/separator";
 
 interface BalanceDisplayProps {
   isLarge?: boolean;
@@ -50,7 +49,9 @@ export function BalanceDisplay({ isLarge = false, isVisible }: BalanceDisplayPro
     return (
       <div className={containerClasses}>
         <Skeleton className={skeletonPrimaryClasses} />
-        <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2">
+            <Skeleton className={skeletonSecondaryClasses} />
+            <Skeleton className={skeletonSecondaryClasses} />
             <Skeleton className={skeletonSecondaryClasses} />
         </div>
       </div>
@@ -71,21 +72,18 @@ export function BalanceDisplay({ isLarge = false, isVisible }: BalanceDisplayPro
   const hiddenBalance = "********";
 
   return (
-    <div className="font-mono w-full space-y-4">
+    <div className="font-mono w-full space-y-2">
       <p className={cn("font-bold tracking-tight", isLarge ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl")}>
-         {isVisible ? balance.usd_value : hiddenBalance}
+         {isVisible ? `$${balance.usd_value}` : hiddenBalance}
       </p>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-2 text-sm">
          <div className="space-y-1">
-            <p className="font-medium text-muted-foreground">BTC</p>
             <p className="font-medium">{isVisible ? balance.btc_value : hiddenBalance}</p>
         </div>
         <div className="space-y-1">
-            <p className="font-medium text-muted-foreground">Sats</p>
             <p className="font-medium">{isVisible ? balance.sats_value : hiddenBalance}</p>
         </div>
          <div className="space-y-1">
-            <p className="font-medium text-muted-foreground">BIF</p>
             <p className="font-medium">{isVisible ? balance.bif_value : hiddenBalance}</p>
         </div>
       </div>

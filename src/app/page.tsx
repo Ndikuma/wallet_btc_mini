@@ -40,7 +40,7 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="w-full flex h-full min-h-[calc(100vh-80px)] flex-grow flex-col items-center justify-center space-y-8 py-24 text-center md:py-32">
             <div className="absolute inset-0 -z-10 h-full w-full bg-background animated-gradient"></div>
-            <div className="max-w-4xl">
+            <div className="max-w-4xl px-4">
               <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
                 Your Keys, Your Bitcoin.
               </h1>

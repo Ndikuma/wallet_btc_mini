@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { X, Undo2 } from "lucide-react";
+import { Undo2 } from "lucide-react";
 
 // Function to shuffle an array
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -65,14 +65,22 @@ export default function VerifyMnemonicPage() {
 
   const handleWordBankClick = (word: string) => {
     if (Object.values(answers).includes(word)) return; // Word already used
-    setSelectedWord(word);
+    
+    // Find the first empty challenge slot
+    const nextEmptyIndex = challengeIndices.find(index => !answers[index]);
+
+    if (nextEmptyIndex !== undefined) {
+      setAnswers(prev => ({ ...prev, [nextEmptyIndex]: word }));
+    }
   };
 
   const handleChallengeSlotClick = (index: number) => {
-    if (!selectedWord) return; // No word selected from bank
-    
-    setAnswers(prev => ({ ...prev, [index]: selectedWord }));
-    setSelectedWord(null);
+    // This function will remove the word from the answer slot
+    if (answers[index]) {
+      const newAnswers = { ...answers };
+      delete newAnswers[index];
+      setAnswers(newAnswers);
+    }
   };
 
   const handleClear = () => {
@@ -92,22 +100,20 @@ export default function VerifyMnemonicPage() {
         description: "One or more words are incorrect. Please try again.",
       });
       setIsLoading(false);
+      // Clear answers on failure so user has to retry
+      handleClear();
       return;
     }
 
     try {
       if (!mnemonic) throw new Error("Mnemonic not found");
 
-      // Construct the payload with only the challenged words and their indices
+      // Construct the payload with only the challenged words and their indices (1-based for backend)
       const verificationPayload: { [key: string]: string } = {};
       challengeIndices.forEach(index => {
-        // API probably expects 1-based indexing, but let's stick to what's logical first
-        // based on user request to send index. Assuming 0-based for now.
-        // The prompt implies sending the index-word mapping for verification.
-        verificationPayload[String(index)] = originalWords[index];
+        verificationPayload[String(index + 1)] = originalWords[index];
       });
       
-      // We also need to send the full mnemonic so the backend can create the wallet
       const finalPayload = {
         mnemonic,
         words_to_verify: verificationPayload
@@ -158,11 +164,9 @@ export default function VerifyMnemonicPage() {
                 <button
                   type="button"
                   onClick={() => handleChallengeSlotClick(index)}
-                  disabled={!!answers[index]}
                   className={cn(
                     "flex h-12 w-full items-center justify-center rounded-md border-2 border-dashed bg-background font-code text-lg font-medium",
-                    answers[index] ? "border-primary text-primary" : "border-muted-foreground text-muted-foreground",
-                    selectedWord && !answers[index] ? "border-primary bg-primary/10" : ""
+                    answers[index] ? "border-primary text-primary cursor-pointer hover:border-destructive hover:text-destructive" : "border-muted-foreground text-muted-foreground",
                   )}
                 >
                   {answers[index] || "?"}
@@ -179,13 +183,12 @@ export default function VerifyMnemonicPage() {
                 return (
                   <Button
                     key={word}
-                    variant={selectedWord === word ? "default" : "outline"}
-                    disabled={isUsed}
+                    variant={"outline"}
+                    disabled={isUsed || allWordsEntered}
                     onClick={() => handleWordBankClick(word)}
                     className={cn(
                         "font-code text-base transition-all",
                         isUsed ? "opacity-30" : "opacity-100",
-                        selectedWord === word ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
                     )}
                   >
                     {word}

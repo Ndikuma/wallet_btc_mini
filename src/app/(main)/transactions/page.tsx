@@ -5,9 +5,6 @@ import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   AlertCircle,
@@ -16,10 +13,16 @@ import {
   ChevronDown,
   Copy,
   ExternalLink,
+  Hash,
+  Landmark,
+  CalendarClock,
+  CircleCheck,
+  CircleX,
+  Clock,
 } from "lucide-react";
 import { cn, shortenText } from "@/lib/utils";
 import api from "@/lib/api";
-import type { Transaction, PaginatedResponse, Balance } from "@/lib/types";
+import type { Transaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -34,19 +37,39 @@ import {
 import { type VariantProps } from "class-variance-authority";
 import { AxiosError } from "axios";
 
-const TransactionCard = ({ tx }: { tx: Transaction }) => {
+const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | null, children?: React.ReactNode }) => {
   const { toast } = useToast();
+  const onCopy = () => {
+    if (value) {
+      navigator.clipboard.writeText(value);
+      toast({ title: `${label} Copied` });
+    }
+  }
+
+  return (
+    <div className="flex items-start gap-4">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+        <Icon className="size-5" />
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        {children ? (
+          <div className="text-sm font-semibold">{children}</div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <p className="font-code text-sm font-semibold break-all">{value ? shortenText(value, 6, 6) : 'N/A'}</p>
+            {value && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onCopy}><Copy className="size-3.5" /></Button>}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const TransactionCard = ({ tx }: { tx: Transaction }) => {
   const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
-  
   const relevantAddress = isSent ? tx.to_address : tx.from_address;
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: `${label} Copied`,
-    });
-  };
-  
   const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'success';
@@ -55,86 +78,73 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
       default: return 'secondary';
     }
   }
+  
+  const getStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'confirmed': return CircleCheck;
+      case 'pending': return Clock;
+      case 'failed': return CircleX;
+      default: return AlertCircle;
+    }
+  }
 
   return (
     <Card className="shadow-sm">
       <CardContent className="p-0">
         <Accordion type="single" collapsible>
           <AccordionItem value={tx.txid} className="border-b-0">
-             <div className="flex items-start p-4">
-                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-                    {isSent ? (
-                        <ArrowUpRight className="size-5 text-destructive" />
-                    ) : (
-                        <ArrowDownLeft className="size-5 text-green-600" />
-                    )}
+            <AccordionTrigger className="p-4 hover:no-underline [&[data-state=open]>div>svg.chevron]:rotate-180">
+              <div className="flex flex-1 items-center gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+                  {isSent ? (
+                    <ArrowUpRight className="size-5 text-destructive" />
+                  ) : (
+                    <ArrowDownLeft className="size-5 text-green-600" />
+                  )}
                 </div>
-                <div className="ml-4 flex-1">
-                   <p className="font-medium truncate">
-                      {isSent ? "Sent to" : "Received from"}{' '}
-                      <span className="font-mono text-muted-foreground">{shortenText(relevantAddress, 4, 4)}</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
+                <div className="flex-1 grid gap-1 text-left">
+                  <p className="font-medium truncate">
+                    {isSent ? "Sent" : "Received"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                  </p>
                 </div>
-                 <div className="text-right">
-                   <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
+                <div className="text-right">
+                  <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
                     {tx.amount_formatted}
                   </p>
-                   <p className="text-xs text-muted-foreground font-mono">
-                     Fee: {tx.fee_formatted.replace("BTC", "")}
+                  <p className="text-xs text-muted-foreground font-mono">
+                    Fee: {tx.fee_formatted.replace("BTC", "")}
                   </p>
                 </div>
-             </div>
-
-            <AccordionContent className="pt-0 px-4 pb-4 space-y-3">
-                 <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-muted-foreground">Status:</span>
-                    <Badge variant={getStatusVariant(tx.status)} className="capitalize">{tx.status}</Badge>
-                 </div>
-                 <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-muted-foreground">TXID:</span>
-                    <div className="flex items-center gap-2 font-code">
-                        <span>{shortenText(tx.txid)}</span>
-                        {tx.txid && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.txid, 'TXID')}><Copy className="size-3.5" /></Button>}
-                    </div>
-                 </div>
-                 <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-muted-foreground">Fee:</span>
-                    <span className="font-mono">{tx.fee_formatted.replace("BTC", "")}</span>
-                 </div>
-                 <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-muted-foreground">From:</span>
-                    <div className="flex items-center gap-2 font-code">
-                        <span>{shortenText(tx.from_address)}</span>
-                        {tx.from_address && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.from_address!, 'Address')}><Copy className="size-3.5" /></Button>}
-                    </div>
+                <div className="pl-2">
+                    <ChevronDown className="chevron size-5 text-muted-foreground transition-transform" />
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-muted-foreground">To:</span>
-                     <div className="flex items-center gap-2 font-code">
-                        <span>{shortenText(tx.to_address)}</span>
-                        {tx.to_address && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(tx.to_address!, 'Address')}><Copy className="size-3.5" /></Button>}
-                    </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="border-t pt-4 px-4 pb-4">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                  <DetailRow icon={getStatusIcon(tx.status)} label="Status">
+                     <Badge variant={getStatusVariant(tx.status)} className="capitalize text-sm">{tx.status}</Badge>
+                  </DetailRow>
+                  <DetailRow icon={CalendarClock} label="Date & Time">
+                     <p className="text-sm font-semibold">{new Date(tx.created_at).toLocaleString()}</p>
+                  </DetailRow>
+                  <DetailRow icon={Hash} label="Transaction ID" value={tx.txid} />
+                  <DetailRow icon={Landmark} label="Fee" value={tx.fee_formatted.replace("BTC", "")} />
+                  <DetailRow icon={ArrowUpRight} label="From Address" value={tx.from_address} />
+                  <DetailRow icon={ArrowDownLeft} label="To Address" value={tx.to_address} />
                 </div>
-                <div className="flex justify-between items-center">
-                    <span className="font-medium text-muted-foreground">Date:</span>
-                    <span className="text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                    {tx.explorer_url && (
-                        <Button asChild variant="link" size="sm" className="p-0 h-auto">
-                            <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
-                                View on Block Explorer <ExternalLink className="ml-2 size-3.5" />
-                            </Link>
-                        </Button>
-                    )}
-                     <AccordionTrigger className="p-1 hover:no-underline [&[data-state=open]>svg]:text-primary w-auto">
-                        <span className="text-sm mr-1">Details</span>
-                        <ChevronDown className="size-4" />
-                    </AccordionTrigger>
-                </div>
+                {tx.explorer_url && (
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
+                      View on Block Explorer <ExternalLink className="ml-2 size-4" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
@@ -152,8 +162,8 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     async function fetchTransactions() {
-      setLoadingTransactions(true);
       setTransactionsError(null);
+      setLoadingTransactions(true);
       try {
         const transactionsRes = await api.getTransactions();
         setTransactions(transactionsRes.data || []);

@@ -80,16 +80,16 @@ export function BalanceDisplay({ isLarge = false, isVisible }: BalanceDisplayPro
       </p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
          <div className="space-y-1">
+            <p className="font-medium text-muted-foreground">BTC</p>
             <p className="font-medium">{isVisible ? (balance.btc_value || 0).toFixed(8) : hiddenBalance}</p>
-            <p className="text-xs text-muted-foreground">BTC</p>
         </div>
         <div className="space-y-1">
+            <p className="font-medium text-muted-foreground">Sats</p>
             <p className="font-medium">{isVisible ? (balance.sats_value || 0).toLocaleString() : hiddenBalance}</p>
-            <p className="text-xs text-muted-foreground">Sats</p>
         </div>
          <div className="space-y-1">
+            <p className="font-medium text-muted-foreground">BIF</p>
             <p className="font-medium">{isVisible ? (balance.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF', minimumFractionDigits: 0, maximumFractionDigits: 0 }) : hiddenBalance}</p>
-            <p className="text-xs text-muted-foreground">BIF</p>
         </div>
       </div>
     </div>

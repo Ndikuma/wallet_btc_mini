@@ -12,9 +12,10 @@ import { Separator } from "./ui/separator";
 
 interface BalanceDisplayProps {
   isLarge?: boolean;
+  isVisible: boolean;
 }
 
-export function BalanceDisplay({ isLarge = false }: BalanceDisplayProps) {
+export function BalanceDisplay({ isLarge = false, isVisible }: BalanceDisplayProps) {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,20 +50,8 @@ export function BalanceDisplay({ isLarge = false }: BalanceDisplayProps) {
     return (
       <div className={containerClasses}>
         <Skeleton className={skeletonPrimaryClasses} />
-        <Separator className="my-2" />
-        <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-                <Skeleton className={skeletonSecondaryClasses} />
-                <Skeleton className="h-4 w-12" />
-            </div>
-            <div className="space-y-1">
-                <Skeleton className={skeletonSecondaryClasses} />
-                <Skeleton className="h-4 w-12" />
-            </div>
-             <div className="space-y-1">
-                <Skeleton className={skeletonSecondaryClasses} />
-                <Skeleton className="h-4 w-12" />
-            </div>
+        <div className="space-y-1">
+            <Skeleton className={skeletonSecondaryClasses} />
         </div>
       </div>
     );
@@ -79,26 +68,27 @@ export function BalanceDisplay({ isLarge = false }: BalanceDisplayProps) {
   
   if (!balance) return null;
 
+  const hiddenBalance = "********";
+
   return (
-    <div className="font-mono w-full">
+    <div className="font-mono w-full space-y-4">
       <p className={cn("font-bold tracking-tight", isLarge ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl")}>
-        {(balance.usd_value || 0).toLocaleString("en-US", {
+         {isVisible ? (balance.usd_value || 0).toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
-        })}
+        }) : hiddenBalance}
       </p>
-      <Separator className="my-4" />
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
          <div className="space-y-1">
-            <p className="font-medium">{(balance.btc_value || 0).toFixed(8)}</p>
+            <p className="font-medium">{isVisible ? (balance.btc_value || 0).toFixed(8) : hiddenBalance}</p>
             <p className="text-xs text-muted-foreground">BTC</p>
         </div>
         <div className="space-y-1">
-            <p className="font-medium">{(balance.sats_value || 0).toLocaleString()}</p>
+            <p className="font-medium">{isVisible ? (balance.sats_value || 0).toLocaleString() : hiddenBalance}</p>
             <p className="text-xs text-muted-foreground">Sats</p>
         </div>
          <div className="space-y-1">
-            <p className="font-medium">{(balance.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+            <p className="font-medium">{isVisible ? (balance.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF', minimumFractionDigits: 0, maximumFractionDigits: 0 }) : hiddenBalance}</p>
             <p className="text-xs text-muted-foreground">BIF</p>
         </div>
       </div>

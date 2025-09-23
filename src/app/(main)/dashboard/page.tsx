@@ -11,6 +11,8 @@ import {
   TrendingDown,
   Clock,
   Repeat,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   Card,
@@ -40,6 +42,8 @@ export default function DashboardPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+
 
   useEffect(() => {
     async function fetchBalance() {
@@ -109,9 +113,15 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-8">
        <Card>
-        <CardContent className="p-6">
-            <h2 className="text-sm font-medium text-muted-foreground mb-2">Current Balance</h2>
-            <BalanceDisplay />
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Current Balance</CardTitle>
+             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsBalanceVisible(!isBalanceVisible)}>
+                {isBalanceVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                <span className="sr-only">Toggle Balance Visibility</span>
+            </Button>
+        </CardHeader>
+        <CardContent>
+            <BalanceDisplay isVisible={isBalanceVisible} />
         </CardContent>
       </Card>
 

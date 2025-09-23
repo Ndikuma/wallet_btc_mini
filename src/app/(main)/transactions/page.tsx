@@ -198,7 +198,7 @@ export default function TransactionsPage() {
                     <p className="text-sm text-muted-foreground">Please try again later.</p>
                 </div>
             </Card>
-        ) : transactions && transactions.length > 0 ? (
+        ) : transactions.length > 0 ? (
           transactions.map((tx) => (
             <TransactionCard key={tx.id} tx={tx} />
           ))
@@ -211,5 +211,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    

@@ -2,7 +2,7 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
-const BACKEND_URL = 'https://throws-meter-granted-hepatitis.trycloudflare.com/';
+const BACKEND_URL = 'https://umuhoratech-wallet.onrender.com/';
 
 // Main instance for authenticated requests
 const axiosInstance = axios.create({

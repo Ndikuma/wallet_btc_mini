@@ -233,7 +233,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
+                      <DialogHeader className="text-center">
                         <DialogTitle>Scan QR Code</DialogTitle>
                         <DialogDescription>
                           Point your camera at a Bitcoin address QR code.

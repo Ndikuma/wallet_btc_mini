@@ -49,8 +49,15 @@ export function LoginForm() {
         title: "Login Successful",
         description: "Welcome back!",
       });
-      router.push("/dashboard");
-      router.refresh(); // To update any server components that rely on auth state
+
+      const { user } = response.data;
+      if (user.wallet_created) {
+        router.push("/dashboard");
+      } else {
+        router.push("/create-or-restore");
+      }
+      router.refresh(); 
+
     } catch (error: any) {
       const errorMsg = error.response?.data?.error?.details?.non_field_errors?.[0] || error.response?.data?.message || "An unexpected error occurred.";
       toast({

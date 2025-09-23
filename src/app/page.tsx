@@ -25,11 +25,16 @@ export default function LandingPage() {
               </Link>
             </Button>
           </nav>
-           <Button asChild className="md:hidden">
-              <Link href="/register">
-                Get Started
-              </Link>
-            </Button>
+           <nav className="flex items-center gap-2 md:hidden">
+             <Button variant="ghost" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/register">
+                  Get Started
+                </Link>
+              </Button>
+           </nav>
         </div>
       </header>
       <main className="flex-1">

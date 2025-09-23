@@ -97,7 +97,24 @@ export default function VerifyMnemonicPage() {
 
     try {
       if (!mnemonic) throw new Error("Mnemonic not found");
-      await api.verifyMnemonic(mnemonic);
+
+      // Construct the payload with only the challenged words and their indices
+      const verificationPayload: { [key: string]: string } = {};
+      challengeIndices.forEach(index => {
+        // API probably expects 1-based indexing, but let's stick to what's logical first
+        // based on user request to send index. Assuming 0-based for now.
+        // The prompt implies sending the index-word mapping for verification.
+        verificationPayload[String(index)] = originalWords[index];
+      });
+      
+      // We also need to send the full mnemonic so the backend can create the wallet
+      const finalPayload = {
+        mnemonic,
+        words_to_verify: verificationPayload
+      }
+
+      await api.verifyMnemonic(finalPayload);
+
       toast({
         title: "Verification Successful",
         description: "Your wallet is ready and secured.",
@@ -106,7 +123,7 @@ export default function VerifyMnemonicPage() {
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.error?.details?.detail || "An error occurred during verification.";
+      const errorMsg = error.response?.data?.error?.details?.detail || error.response?.data?.message || "An error occurred during verification.";
       toast({
         variant: "destructive",
         title: "Verification Failed",

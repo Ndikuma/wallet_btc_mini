@@ -69,7 +69,7 @@ const getUser = () => axiosInstance.get<User>('user/');
 const getWallets = () => axiosInstance.get<PaginatedResponse<Wallet>>('wallet/');
 const getWalletBalance = () => axiosInstance.get<Balance>('wallet/balance/');
 const generateMnemonic = () => axiosInstance.post<{ mnemonic: string }>('wallet/generate_mnemonic/');
-const verifyMnemonic = (mnemonic: string) => axiosInstance.post('wallet/verify_mnemonic/', { mnemonic });
+const verifyMnemonic = (payload: { mnemonic: string, words_to_verify: { [key: string]: string } }) => axiosInstance.post('wallet/verify_mnemonic/', payload);
 const generateNewAddress = () => axiosInstance.post<{ address: string }>('wallet/generate_address/');
 const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('wallet/generate_qr_code/', { data });
 const restoreWallet = (mnemonic: string) => axiosInstance.post('wallet/restore/', { mnemonic });

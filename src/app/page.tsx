@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react";
 export default function LandingPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-background/80 backdrop-blur-sm">
         <div className="container flex h-20 items-center justify-between py-6">
           <Link href="/" className="flex items-center gap-3">
             <BitcoinIcon className="size-8 text-primary" />
@@ -33,7 +33,7 @@ export default function LandingPage() {
         </div>
       </header>
       <main className="flex-1">
-        <section className="container flex flex-col items-center justify-center space-y-8 py-24 text-center md:py-32">
+        <section className="container flex h-full flex-grow flex-col items-center justify-center space-y-8 py-24 text-center md:py-32">
             <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
               Your Keys, Your Bitcoin.
             </h1>

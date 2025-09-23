@@ -17,15 +17,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
-import type { AuthResponse } from "@/lib/types";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
-
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info } from "lucide-react";
+import { useEffect } from "react";
 
 const formSchema = z.object({
-  username: z.string().min(1, { message: "Username is required." }),
-  password: z.string().min(1, { message: "Password is required." }),
   mnemonic: z.string().min(20, { message: "Recovery phrase seems too short." })
     .refine(value => {
         const wordCount = value.trim().split(/\s+/).length;
@@ -37,13 +34,18 @@ export function RestoreForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("authToken");
+      setIsLoggedIn(!!token);
+    }
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
-      password: "",
       mnemonic: "",
     },
   });
@@ -51,22 +53,17 @@ export function RestoreForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // First, log in to get a token if the user is valid
-      const loginResponse = await api.login({ username: values.username, password: values.password });
-      localStorage.setItem('authToken', loginResponse.data.token);
-
-      // Then, restore the wallet with the new token
       await api.restoreWallet(values.mnemonic);
       
       toast({
-        title: "Wallet Restored",
-        description: "Welcome back!",
+        title: "Wallet Restored Successfully",
+        description: "Your wallet is now ready. Welcome back!",
       });
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
       const errorDetails = error.response?.data?.error?.details;
-      const errorMsg = errorDetails?.detail || errorDetails?.non_field_errors?.[0] || errorDetails?.mnemonic?.[0] || error.response?.data?.message || "Failed to restore wallet. Please check your details.";
+      const errorMsg = errorDetails?.mnemonic?.[0] || error.response?.data?.message || "Failed to restore wallet. Please check your recovery phrase.";
       toast({
         variant: "destructive",
         title: "Restore Failed",
@@ -77,49 +74,21 @@ export function RestoreForm() {
     }
   }
 
+  if (!isLoggedIn) {
+      return (
+          <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Not Logged In</AlertTitle>
+              <AlertDescription>
+                  You need to log in or create an account before you can restore a wallet.
+              </AlertDescription>
+          </Alert>
+      )
+  }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input type="text" placeholder="yourusername" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <div className="relative">
-                <FormControl>
-                  <Input 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="********" 
-                    {...field}
-                    className="pr-10"
-                  />
-                </FormControl>
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="mnemonic"

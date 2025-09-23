@@ -47,8 +47,12 @@ export function RegisterForm() {
     try {
       const response = await api.register(values);
       localStorage.setItem('authToken', response.data.token);
-       // Wallet is created on backend, so we redirect to create-wallet to get the mnemonic
-      router.push("/create-wallet");
+      toast({
+        title: "Account Created",
+        description: "Please set up your wallet to continue.",
+      });
+      router.push("/create-or-restore");
+      router.refresh();
     } catch (error: any) {
        const errorDetails = error.response?.data?.error?.details;
        const errorMsg = errorDetails?.email?.[0] || errorDetails?.password?.[0] || errorDetails?.username?.[0] || error.response?.data?.message || "An unexpected error occurred.";

@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { AxiosError } from "axios";
 import { cn } from "@/lib/utils";
+import { Separator } from "./ui/separator";
 
 interface BalanceDisplayProps {
   isLarge?: boolean;
@@ -39,26 +40,37 @@ export function BalanceDisplay({ isLarge = false }: BalanceDisplayProps) {
     fetchBalance();
   }, []);
 
-  const containerClasses = cn(
-    "flex flex-col",
-    isLarge ? "items-start gap-2" : "items-end gap-1"
-  );
+  const containerClasses = cn("flex flex-col gap-2");
 
-  const skeletonPrimaryClasses = cn("w-48", isLarge ? "h-10" : "h-6");
-  const skeletonSecondaryClasses = cn("w-56", isLarge ? "h-5" : "h-4");
+  const skeletonPrimaryClasses = cn("w-48", isLarge ? "h-10" : "h-8");
+  const skeletonSecondaryClasses = "h-5 w-24";
 
   if (loading) {
     return (
       <div className={containerClasses}>
         <Skeleton className={skeletonPrimaryClasses} />
-        <Skeleton className={skeletonSecondaryClasses} />
+        <Separator className="my-2" />
+        <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+                <Skeleton className={skeletonSecondaryClasses} />
+                <Skeleton className="h-4 w-12" />
+            </div>
+            <div className="space-y-1">
+                <Skeleton className={skeletonSecondaryClasses} />
+                <Skeleton className="h-4 w-12" />
+            </div>
+             <div className="space-y-1">
+                <Skeleton className={skeletonSecondaryClasses} />
+                <Skeleton className="h-4 w-12" />
+            </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 text-xs text-destructive">
+      <div className="flex items-center gap-2 text-sm text-destructive">
         <AlertCircle className="size-4" />
         <span>{error}</span>
       </div>
@@ -68,17 +80,27 @@ export function BalanceDisplay({ isLarge = false }: BalanceDisplayProps) {
   if (!balance) return null;
 
   return (
-    <div className={cn("flex flex-col font-mono w-full", isLarge ? "items-start gap-1" : "items-end")}>
-      <p className={cn("font-bold", isLarge ? "text-3xl sm:text-4xl" : "text-base")}>
+    <div className="font-mono w-full">
+      <p className={cn("font-bold tracking-tight", isLarge ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl")}>
         {(balance.usd_value || 0).toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
         })}
       </p>
-      <div className={cn("flex flex-wrap items-baseline text-muted-foreground", isLarge ? "gap-x-4 gap-y-1 text-sm" : "gap-x-2 text-xs justify-end")}>
-        <span>{(balance.btc_value || 0).toFixed(8)} BTC</span>
-        <span>≈ {(balance.sats_value || 0).toLocaleString()} Sats</span>
-        <span className="hidden xs:inline">≈ {(balance.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+      <Separator className="my-4" />
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+         <div className="space-y-1">
+            <p className="font-medium">{(balance.btc_value || 0).toFixed(8)}</p>
+            <p className="text-xs text-muted-foreground">BTC</p>
+        </div>
+        <div className="space-y-1">
+            <p className="font-medium">{(balance.sats_value || 0).toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">Sats</p>
+        </div>
+         <div className="space-y-1">
+            <p className="font-medium">{(balance.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+            <p className="text-xs text-muted-foreground">BIF</p>
+        </div>
       </div>
     </div>
   );

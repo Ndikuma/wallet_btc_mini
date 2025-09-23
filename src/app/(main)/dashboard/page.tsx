@@ -109,11 +109,9 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-8">
        <Card>
-        <CardHeader>
-           <CardTitle className="text-sm font-medium text-muted-foreground">Current Balance</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <BalanceDisplay isLarge={true} />
+        <CardContent className="p-6">
+            <h2 className="text-sm font-medium text-muted-foreground mb-2">Current Balance</h2>
+            <BalanceDisplay />
         </CardContent>
       </Card>
 

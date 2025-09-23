@@ -35,11 +35,9 @@ export default function DashboardPage() {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
 
   const [loadingBalance, setLoadingBalance] = useState(true);
-  const [loadingWallet, setLoadingWallet] = useState(true);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
-  const [walletError, setWalletError] = useState<string | null>(null);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,35 +58,6 @@ export default function DashboardPage() {
       }
     }
     fetchBalance();
-  }, []);
-
-  useEffect(() => {
-    async function fetchWallet() {
-      setLoadingWallet(true);
-      setWalletError(null);
-      try {
-        const walletRes = await api.getWallets();
-        if (walletRes.data && walletRes.data.results && walletRes.data.results.length > 0) {
-          setWallet(walletRes.data.results[0]);
-        } else if (walletRes.data && Array.isArray(walletRes.data) && walletRes.data.length > 0) {
-          setWallet(walletRes.data[0]);
-        } else if (walletRes.data && !Array.isArray(walletRes.data)) {
-           setWallet(walletRes.data as Wallet);
-        } else {
-          setWallet(null);
-        }
-      } catch (err: any) {
-        console.error("Failed to fetch wallet stats", err);
-        if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
-            setWalletError("Network error loading stats.");
-        } else {
-            setWalletError("Could not load wallet stats.");
-        }
-      } finally {
-        setLoadingWallet(false);
-      }
-    }
-    fetchWallet();
   }, []);
 
   useEffect(() => {
@@ -162,65 +131,6 @@ export default function DashboardPage() {
         </CardHeader>
       </Card>
 
-       <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
-           {loadingWallet && (
-            Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                  <CardHeader>
-                      <Skeleton className="h-5 w-24" />
-                  </CardHeader>
-                  <CardContent>
-                      <Skeleton className="h-8 w-32" />
-                  </CardContent>
-              </Card>
-            ))
-          )}
-          {walletError && !loadingWallet && (
-             <div className="lg:col-span-4 text-center text-destructive">
-                <AlertCircle className="mr-2 size-4 inline-block" /> {walletError}
-            </div>
-          )}
-          {!loadingWallet && !walletError && wallet?.stats ? (
-            <>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
-                        <Repeat className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{wallet.stats.total_transactions}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Sent</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{wallet.stats.total_sent.toFixed(8)} BTC</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Received</CardTitle>
-                        <TrendingDown className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{wallet.stats.total_received.toFixed(8)} BTC</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Wallet Age</CardTitle>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{wallet.stats.wallet_age_days} days</div>
-                    </CardContent>
-                </Card>
-            </>
-          ) : null}
-      </div>
 
        <div className="grid grid-cols-1 gap-4 md:gap-6">
           <Card>
@@ -298,5 +208,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

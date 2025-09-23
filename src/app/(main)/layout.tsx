@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UserNav } from "@/components/user-nav";
 import { Suspense } from "react";
+import { BalanceDisplay } from "@/components/balance-display";
 
 export default function MainLayout({
   children,
@@ -29,6 +30,9 @@ export default function MainLayout({
             <Suspense fallback={null}>
                 <HeaderTitle />
             </Suspense>
+          </div>
+          <div className="hidden sm:block">
+            <BalanceDisplay />
           </div>
           <UserNav />
         </header>

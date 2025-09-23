@@ -28,6 +28,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import type { Wallet, Transaction, Balance } from "@/lib/types";
 import { AxiosError } from "axios";
+import { BalanceDisplay } from "@/components/balance-display";
 
 export default function DashboardPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
@@ -57,7 +58,8 @@ export default function DashboardPage() {
         setLoadingBalance(false);
       }
     }
-    fetchBalance();
+    // We let BalanceDisplay handle its own fetching.
+    // fetchBalance(); 
   }, []);
 
   useEffect(() => {
@@ -106,29 +108,13 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-8">
-      <Card>
+       <Card>
         <CardHeader>
            <CardTitle className="text-sm font-medium text-muted-foreground">Current Balance</CardTitle>
-           {loadingBalance ? (
-              <div className="space-y-2">
-                  <Skeleton className="h-10 w-48" />
-                  <Skeleton className="h-4 w-full max-w-xs" />
-              </div>
-           ) : (
-              <>
-              <div className="flex items-baseline gap-2">
-                  <span className="text-3xl sm:text-4xl font-bold">{(balance?.usd_value || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                  <span>{(balance?.btc_value || 0).toFixed(8)} BTC</span>
-                  <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                  <span className="hidden sm:inline">≈ {(balance?.sats_value || 0).toLocaleString()} Sats</span>
-                  <Separator orientation="vertical" className="h-4 hidden md:block" />
-                  <span className="hidden md:inline">≈ {(balance?.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF' })}</span>
-              </div>
-              </>
-           )}
         </CardHeader>
+        <CardContent>
+            <BalanceDisplay isLarge={true} />
+        </CardContent>
       </Card>
 
 
@@ -198,7 +184,7 @@ export default function DashboardPage() {
                 ) : null}
                 {!loadingTransactions && !transactionsError && (!recentTransactions || recentTransactions.length === 0) && (
                   <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
-                    No recent transactions.
+                    No transactions found.
                   </div>
                 )}
               </div>

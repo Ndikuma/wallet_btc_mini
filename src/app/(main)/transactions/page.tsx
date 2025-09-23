@@ -34,11 +34,9 @@ import {
 import { type VariantProps } from "class-variance-authority";
 import { AxiosError } from "axios";
 
-const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: number }) => {
+const TransactionCard = ({ tx }: { tx: Transaction }) => {
   const { toast } = useToast();
   const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
-  const amountNum = parseFloat(tx.amount);
-  const usdValue = Math.abs(amountNum * btcToUsdRate);
   
   const relevantAddress = isSent ? tx.to_address : tx.from_address;
 
@@ -85,7 +83,7 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
                     {tx.amount_formatted}
                   </p>
                    <p className="text-xs text-muted-foreground font-mono">
-                     {isSent ? "-" : "+"} ${usdValue.toFixed(2)}
+                     Fee: {tx.fee_formatted.replace("BTC", "")}
                   </p>
                 </div>
              </div>
@@ -149,9 +147,7 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
 export default function TransactionsPage() {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balance, setBalance] = useState<Balance | null>(null);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
-  const [loadingBalance, setLoadingBalance] = useState(true);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -160,7 +156,7 @@ export default function TransactionsPage() {
       setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
-        setTransactions((transactionsRes as any).results || []);
+        setTransactions(transactionsRes.data.results || []);
       } catch (err: any) {
         console.error("Failed to fetch transactions", err);
         if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
@@ -179,25 +175,7 @@ export default function TransactionsPage() {
     }
     fetchTransactions();
   }, [toast]);
-  
-  useEffect(() => {
-    async function fetchBalance() {
-      setLoadingBalance(true);
-      try {
-        const balanceRes = await api.getWalletBalance();
-        setBalance(balanceRes.data);
-      } catch (error) {
-        console.error("Failed to fetch balance", error);
-        setBalance(null);
-      } finally {
-        setLoadingBalance(false);
-      }
-    }
-    fetchBalance();
-  }, []);
 
-
-  const btcToUsdRate = (balance?.usd_value || 0) / (balance?.btc_value || 1);
 
   return (
     <div className="space-y-6">
@@ -222,7 +200,7 @@ export default function TransactionsPage() {
             </Card>
         ) : transactions && transactions.length > 0 ? (
           transactions.map((tx) => (
-            <TransactionCard key={tx.id} tx={tx} btcToUsdRate={btcToUsdRate} />
+            <TransactionCard key={tx.id} tx={tx} />
           ))
         ) : (
           <Card className="flex h-48 items-center justify-center">
@@ -233,3 +211,5 @@ export default function TransactionsPage() {
     </div>
   );
 }
+
+    

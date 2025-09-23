@@ -68,9 +68,11 @@ export default function DashboardPage() {
       setWalletError(null);
       try {
         const walletRes = await api.getWallets();
-        if (Array.isArray(walletRes.data) && walletRes.data.length > 0) {
+        if (walletRes.data && walletRes.data.results && walletRes.data.results.length > 0) {
+          setWallet(walletRes.data.results[0]);
+        } else if (walletRes.data && Array.isArray(walletRes.data) && walletRes.data.length > 0) {
           setWallet(walletRes.data[0]);
-        } else if (walletRes.data) {
+        } else if (walletRes.data && !Array.isArray(walletRes.data)) {
            setWallet(walletRes.data as Wallet);
         } else {
           setWallet(null);
@@ -95,7 +97,7 @@ export default function DashboardPage() {
       setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
-        setRecentTransactions((transactionsRes as any).results || []);
+        setRecentTransactions(transactionsRes.data.results || []);
       } catch (err: any) {
          console.error("Failed to fetch recent transactions", err);
          if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
@@ -296,3 +298,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

@@ -66,8 +66,10 @@ export default function DashboardPage() {
         setLoadingTransactions(false);
       }
     }
-    fetchTransactions();
-  }, []);
+    if (!error) {
+      fetchTransactions();
+    }
+  }, [error]);
 
   
     if (error) {

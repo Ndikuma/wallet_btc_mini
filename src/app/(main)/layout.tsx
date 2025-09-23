@@ -31,9 +31,6 @@ export default function MainLayout({
                 <HeaderTitle />
             </Suspense>
           </div>
-          <div className="hidden sm:block">
-            <BalanceDisplay />
-          </div>
           <UserNav />
         </header>
         <main className="flex-1 p-4 md:p-6 lg:p-8 mb-20 md:mb-0">{children}</main>

@@ -184,7 +184,7 @@ export default function DashboardPage() {
                 ) : null}
                 {!loadingTransactions && !transactionsError && (!recentTransactions || recentTransactions.length === 0) && (
                   <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
-                    No transactions found.
+                    No transactions yet.
                   </div>
                 )}
               </div>

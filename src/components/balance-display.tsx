@@ -39,11 +39,19 @@ export function BalanceDisplay({ isLarge = false }: BalanceDisplayProps) {
     fetchBalance();
   }, []);
 
+  const containerClasses = cn(
+    "flex flex-col",
+    isLarge ? "items-start gap-2" : "items-end gap-1"
+  );
+
+  const skeletonPrimaryClasses = cn("w-48", isLarge ? "h-10" : "h-6");
+  const skeletonSecondaryClasses = cn("w-56", isLarge ? "h-5" : "h-4");
+
   if (loading) {
     return (
-      <div className={cn("flex flex-col", isLarge ? "gap-2 items-start" : "gap-1 items-end")}>
-        <Skeleton className={cn("w-32", isLarge ? "h-10" : "h-6")} />
-        <Skeleton className={cn("w-40", isLarge ? "h-5" : "h-4")} />
+      <div className={containerClasses}>
+        <Skeleton className={skeletonPrimaryClasses} />
+        <Skeleton className={skeletonSecondaryClasses} />
       </div>
     );
   }
@@ -60,17 +68,17 @@ export function BalanceDisplay({ isLarge = false }: BalanceDisplayProps) {
   if (!balance) return null;
 
   return (
-    <div className={cn("flex flex-col font-mono", isLarge ? "items-start gap-1" : "items-end")}>
+    <div className={cn("flex flex-col font-mono w-full", isLarge ? "items-start gap-1" : "items-end")}>
       <p className={cn("font-bold", isLarge ? "text-3xl sm:text-4xl" : "text-base")}>
         {(balance.usd_value || 0).toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
         })}
       </p>
-      <div className={cn("flex flex-wrap items-center text-muted-foreground", isLarge ? "gap-x-4 gap-y-1 text-sm" : "gap-x-2 text-xs justify-end")}>
+      <div className={cn("flex flex-wrap items-baseline text-muted-foreground", isLarge ? "gap-x-4 gap-y-1 text-sm" : "gap-x-2 text-xs justify-end")}>
         <span>{(balance.btc_value || 0).toFixed(8)} BTC</span>
-        <span className="hidden sm:inline">≈ {(balance.sats_value || 0).toLocaleString()} Sats</span>
-        <span className="hidden md:inline">≈ {(balance.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+        <span>≈ {(balance.sats_value || 0).toLocaleString()} Sats</span>
+        <span className="hidden xs:inline">≈ {(balance.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
       </div>
     </div>
   );

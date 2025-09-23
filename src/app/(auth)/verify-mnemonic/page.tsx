@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -13,10 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { RefreshCcw } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { RefreshCcw, Eraser } from "lucide-react";
 import api from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 // Function to shuffle an array
 const shuffle = <T,>(array: T[]): T[] => {
@@ -34,10 +33,9 @@ export default function VerifyMnemonicPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [mnemonic, setMnemonic] = useState<string | null>(null);
+  const [shuffledWords, setShuffledWords] = useState<string[]>([]);
+  const [selectedWords, setSelectedWords] = useState<string[]>([]);
   
-  const [verificationWords, setVerificationWords] = useState<{ index: number; word: string }[]>([]);
-  const [userInputs, setUserInputs] = useState<string[]>([]);
-
   useEffect(() => {
     const storedMnemonic = localStorage.getItem("tempMnemonic");
     if (!storedMnemonic) {
@@ -56,32 +54,26 @@ export default function VerifyMnemonicPage() {
     if (!mnemonic) return;
 
     const allWords = mnemonic.split(" ");
-    const indices = shuffle([...Array(allWords.length).keys()]).slice(0, 4);
-    const selected = indices.map(index => ({ index, word: allWords[index] })).sort((a, b) => a.index - b.index);
-    setVerificationWords(selected);
-    setUserInputs(Array(selected.length).fill(""));
+    setShuffledWords(shuffle([...allWords]));
+    setSelectedWords([]);
   }, [mnemonic]);
-
-  const handleInputChange = (index: number, value: string) => {
-    const newInputs = [...userInputs];
-    newInputs[index] = value;
-    setUserInputs(newInputs);
-  };
   
+  const handleWordSelect = (word: string) => {
+    if (selectedWords.length < 12) {
+      setSelectedWords([...selectedWords, word]);
+    }
+  };
+
+  const handleWordDeselect = (index: number) => {
+    setSelectedWords(selectedWords.filter((_, i) => i !== index));
+  }
+
+  const handleClear = () => {
+    setSelectedWords([]);
+  }
+
   const handleVerify = async () => {
     setIsLoading(true);
-
-    const isCorrect = verificationWords.every((v, i) => userInputs[i].trim().toLowerCase() === v.word.toLowerCase());
-
-    if (!isCorrect) {
-       toast({
-            variant: "destructive",
-            title: "Verification Failed",
-            description: "One or more words are incorrect. Please try again.",
-        });
-       setIsLoading(false);
-       return;
-    }
 
     if (!mnemonic) {
         toast({
@@ -91,6 +83,18 @@ export default function VerifyMnemonicPage() {
         });
         setIsLoading(false);
         return;
+    }
+    
+    const isCorrect = selectedWords.join(" ") === mnemonic;
+
+    if (!isCorrect) {
+       toast({
+            variant: "destructive",
+            title: "Verification Failed",
+            description: "The order of the words is incorrect. Please try again.",
+        });
+       setIsLoading(false);
+       return;
     }
 
     try {
@@ -114,43 +118,60 @@ export default function VerifyMnemonicPage() {
     }
   };
 
-  const allWordsEntered = userInputs.every(input => input.trim().length > 0);
+  const allWordsEntered = selectedWords.length === 12;
+  const isWordUsed = (word: string) => selectedWords.includes(word);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
-      <Card className="w-full max-w-lg">
+      <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle>Verify Recovery Phrase</CardTitle>
+          <CardTitle>Verify Your Phrase</CardTitle>
           <CardDescription>
-            Enter the specified words from your recovery phrase to confirm your backup.
+            Tap the words in the correct order to confirm your backup.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-4 rounded-lg border bg-background p-4">
-             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {verificationWords.map(({index}, i) => (
-                    <div key={index} className="flex items-center gap-2">
-                        <Label htmlFor={`word-${index}`} className="w-16 text-right text-sm text-muted-foreground">Word #{index + 1}</Label>
-                        <Input
-                          id={`word-${index}`}
-                          type="text"
-                          value={userInputs[i]}
-                          onChange={(e) => handleInputChange(i, e.target.value)}
-                           className="w-full"
-                           autoComplete="off"
-                        />
+          <div className="min-h-[14rem] rounded-lg border-2 border-dashed bg-background p-4">
+              <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3">
+                 {Array.from({ length: 12 }).map((_, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleWordDeselect(index)}
+                      className={cn(
+                        "flex items-baseline rounded-md border py-2 px-3",
+                        selectedWords[index] ? 'border-primary bg-secondary cursor-pointer' : 'border-transparent'
+                      )}
+                    >
+                      <span className="mr-3 text-sm text-muted-foreground">{index + 1}.</span>
+                      <span className="font-code text-base font-medium">{selectedWords[index]}</span>
                     </div>
                 ))}
-            </div>
+              </div>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            {shuffledWords.map((word, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                onClick={() => handleWordSelect(word)}
+                disabled={isWordUsed(word) || allWordsEntered || isLoading}
+                className={cn(
+                    "font-code text-base",
+                    isWordUsed(word) && "opacity-20"
+                )}
+              >
+                {word}
+              </Button>
+            ))}
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button onClick={handleVerify} className="w-full" size="lg" disabled={!allWordsEntered || isLoading}>
-            {isLoading ? "Verifying..." : "Verify & Finish"}
+        <CardFooter className="flex flex-col-reverse gap-4 sm:flex-row sm:justify-between">
+           <Button variant="ghost" onClick={handleClear} disabled={isLoading || selectedWords.length === 0}>
+             <Eraser className="mr-2 size-4" />
+            Clear
           </Button>
-           <Button variant="ghost" size="sm" onClick={() => setUserInputs(Array(verificationWords.length).fill(""))} disabled={isLoading}>
-             <RefreshCcw className="mr-2 size-4" />
-            Clear Inputs
+          <Button onClick={handleVerify} size="lg" disabled={!allWordsEntered || isLoading}>
+            {isLoading ? "Verifying..." : "Verify & Finish"}
           </Button>
         </CardFooter>
       </Card>

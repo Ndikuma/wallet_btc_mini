@@ -8,14 +8,14 @@ import {
   Download,
   History,
   User,
+  ScanLine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ScanIcon } from "@/components/icons";
 
 const menuItems = [
   { path: "/dashboard", icon: Home, label: "Home" },
   { path: "/receive", icon: Download, label: "Receive" },
-  { path: "/send", icon: ScanIcon, label: "Scan" }, // Special item for the center button
+  { path: "/send", icon: ScanLine, label: "Scan" }, // Special item for the center button
   { path: "/transactions", icon: History, label: "History" },
   { path: "/profile", icon: User, label: "Profile" },
 ];

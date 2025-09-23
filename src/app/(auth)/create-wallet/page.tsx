@@ -17,6 +17,7 @@ import { ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CopyButton } from "@/components/copy-button";
 
 export default function CreateWalletPage() {
   const { toast } = useToast();
@@ -82,6 +83,14 @@ export default function CreateWalletPage() {
               </div>
             )}
           </div>
+           <CopyButton
+              textToCopy={mnemonic || ''}
+              disabled={loading || !mnemonic}
+              variant="outline"
+              toastMessage="Recovery phrase copied"
+            >
+              Copy Phrase
+            </CopyButton>
         </CardContent>
         <CardFooter>
           <Button asChild className="w-full" size="lg" disabled={loading}>

@@ -30,7 +30,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { Wallet } from "@/lib/types";
+import type { Wallet, Balance } from "@/lib/types";
 import { AxiosError } from "axios";
 
 const formSchema = (balance: number) => z.object({
@@ -62,17 +62,13 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [balance, setBalance] = useState<Balance | null>(null);
 
   useEffect(() => {
-    async function fetchWallet() {
+    async function fetchBalance() {
       try {
-        const response = await api.getWallets();
-         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-          setWallet(response.data[0]);
-        } else {
-           setWallet(response.data as any);
-        }
+        const response = await api.getWalletBalance();
+        setBalance(response.data);
       } catch (error) {
         if (error instanceof AxiosError && error.response?.status === 401) {
             toast({
@@ -91,10 +87,10 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
         }
       }
     }
-    fetchWallet();
+    fetchBalance();
   }, [router, toast]);
 
-  const currentBalance = Number(wallet?.balance) || 0;
+  const currentBalance = balance?.btc_value || 0;
 
   const form = useForm<SendFormValues>({
     resolver: zodResolver(formSchema(currentBalance)),

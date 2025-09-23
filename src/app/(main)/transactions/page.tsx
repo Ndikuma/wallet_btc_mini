@@ -17,7 +17,7 @@ import {
   Copy,
   ExternalLink,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, shortenText } from "@/lib/utils";
 import api from "@/lib/api";
 import type { Transaction, PaginatedResponse, Balance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,12 +49,6 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
     });
   };
   
-  const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
-    if (!text) return 'an external address';
-    if (text.length <= start + end) return text;
-    return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
-  }
-
   const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'success';
@@ -110,7 +104,7 @@ const TransactionCard = ({ tx, btcToUsdRate }: { tx: Transaction; btcToUsdRate: 
                  </div>
                  <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-muted-foreground">Fee:</span>
-                    <span className="font-mono">{tx.fee_formatted}</span>
+                    <span className="font-mono">{tx.fee_formatted.replace("BTC", "")}</span>
                  </div>
                  <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-muted-foreground">From:</span>
@@ -166,7 +160,7 @@ export default function TransactionsPage() {
       setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
-        setTransactions((transactionsRes as any) || []);
+        setTransactions((transactionsRes as any).results || []);
       } catch (err: any) {
         console.error("Failed to fetch transactions", err);
         if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {

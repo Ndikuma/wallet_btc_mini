@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
+import { cn, shortenText } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import type { Wallet, Transaction, Balance } from "@/lib/types";
@@ -41,12 +41,6 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
-
-  const shortenText = (text: string | null | undefined, start = 8, end = 8) => {
-    if (!text) return 'an external address';
-    if (text.length <= start + end) return text;
-    return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
-  }
 
   useEffect(() => {
     async function fetchBalance() {
@@ -101,7 +95,7 @@ export default function DashboardPage() {
       setTransactionsError(null);
       try {
         const transactionsRes = await api.getTransactions();
-        setRecentTransactions((transactionsRes as any) || []);
+        setRecentTransactions((transactionsRes as any).results || []);
       } catch (err: any) {
          console.error("Failed to fetch recent transactions", err);
          if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
@@ -283,7 +277,7 @@ export default function DashboardPage() {
                             {tx.amount_formatted}
                           </p>
                            <p className="text-xs text-muted-foreground font-mono">
-                             Fee: {tx.fee_formatted}
+                             Fee: {tx.fee_formatted.replace("BTC", "")}
                           </p>
                         </div>
                       </div>

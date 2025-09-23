@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { RefreshCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import api from "@/lib/api";
 
 // Function to shuffle an array
 const shuffle = <T,>(array: T[]): T[] => {
@@ -82,7 +83,18 @@ export default function VerifyMnemonicPage() {
        return;
     }
 
+    if (!mnemonic) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Mnemonic phrase not found.",
+        });
+        setIsLoading(false);
+        return;
+    }
+
     try {
+        await api.verifyMnemonic(mnemonic);
         toast({
             title: "Verification Successful",
             description: "Your wallet is ready and secured.",

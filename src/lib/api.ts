@@ -37,7 +37,11 @@ const createResponseInterceptor = (instance: typeof axiosInstance) => {
     instance.interceptors.response.use(
         (response: AxiosResponse<ApiResponse<any>>) => {
             if (response.data && response.data.success) {
-            return { ...response, data: response.data.data };
+                // For paginated responses, the actual data is in `results`
+                if (response.data.data && 'results' in response.data.data) {
+                    return { ...response, data: response.data.data };
+                }
+                return { ...response, data: response.data.data };
             }
             return response;
         },
@@ -62,9 +66,10 @@ const getUser = () => axiosInstance.get<User>('user/');
 
 
 // Wallet
-const getWallets = () => axiosInstance.get<Wallet[]>('wallet/');
+const getWallets = () => axiosInstance.get<PaginatedResponse<Wallet>>('wallet/');
 const getWalletBalance = () => axiosInstance.get<Balance>('wallet/balance/');
 const generateMnemonic = () => axiosInstance.post<{ mnemonic: string }>('wallet/generate_mnemonic/');
+const verifyMnemonic = (mnemonic: string) => axiosInstance.post('wallet/verify_mnemonic/', { mnemonic });
 const generateNewAddress = () => axiosInstance.post<{ address: string }>('wallet/generate_address/');
 const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('wallet/generate_qr_code/', { data });
 const restoreWallet = (mnemonic: string) => axiosInstance.post('wallet/restore/', { mnemonic });
@@ -72,7 +77,7 @@ const restoreWallet = (mnemonic: string) => axiosInstance.post('wallet/restore/'
 
 // Transactions
 const getTransactions = () => {
-    return axiosInstance.get<Transaction[]>('transaction/');
+    return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
 };
 const sendTransaction = (values: any) => axiosInstance.post('transaction/send/', values);
 
@@ -86,6 +91,7 @@ const api = {
     getWallets,
     getWalletBalance,
     generateMnemonic,
+    verifyMnemonic,
     generateNewAddress,
     generateQrCode,
     restoreWallet,

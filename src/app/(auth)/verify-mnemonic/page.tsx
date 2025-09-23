@@ -14,8 +14,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { X, Undo2 } from "lucide-react";
+
+// Function to shuffle an array
+const shuffleArray = <T,>(array: T[]): T[] => {
+  return [...array].sort(() => Math.random() - 0.5);
+};
 
 // Function to get 4 random unique indices from 0 to 11
 const getRandomIndices = () => {
@@ -31,11 +36,15 @@ export default function VerifyMnemonicPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [mnemonic, setMnemonic] = useState<string | null>(null);
+  const [originalWords, setOriginalWords] = useState<string[]>([]);
   
-  // State for the 4 random words to verify
-  const [verificationWords, setVerificationWords] = useState<{ index: number; value: string }[]>([]);
-  const [userInputs, setUserInputs] = useState<string[]>(Array(4).fill(''));
-
+  const [shuffledWords, setShuffledWords] = useState<string[]>([]);
+  const [challengeIndices, setChallengeIndices] = useState<number[]>([]);
+  
+  // State to hold the user's answers for each slot { index: word }
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  
   useEffect(() => {
     const storedMnemonic = localStorage.getItem("tempMnemonic");
     if (!storedMnemonic) {
@@ -46,35 +55,35 @@ export default function VerifyMnemonicPage() {
       });
       router.push("/create-wallet");
     } else {
-      setMnemonic(storedMnemonic);
       const words = storedMnemonic.split(" ");
-      const randomIndices = getRandomIndices();
-      setVerificationWords(
-        randomIndices.map(index => ({ index, value: words[index] }))
-      );
+      setMnemonic(storedMnemonic);
+      setOriginalWords(words);
+      setShuffledWords(shuffleArray(words));
+      setChallengeIndices(getRandomIndices());
     }
   }, [router, toast]);
 
-  const handleInputChange = (index: number, value: string) => {
-    const newInputs = [...userInputs];
-    newInputs[index] = value.trim().toLowerCase();
-    setUserInputs(newInputs);
+  const handleWordBankClick = (word: string) => {
+    if (Object.values(answers).includes(word)) return; // Word already used
+    setSelectedWord(word);
+  };
+
+  const handleChallengeSlotClick = (index: number) => {
+    if (!selectedWord) return; // No word selected from bank
+    
+    setAnswers(prev => ({ ...prev, [index]: selectedWord }));
+    setSelectedWord(null);
+  };
+
+  const handleClear = () => {
+    setAnswers({});
+    setSelectedWord(null);
   };
 
   const handleVerify = async () => {
     setIsLoading(true);
 
-    if (!mnemonic) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Mnemonic phrase not found.",
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    const isCorrect = verificationWords.every((wordInfo, i) => userInputs[i] === wordInfo.value);
+    const isCorrect = challengeIndices.every(index => answers[index] === originalWords[index]);
 
     if (!isCorrect) {
       toast({
@@ -87,6 +96,7 @@ export default function VerifyMnemonicPage() {
     }
 
     try {
+      if (!mnemonic) throw new Error("Mnemonic not found");
       await api.verifyMnemonic(mnemonic);
       toast({
         title: "Verification Successful",
@@ -107,40 +117,74 @@ export default function VerifyMnemonicPage() {
     }
   };
 
-  const allWordsEntered = userInputs.every(input => input.length > 0) && userInputs.length === 4;
+  const allWordsEntered = Object.keys(answers).length === 4;
 
-  if (verificationWords.length === 0) {
-    return null; // Don't render until indices are selected
+  if (challengeIndices.length === 0) {
+    return null; // Don't render until component is ready
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
+      <Card className="w-full max-w-2xl">
+        <CardHeader className="text-center">
           <CardTitle>Verify Your Phrase</CardTitle>
           <CardDescription>
-            Enter the specified words from your recovery phrase to confirm your backup.
+            Select the correct word from the list below for each required position to prove you have backed up your phrase.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-8">
+          {/* Challenge Slots */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {verificationWords.map((wordInfo, i) => (
-              <div key={wordInfo.index} className="space-y-2">
-                <Label htmlFor={`word-${i}`} className="font-semibold">
-                  Word #{wordInfo.index + 1}
-                </Label>
-                <Input
-                  id={`word-${i}`}
-                  type="text"
-                  autoComplete="off"
-                  value={userInputs[i]}
-                  onChange={(e) => handleInputChange(i, e.target.value)}
-                  className="font-code text-base"
-                  disabled={isLoading}
-                />
+            {challengeIndices.map(index => (
+              <div key={index} className="space-y-2">
+                <label className="text-sm font-semibold text-muted-foreground">Word #{index + 1}</label>
+                <button
+                  type="button"
+                  onClick={() => handleChallengeSlotClick(index)}
+                  disabled={!!answers[index]}
+                  className={cn(
+                    "flex h-12 w-full items-center justify-center rounded-md border-2 border-dashed bg-background font-code text-lg font-medium",
+                    answers[index] ? "border-primary text-primary" : "border-muted-foreground text-muted-foreground",
+                    selectedWord && !answers[index] ? "border-primary bg-primary/10" : ""
+                  )}
+                >
+                  {answers[index] || "?"}
+                </button>
               </div>
             ))}
           </div>
+          
+          {/* Word Bank */}
+          <div className="rounded-lg border bg-background/50 p-4">
+            <div className="flex flex-wrap justify-center gap-3">
+              {shuffledWords.map(word => {
+                const isUsed = Object.values(answers).includes(word);
+                return (
+                  <Button
+                    key={word}
+                    variant={selectedWord === word ? "default" : "outline"}
+                    disabled={isUsed}
+                    onClick={() => handleWordBankClick(word)}
+                    className={cn(
+                        "font-code text-base transition-all",
+                        isUsed ? "opacity-30" : "opacity-100",
+                        selectedWord === word ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+                    )}
+                  >
+                    {word}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+          
+          <div className="flex justify-center">
+             <Button variant="ghost" onClick={handleClear} disabled={Object.keys(answers).length === 0 || isLoading}>
+                <Undo2 className="mr-2 size-4" />
+                Clear selections
+            </Button>
+          </div>
+
         </CardContent>
         <CardFooter>
           <Button onClick={handleVerify} size="lg" className="w-full" disabled={!allWordsEntered || isLoading}>

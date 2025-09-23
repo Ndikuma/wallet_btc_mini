@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Download,
   History,
-  LayoutDashboard,
+  Home,
   Send,
   Settings,
   User
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [
-  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/dashboard", icon: Home, label: "Dashboard" },
   { path: "/send", icon: Send, label: "Send" },
   { path: "/receive", icon: Download, label: "Receive" },
   { path: "/transactions", icon: History, label: "Transactions" },
@@ -43,8 +43,8 @@ export function MainNav() {
     <>
       <SidebarHeader className="p-4">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <BitcoinIcon className="size-8 text-primary" />
-          <h2 className="text-xl font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
+          <BitcoinIcon className="size-7" />
+          <h2 className="text-lg font-semibold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
             mini wallet
           </h2>
         </Link>

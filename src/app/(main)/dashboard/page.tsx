@@ -56,7 +56,7 @@ export default function DashboardPage() {
         const transactionsRes = await api.getTransactions();
         setRecentTransactions(transactionsRes.data || []);
       } catch (err: any) {
-         console.error("Failed to fetch recent transactions", err);
+        console.error("Failed to fetch recent transactions", err);
          if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
             setTransactionsError("Network error. Could not connect to the server.");
          } else {

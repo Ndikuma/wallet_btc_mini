@@ -5,9 +5,8 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import type { Balance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Bitcoin } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { AxiosError } from "axios";
-import { cn } from "@/lib/utils";
 
 interface BalanceDisplayProps {
   isVisible: boolean;
@@ -41,10 +40,10 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-7 w-40" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-40" />
+        <div className="grid grid-cols-2 gap-4 pt-2">
+            <Skeleton className="h-6 w-24" />
             <Skeleton className="h-6 w-24" />
             <Skeleton className="h-6 w-24" />
         </div>
@@ -64,37 +63,25 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
   if (!balance) return null;
 
   const hiddenBalance = "********";
-  
-  const btcValue = typeof balance.btc_value === 'number' ? balance.btc_value : parseFloat(balance.btc_value);
 
   return (
-    <div className="font-mono w-full space-y-4">
-        {/* Primary USD Display */}
-        <p className="text-2xl sm:text-3xl font-bold tracking-tight">
-            {isVisible ? `$${Number(balance.usd_value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD` : hiddenBalance}
-        </p>
+    <div className="w-full space-y-4">
+      <p className="text-2xl sm:text-3xl font-bold tracking-tight">
+        {isVisible ? balance.usd_value : hiddenBalance}
+      </p>
 
-        {/* Secondary BTC Display */}
-        <div className="flex items-baseline gap-2">
-          <Bitcoin className="size-5 text-muted-foreground" />
-          <p className="text-lg sm:text-xl font-medium">
-              {isVisible ? `${btcValue.toFixed(8)} BTC` : hiddenBalance}
-          </p>
-        </div>
-
-      {/* Additional Units */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 pt-2 text-sm text-muted-foreground">
-         <div className="space-y-1">
-            <p className="font-semibold text-base text-foreground">
-              {isVisible ? Number(balance.sats_value).toLocaleString() : hiddenBalance}
-            </p>
-            <p>sats</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+        <div className="space-y-1">
+            <p className="font-medium text-muted-foreground">BTC</p>
+            <p className="font-medium">{isVisible ? balance.btc_value : hiddenBalance}</p>
         </div>
         <div className="space-y-1">
-            <p className="font-semibold text-base text-foreground">
-              {isVisible ? `${Number(balance.bif_value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : hiddenBalance}
-            </p>
-             <p>BIF</p>
+            <p className="font-medium text-muted-foreground">Sats</p>
+            <p className="font-medium">{isVisible ? balance.sats_value : hiddenBalance}</p>
+        </div>
+        <div className="space-y-1">
+             <p className="font-medium text-muted-foreground">BIF</p>
+             <p className="font-medium">{isVisible ? balance.bif_value : hiddenBalance}</p>
         </div>
       </div>
     </div>

@@ -73,23 +73,20 @@ export function BalanceDisplay({ isLarge = false, isVisible }: BalanceDisplayPro
   return (
     <div className="font-mono w-full space-y-4">
       <p className={cn("font-bold tracking-tight", isLarge ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl")}>
-         {isVisible ? (balance.usd_value || 0).toLocaleString("en-US", {
-          style: "currency",
-          currency: "USD",
-        }) : hiddenBalance}
+         {isVisible ? balance.usd_value : hiddenBalance}
       </p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
          <div className="space-y-1">
             <p className="font-medium text-muted-foreground">BTC</p>
-            <p className="font-medium">{isVisible ? (balance.btc_value || 0).toFixed(8) : hiddenBalance}</p>
+            <p className="font-medium">{isVisible ? balance.btc_value : hiddenBalance}</p>
         </div>
         <div className="space-y-1">
             <p className="font-medium text-muted-foreground">Sats</p>
-            <p className="font-medium">{isVisible ? (balance.sats_value || 0).toLocaleString() : hiddenBalance}</p>
+            <p className="font-medium">{isVisible ? balance.sats_value : hiddenBalance}</p>
         </div>
          <div className="space-y-1">
             <p className="font-medium text-muted-foreground">BIF</p>
-            <p className="font-medium">{isVisible ? (balance.bif_value || 0).toLocaleString('fr-BI', { style: 'currency', currency: 'BIF', minimumFractionDigits: 0, maximumFractionDigits: 0 }) : hiddenBalance}</p>
+            <p className="font-medium">{isVisible ? balance.bif_value : hiddenBalance}</p>
         </div>
       </div>
     </div>

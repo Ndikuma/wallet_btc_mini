@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BitcoinIcon } from "@/components/icons";
@@ -32,22 +33,24 @@ export default function LandingPage() {
         </div>
       </header>
       <main className="flex-1">
-        <section className="container flex h-full min-h-[calc(100vh-80px)] flex-grow flex-col items-center justify-center space-y-8 py-24 text-center md:py-32">
-            <div className="absolute inset-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div><div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_500px_at_50%_200px,#312e8133,transparent)]"></div>
-            <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-              Your Keys, Your Bitcoin.
-            </h1>
-            <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-              Take full control of your Bitcoin with a simple, secure, open-source wallet built for everyone. Send, receive, and manage your assets with confidence.
-            </p>
-             <div className="flex w-full flex-col justify-center gap-4 sm:flex-row md:justify-center">
-                <Button asChild size="lg" className="w-full sm:w-auto">
-                  <Link href="/register">Create New Wallet</Link>
-                </Button>
-                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-                  <Link href="/restore-wallet">Restore Wallet</Link>
-                </Button>
-              </div>
+        <section className="w-full flex h-full min-h-[calc(100vh-80px)] flex-grow flex-col items-center justify-center space-y-8 py-24 text-center md:py-32">
+            <div className="absolute inset-0 -z-10 h-full w-full bg-background animated-gradient"></div>
+            <div className="max-w-4xl">
+              <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
+                Your Keys, Your Bitcoin.
+              </h1>
+              <p className="mt-6 max-w-2xl mx-auto text-lg leading-relaxed text-muted-foreground sm:text-xl">
+                Take full control of your Bitcoin with a simple, secure, open-source wallet built for everyone. Send, receive, and manage your assets with confidence.
+              </p>
+              <div className="mt-8 flex w-full flex-col justify-center gap-4 sm:flex-row md:justify-center">
+                  <Button asChild size="lg" className="w-full sm:w-auto">
+                    <Link href="/register">Create New Wallet</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                    <Link href="/restore-wallet">Restore Wallet</Link>
+                  </Button>
+                </div>
+            </div>
         </section>
       </main>
     </div>

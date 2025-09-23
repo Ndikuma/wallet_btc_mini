@@ -5,16 +5,15 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import type { Balance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Bitcoin } from "lucide-react";
 import { AxiosError } from "axios";
 import { cn } from "@/lib/utils";
 
 interface BalanceDisplayProps {
-  isLarge?: boolean;
   isVisible: boolean;
 }
 
-export function BalanceDisplay({ isLarge = false, isVisible }: BalanceDisplayProps) {
+export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,19 +39,14 @@ export function BalanceDisplay({ isLarge = false, isVisible }: BalanceDisplayPro
     fetchBalance();
   }, []);
 
-  const containerClasses = cn("flex flex-col gap-2");
-
-  const skeletonPrimaryClasses = cn("w-48", isLarge ? "h-10" : "h-8");
-  const skeletonSecondaryClasses = "h-5 w-24";
-
   if (loading) {
     return (
-      <div className={containerClasses}>
-        <Skeleton className={skeletonPrimaryClasses} />
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 pt-2">
-            <Skeleton className={skeletonSecondaryClasses} />
-            <Skeleton className={skeletonSecondaryClasses} />
-            <Skeleton className={skeletonSecondaryClasses} />
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-7 w-40" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-24" />
         </div>
       </div>
     );
@@ -70,21 +64,37 @@ export function BalanceDisplay({ isLarge = false, isVisible }: BalanceDisplayPro
   if (!balance) return null;
 
   const hiddenBalance = "********";
+  
+  const btcValue = typeof balance.btc_value === 'number' ? balance.btc_value : parseFloat(balance.btc_value);
 
   return (
-    <div className="font-mono w-full space-y-2">
-      <p className={cn("font-bold tracking-tight", isLarge ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl")}>
-         {isVisible ? `$${balance.usd_value}` : hiddenBalance}
-      </p>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-2 text-sm">
+    <div className="font-mono w-full space-y-4">
+        {/* Primary USD Display */}
+        <p className="text-2xl sm:text-3xl font-bold tracking-tight">
+            {isVisible ? `$${Number(balance.usd_value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD` : hiddenBalance}
+        </p>
+
+        {/* Secondary BTC Display */}
+        <div className="flex items-baseline gap-2">
+          <Bitcoin className="size-5 text-muted-foreground" />
+          <p className="text-lg sm:text-xl font-medium">
+              {isVisible ? `${btcValue.toFixed(8)} BTC` : hiddenBalance}
+          </p>
+        </div>
+
+      {/* Additional Units */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 pt-2 text-sm text-muted-foreground">
          <div className="space-y-1">
-            <p className="font-medium">{isVisible ? balance.btc_value : hiddenBalance}</p>
+            <p className="font-semibold text-base text-foreground">
+              {isVisible ? Number(balance.sats_value).toLocaleString() : hiddenBalance}
+            </p>
+            <p>sats</p>
         </div>
         <div className="space-y-1">
-            <p className="font-medium">{isVisible ? balance.sats_value : hiddenBalance}</p>
-        </div>
-         <div className="space-y-1">
-            <p className="font-medium">{isVisible ? balance.bif_value : hiddenBalance}</p>
+            <p className="font-semibold text-base text-foreground">
+              {isVisible ? `${Number(balance.bif_value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : hiddenBalance}
+            </p>
+             <p>BIF</p>
         </div>
       </div>
     </div>

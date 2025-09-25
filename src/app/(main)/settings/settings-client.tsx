@@ -207,8 +207,8 @@ export function SettingsClient() {
                     )}
                 </div>
               </div>
-              <AlertDialogFooter className="pt-4 gap-4">
-                  <AlertDialogCancel onClick={closeBackupDialog}>Close</AlertDialogCancel>
+              <AlertDialogFooter className="pt-4 sm:gap-2 gap-4 flex-col sm:flex-row">
+                  <AlertDialogCancel onClick={closeBackupDialog} className="mt-0">Close</AlertDialogCancel>
                   <CopyButton
                     textToCopy={wif || ''}
                     disabled={isBackupLoading || !wif}
@@ -224,3 +224,5 @@ export function SettingsClient() {
     </>
   );
 }
+
+    

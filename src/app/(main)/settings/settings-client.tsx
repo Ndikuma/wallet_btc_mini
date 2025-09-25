@@ -2,6 +2,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Card,
   CardContent,
@@ -32,13 +35,32 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CopyButton } from "@/components/copy-button";
 import { ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+const restoreFormSchema = z.object({
+  data: z.string().min(20, { message: "Recovery data seems too short." })
+    .refine(value => {
+        const trimmed = value.trim();
+        const wordCount = trimmed.split(/\s+/).length;
+        const isWif = (trimmed.length > 40 && trimmed.length < 60 && (trimmed.startsWith('L') || trimmed.startsWith('K') || trimmed.startsWith('5')));
+        return wordCount === 12 || wordCount === 24 || isWif;
+    }, "Please enter a valid 12/24-word phrase or a WIF private key."),
+});
 
 export function SettingsClient() {
   const { toast } = useToast();
@@ -46,20 +68,13 @@ export function SettingsClient() {
   const [wif, setWif] = useState<string | null>(null);
   const [isBackupLoading, setIsBackupLoading] = useState(false);
   const [isBackupDialogOpen, setIsBackupDialogOpen] = useState(false);
+  const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
 
-  useEffect(() => {
-    // This effect runs only on the client after initial render to sync with localStorage
-    const savedSettings = localStorage.getItem('walletSettings');
-    if (savedSettings) {
-      try {
-        const parsed = JSON.parse(savedSettings);
-        if (parsed.displayUnit) setDisplayUnit(parsed.displayUnit);
-        if (parsed.currency) setCurrency(parsed.currency);
-      } catch (e) {
-        console.error("Failed to parse settings from localStorage", e);
-      }
-    }
-  }, [setCurrency, setDisplayUnit]);
+  const restoreForm = useForm<z.infer<typeof restoreFormSchema>>({
+    resolver: zodResolver(restoreFormSchema),
+    defaultValues: { data: "" },
+  });
 
 
   const handleBackup = async () => {
@@ -84,6 +99,29 @@ export function SettingsClient() {
   const closeBackupDialog = () => {
     setIsBackupDialogOpen(false);
     setWif(null);
+  }
+
+  async function handleRestoreSubmit(values: z.infer<typeof restoreFormSchema>) {
+    setIsRestoring(true);
+    try {
+      await api.restoreWallet(values.data);
+      toast({
+        title: "Wallet Restore Initialized",
+        description: "Your wallet is being restored. The app will reload.",
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error?.details?.data?.[0] || error.response?.data?.message || "Failed to restore wallet. Please check your recovery data.";
+      toast({
+        variant: "destructive",
+        title: "Restore Failed",
+        description: errorMsg,
+      });
+    } finally {
+      setIsRestoring(false);
+    }
   }
 
   return (
@@ -188,10 +226,50 @@ export function SettingsClient() {
             <div className="flex flex-col space-y-1">
               <span>Restore Wallet</span>
               <span className="font-normal leading-snug text-muted-foreground">
-                Restore your wallet from a backup file.
+                Restore your wallet from a recovery phrase or a WIF private key.
               </span>
             </div>
-            <Button variant="outline" className="w-full sm:w-auto">Restore</Button>
+            <AlertDialog open={isRestoreDialogOpen} onOpenChange={setIsRestoreDialogOpen}>
+                <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="w-full sm:w-auto">Restore</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Restore Your Wallet</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Enter your 12/24-word recovery phrase or WIF private key. This will replace the current wallet on this account.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <Form {...restoreForm}>
+                        <form onSubmit={restoreForm.handleSubmit(handleRestoreSubmit)} className="space-y-4">
+                            <FormField
+                                control={restoreForm.control}
+                                name="data"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Recovery Data</FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                        placeholder="Enter your recovery phrase or WIF key..."
+                                        className="resize-none"
+                                        rows={4}
+                                        {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <AlertDialogFooter className="pt-2">
+                                <AlertDialogCancel disabled={isRestoring}>Cancel</AlertDialogCancel>
+                                <Button type="submit" disabled={isRestoring}>
+                                    {isRestoring ? "Restoring..." : "Restore Wallet"}
+                                </Button>
+                            </AlertDialogFooter>
+                        </form>
+                    </Form>
+                </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardContent>
       </Card>
@@ -201,7 +279,7 @@ export function SettingsClient() {
               <AlertDialogHeader>
                   <AlertDialogTitle>Your Wallet Private Key (WIF)</AlertDialogTitle>
                   <AlertDialogDescription>
-                      This is your private key in Wallet Import Format. It provides full access to your funds.
+                      This is your private key in Wallet Import Format (WIF). It provides full access to your funds.
                       Keep it secret and store it in a safe, offline location.
                   </AlertDialogDescription>
               </AlertDialogHeader>
@@ -239,5 +317,3 @@ export function SettingsClient() {
     </>
   );
 }
-
-    

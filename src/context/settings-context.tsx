@@ -19,32 +19,34 @@ interface SettingsContextType {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-const getInitialSettings = (): Settings => {
-    if (typeof window === 'undefined') {
-        return { displayUnit: 'btc', currency: 'usd' };
-    }
-    const savedSettings = localStorage.getItem('walletSettings');
-    if (savedSettings) {
-        try {
-            const parsed = JSON.parse(savedSettings);
-            return {
-                displayUnit: parsed.displayUnit || 'btc',
-                currency: parsed.currency || 'usd',
+const defaultSettings: Settings = { displayUnit: 'btc', currency: 'usd' };
+
+const getSettingsFromStorage = (): Settings => {
+    if (typeof window !== 'undefined') {
+        const savedSettings = localStorage.getItem('walletSettings');
+        if (savedSettings) {
+            try {
+                const parsed = JSON.parse(savedSettings);
+                return {
+                    displayUnit: parsed.displayUnit || 'btc',
+                    currency: parsed.currency || 'usd',
+                };
+            } catch (e) {
+                console.error("Failed to parse settings from localStorage", e);
+                return defaultSettings;
             }
-        } catch (e) {
-            return { displayUnit: 'btc', currency: 'usd' };
         }
     }
-    return { displayUnit: 'btc', currency: 'usd' };
+    return defaultSettings;
 };
 
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
-  const [settings, setSettings] = useState<Settings>(getInitialSettings);
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
 
   useEffect(() => {
-    // This effect runs on the client after initial render to sync with localStorage
-    setSettings(getInitialSettings());
+    // This effect runs only on the client after initial render to sync with localStorage
+    setSettings(getSettingsFromStorage());
   }, []);
 
 
@@ -52,7 +54,10 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     // This effect saves settings to localStorage whenever they change
     if (typeof window !== 'undefined') {
         try {
-            localStorage.setItem('walletSettings', JSON.stringify(settings));
+            // We only save if the settings are not the default ones from first load
+            if (settings !== defaultSettings) {
+              localStorage.setItem('walletSettings', JSON.stringify(settings));
+            }
         } catch (e) {
             console.error("Could not save settings to localStorage", e);
         }

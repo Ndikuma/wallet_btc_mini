@@ -1,5 +1,5 @@
 
-import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance } from '@/lib/types';
+import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
 const BACKEND_URL = 'https://traveling-geo-daniel-candles.trycloudflare.com/';
@@ -81,7 +81,12 @@ const getTransactions = () => {
     return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
 };
 const sendTransaction = (values: any) => axiosInstance.post('transaction/send/', values);
-const estimateFee = (values: any) => axiosInstance.post<{ fee: number }>('transaction/estimate_fee/', values);
+const estimateFee = (values: { recipient: string, amount: number }) => {
+    return axiosInstance.post<FeeEstimation>('transaction/estimate-fee/', {
+        to_address: values.recipient,
+        amount: values.amount
+    });
+}
 
 
 const api = {

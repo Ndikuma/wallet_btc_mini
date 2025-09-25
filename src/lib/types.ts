@@ -1,5 +1,4 @@
 
-
 export interface User {
   id: number;
   username: string;
@@ -76,6 +75,16 @@ export interface Transaction {
   updated_at: string;
 }
 
+export interface FeeEstimation {
+    amount_btc: string;
+    to_address: string;
+    network_fee_btc: string;
+    service_fee_btc: string;
+    total_fee_btc: string;
+    change_btc: string;
+    tx_size_bytes: number;
+}
+
 
 export interface ApiErrorDetails {
     [key: string]: string[] | string;
@@ -101,5 +110,3 @@ export interface PaginatedResponse<T> {
     previous: string | null;
     results: T[];
 }
-
-    

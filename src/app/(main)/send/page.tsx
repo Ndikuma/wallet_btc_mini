@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -15,23 +15,28 @@ import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import type { FeeEstimation } from "@/lib/types";
 
 function TransactionDetailRow({
   label,
   value,
   isAddress = false,
+  isBold = false,
+  className = "",
 }: {
   label: string;
   value: string;
   isAddress?: boolean;
+  isBold?: boolean;
+  className?: string;
 }) {
   return (
     <div className="flex items-start justify-between">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span
-        className={`max-w-[60%] text-right text-sm font-medium ${
+        className={`max-w-[60%] text-right text-sm ${
           isAddress ? "break-all font-code" : ""
-        }`}
+        } ${isBold ? "font-bold" : "font-medium"} ${className}`}
       >
         {value}
       </span>
@@ -43,7 +48,7 @@ export default function SendPage() {
   const { toast } = useToast();
   const [step, setStep] = useState<"form" | "confirmation">("form");
   const [transactionDetails, setTransactionDetails] = useState<SendFormValues | null>(null);
-  const [fee, setFee] = useState<number | null>(null);
+  const [feeEstimation, setFeeEstimation] = useState<FeeEstimation | null>(null);
   const [loadingFee, setLoadingFee] = useState(false);
 
   const handleFormSubmit = async (values: SendFormValues) => {
@@ -53,7 +58,7 @@ export default function SendPage() {
     
     try {
         const feeResponse = await api.estimateFee(values);
-        setFee(feeResponse.data.fee);
+        setFeeEstimation(feeResponse.data);
     } catch (error: any) {
         const errorMsg = error.response?.data?.message || "Could not estimate network fee. Please try again.";
         toast({
@@ -61,7 +66,6 @@ export default function SendPage() {
             title: "Fee Estimation Failed",
             description: errorMsg,
         });
-        // Go back to the form if fee estimation fails
         setStep("form");
     } finally {
         setLoadingFee(false);
@@ -71,11 +75,12 @@ export default function SendPage() {
   const handleBack = () => {
     setStep("form");
     setTransactionDetails(null);
-    setFee(null);
+    setFeeEstimation(null);
   };
   
-  const calculatedFee = fee ? fee.toFixed(8) : "0";
-  const totalAmount = transactionDetails ? (transactionDetails.amount + (fee || 0)).toFixed(8) : "0";
+  const totalAmount = (transactionDetails && feeEstimation)
+    ? (transactionDetails.amount + parseFloat(feeEstimation.total_fee_btc)).toFixed(8)
+    : "0";
 
   return (
     <div className="mx-auto max-w-lg">
@@ -128,21 +133,42 @@ export default function SendPage() {
                         value={`${transactionDetails.amount.toFixed(8)} BTC`}
                     />
                     {loadingFee ? (
+                       <div className="space-y-3">
+                         <div className="flex justify-between items-center">
+                             <span className="text-sm text-muted-foreground">Network Fee</span>
+                             <Skeleton className="h-5 w-24" />
+                         </div>
+                         <div className="flex justify-between items-center">
+                             <span className="text-sm text-muted-foreground">Service Fee</span>
+                             <Skeleton className="h-5 w-24" />
+                         </div>
+                       </div>
+                    ) : feeEstimation ? (
+                       <>
+                        <TransactionDetailRow
+                            label="Network Fee"
+                            value={`${parseFloat(feeEstimation.network_fee_btc).toFixed(8)} BTC`}
+                        />
+                        <TransactionDetailRow
+                            label="Service Fee"
+                            value={`${parseFloat(feeEstimation.service_fee_btc).toFixed(8)} BTC`}
+                        />
+                       </>
+                    ) : null}
+                     <div className="my-2 border-t border-dashed border-border"></div>
+                     {loadingFee ? (
                        <div className="flex justify-between items-center">
-                           <span className="text-sm text-muted-foreground">Network Fee</span>
-                           <Skeleton className="h-5 w-24" />
+                           <span className="text-base font-bold text-muted-foreground">Total</span>
+                           <Skeleton className="h-6 w-32" />
                        </div>
                     ) : (
                        <TransactionDetailRow
-                          label="Network Fee (est.)"
-                          value={`${calculatedFee} BTC`}
+                        label="Total"
+                        value={`${totalAmount} BTC`}
+                        isBold
+                        className="text-base"
                       />
                     )}
-                     <div className="my-2 border-t border-dashed border-border"></div>
-                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Total</span>
-                        {loadingFee ? <Skeleton className="h-6 w-28" /> : <span className="text-lg font-bold">{totalAmount} BTC</span>}
-                    </div>
                 </div>
 
                 <SendForm

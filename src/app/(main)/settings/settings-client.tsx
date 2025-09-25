@@ -20,9 +20,11 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useSettings } from "@/context/settings-context";
 
 export function SettingsClient() {
   const { toast } = useToast();
+  const { settings, setCurrency, setDisplayUnit } = useSettings();
 
   const handleBackup = () => {
     toast({
@@ -48,7 +50,10 @@ export function SettingsClient() {
                 Set your preferred currency for display.
               </span>
             </Label>
-            <Select defaultValue="usd">
+            <Select
+              value={settings.currency}
+              onValueChange={(value) => setCurrency(value as "usd" | "eur" | "jpy" | "bif")}
+            >
               <SelectTrigger id="currency" className="w-full sm:w-48">
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
@@ -63,7 +68,11 @@ export function SettingsClient() {
           <div>
             <Label className="font-medium">Primary Display Unit</Label>
             <p className="text-sm text-muted-foreground pt-1">Select the main unit for displaying your balance.</p>
-            <RadioGroup defaultValue="btc" className="mt-3 grid grid-cols-3 gap-2 sm:gap-4">
+            <RadioGroup
+              value={settings.displayUnit}
+              onValueChange={(value) => setDisplayUnit(value as "btc" | "sats" | "usd")}
+              className="mt-3 grid grid-cols-3 gap-2 sm:gap-4"
+            >
               <div>
                 <RadioGroupItem value="btc" id="btc" className="peer sr-only" />
                 <Label htmlFor="btc" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:py-4 sm:text-base">
@@ -72,7 +81,7 @@ export function SettingsClient() {
               </div>
                <div>
                 <RadioGroupItem value="sats" id="sats" className="peer sr-only" />
-                <Label htmlFor="sats" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:py-4 sm:text-base">
+                <Label htmlFor="sats" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:py-4 sm-text-base">
                   Sats
                 </Label>
               </div>

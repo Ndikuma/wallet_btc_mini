@@ -7,6 +7,7 @@ import type { Balance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { AxiosError } from "axios";
+import { useSettings } from "@/context/settings-context";
 
 interface BalanceDisplayProps {
   isVisible: boolean;
@@ -16,6 +17,7 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { settings } = useSettings();
 
   useEffect(() => {
     async function fetchBalance() {
@@ -39,6 +41,28 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
     }
     fetchBalance();
   }, []);
+  
+  const getPrimaryBalance = () => {
+    if (!balance) return "";
+    switch (settings.displayUnit) {
+      case "sats": return balance.sats_value;
+      case "usd": return balance.usd_value;
+      case "btc":
+      default:
+        return balance.btc_value;
+    }
+  }
+  
+  const getSecondaryBalances = () => {
+    if (!balance) return { val1: "", val2: "" };
+    switch (settings.displayUnit) {
+      case "sats": return { val1: balance.btc_value, val2: balance.usd_value };
+      case "usd": return { val1: balance.btc_value, val2: balance.sats_value };
+      case "btc":
+      default:
+        return { val1: balance.sats_value, val2: balance.usd_value };
+    }
+  }
 
   if (loading) {
     return (
@@ -65,19 +89,21 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
   if (!balance) return null;
 
   const hiddenBalance = "********";
+  const primaryBalance = getPrimaryBalance();
+  const { val1, val2 } = getSecondaryBalances();
 
   return (
     <div className="w-full space-y-4">
       <p className="text-3xl sm:text-4xl font-bold tracking-tight">
-        {isVisible ? balance.usd_value : hiddenBalance}
+        {isVisible ? primaryBalance : hiddenBalance}
       </p>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
         <div className="space-y-1">
-            <p className="font-medium">{isVisible ? balance.btc_value : hiddenBalance}</p>
+            <p className="font-medium">{isVisible ? val1 : hiddenBalance}</p>
         </div>
         <div className="space-y-1">
-            <p className="font-medium">{isVisible ? balance.sats_value : hiddenBalance}</p>
+            <p className="font-medium">{isVisible ? val2 : hiddenBalance}</p>
         </div>
         <div className="space-y-1">
              <p className="font-medium">{isVisible ? balance.bif_value : hiddenBalance}</p>

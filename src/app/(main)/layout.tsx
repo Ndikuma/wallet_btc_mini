@@ -8,8 +8,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { UserNav } from "@/components/user-nav";
+import { SettingsProvider } from "@/context/settings-context";
 import { Suspense } from "react";
-import { BalanceDisplay } from "@/components/balance-display";
 
 export default function MainLayout({
   children,
@@ -17,25 +17,27 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="icon" variant="inset">
-        <Suspense>
-          <MainNav />
-        </Suspense>
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6">
-          <SidebarTrigger className="md:hidden" />
-          <div className="flex-1">
-            <Suspense fallback={null}>
+    <SettingsProvider>
+      <SidebarProvider>
+        <Sidebar collapsible="icon" variant="inset">
+          <Suspense>
+            <MainNav />
+          </Suspense>
+        </Sidebar>
+        <SidebarInset>
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6">
+            <SidebarTrigger className="md:hidden" />
+            <div className="flex-1">
+              <Suspense fallback={null}>
                 <HeaderTitle />
-            </Suspense>
-          </div>
-          <UserNav />
-        </header>
-        <main className="flex-1 p-4 md:p-6 lg:p-8 mb-20 md:mb-0">{children}</main>
-        <MobileNav />
-      </SidebarInset>
-    </SidebarProvider>
+              </Suspense>
+            </div>
+            <UserNav />
+          </header>
+          <main className="flex-1 p-4 md:p-6 lg:p-8 mb-20 md:mb-0">{children}</main>
+          <MobileNav />
+        </SidebarInset>
+      </SidebarProvider>
+    </SettingsProvider>
   );
 }

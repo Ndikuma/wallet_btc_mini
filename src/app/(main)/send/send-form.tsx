@@ -83,6 +83,11 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
       try {
         const response = await api.getWalletBalance();
         setBalance(response.data);
+        // After fetching the balance, trigger validation for the amount field
+        // as its validation rules depend on the balance.
+        if (form.getValues("amount")) {
+            form.trigger("amount");
+        }
       } catch (error) {
         if (error instanceof AxiosError && error.response?.status === 401) {
             toast({
@@ -104,7 +109,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
       }
     }
     fetchBalance();
-  }, [router, toast]);
+  }, [router, toast, form]);
   
   // Update the form resolver and values when the balance changes.
   useEffect(() => {
@@ -185,6 +190,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   const handleSetAmount = (percentage: number) => {
     const newAmount = currentBalance * percentage;
     form.setValue("amount", parseFloat(newAmount.toFixed(8)));
+    form.trigger("amount");
   };
 
   async function onSubmit(values: SendFormValues) {

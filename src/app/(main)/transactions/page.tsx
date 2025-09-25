@@ -93,7 +93,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
       <CardContent className="p-0">
         <Accordion type="single" collapsible>
           <AccordionItem value={tx.txid} className="border-b-0">
-            <AccordionTrigger className="p-4 hover:no-underline [&[data-state=open]>div>svg.chevron]:rotate-180">
+            <AccordionTrigger className="p-4 hover:no-underline">
               <div className="flex flex-1 items-center gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
                   {isSent ? (

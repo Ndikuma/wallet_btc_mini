@@ -46,19 +46,26 @@ export default function SendPage() {
   const [fee, setFee] = useState<number | null>(null);
   const [loadingFee, setLoadingFee] = useState(false);
 
-  const handleFormSubmit = (values: SendFormValues) => {
+  const handleFormSubmit = async (values: SendFormValues) => {
     setTransactionDetails(values);
     setLoadingFee(true);
     setStep("confirmation");
     
-    // Fee is now determined by backend, so we just set a placeholder here for display.
-    // The actual fee will be calculated during the final transaction submission.
-    // A mock fee is shown for UI purposes. In a real app, you might have an endpoint 
-    // to estimate fee before sending.
-    setTimeout(() => {
-        setFee(0.00005); // Using a fallback fee for display
+    try {
+        const feeResponse = await api.estimateFee(values);
+        setFee(feeResponse.data.fee);
+    } catch (error: any) {
+        const errorMsg = error.response?.data?.message || "Could not estimate network fee. Please try again.";
+        toast({
+            variant: "destructive",
+            title: "Fee Estimation Failed",
+            description: errorMsg,
+        });
+        // Go back to the form if fee estimation fails
+        setStep("form");
+    } finally {
         setLoadingFee(false);
-    }, 1000);
+    }
   };
 
   const handleBack = () => {

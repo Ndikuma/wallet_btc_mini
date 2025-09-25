@@ -2,7 +2,7 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
-const BACKEND_URL = 'https://umuhoratech-wallet.onrender.com/';
+const BACKEND_URL = 'https://traveling-geo-daniel-candles.trycloudflare.com/';
 
 // Main instance for authenticated requests
 const axiosInstance = axios.create({
@@ -72,7 +72,7 @@ const generateMnemonic = () => axiosInstance.post<{ mnemonic: string }>('wallet/
 const createWallet = (mnemonic: string) => axiosInstance.post('wallet/create_wallet/', { mnemonic });
 const generateNewAddress = () => axiosInstance.post<{ address: string }>('wallet/generate_address/');
 const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('wallet/generate_qr_code/', { data });
-const restoreWallet = (mnemonic: string) => axiosInstance.post('wallet/restore/', { data: mnemonic });
+const restoreWallet = (data: string) => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = () => axiosInstance.get<{ wif: string }>('wallet/backup/');
 
 
@@ -81,6 +81,7 @@ const getTransactions = () => {
     return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
 };
 const sendTransaction = (values: any) => axiosInstance.post('transaction/send/', values);
+const estimateFee = (values: any) => axiosInstance.post<{ fee: number }>('transaction/estimate_fee/', values);
 
 
 const api = {
@@ -98,7 +99,8 @@ const api = {
     restoreWallet,
     backupWallet,
     getTransactions,
-    sendTransaction
+    sendTransaction,
+    estimateFee,
 };
 
 export default api;

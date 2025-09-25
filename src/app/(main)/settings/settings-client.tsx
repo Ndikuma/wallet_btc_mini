@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,17 +22,54 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSettings } from "@/context/settings-context";
+import api from "@/lib/api";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CopyButton } from "@/components/copy-button";
+import { ShieldAlert } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+
 
 export function SettingsClient() {
   const { toast } = useToast();
   const { settings, setCurrency, setDisplayUnit } = useSettings();
+  const [wif, setWif] = useState<string | null>(null);
+  const [isBackupLoading, setIsBackupLoading] = useState(false);
+  const [isBackupDialogOpen, setIsBackupDialogOpen] = useState(false);
 
-  const handleBackup = () => {
-    toast({
-      title: "Backup initiated",
-      description: "Your wallet backup file is being generated...",
-    });
+  const handleBackup = async () => {
+    setIsBackupLoading(true);
+    setIsBackupDialogOpen(true);
+    try {
+        const response = await api.backupWallet();
+        setWif(response.data.wif);
+    } catch(error: any) {
+        const errorMsg = error.response?.data?.message || "Could not retrieve backup key. Please try again.";
+        toast({
+            variant: "destructive",
+            title: "Backup Failed",
+            description: errorMsg,
+        });
+        setIsBackupDialogOpen(false); // Close dialog on error
+    } finally {
+        setIsBackupLoading(false);
+    }
   };
+
+  const closeBackupDialog = () => {
+    setIsBackupDialogOpen(false);
+    setWif(null);
+  }
 
   return (
     <>
@@ -126,7 +164,7 @@ export function SettingsClient() {
             <div className="flex flex-col space-y-1">
               <span>Backup Wallet</span>
               <span className="font-normal leading-snug text-muted-foreground">
-                Download a secure backup of your wallet.
+                Reveal your private key (WIF) for backup. Store it securely offline.
               </span>
             </div>
             <Button onClick={handleBackup} className="w-full sm:w-auto">Backup Now</Button>
@@ -142,6 +180,47 @@ export function SettingsClient() {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={isBackupDialogOpen} onOpenChange={setIsBackupDialogOpen}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                  <AlertDialogTitle>Your Wallet Private Key (WIF)</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      This is your private key. It provides full access to your funds.
+                      Keep it secret and store it in a safe, offline location.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="space-y-4">
+                <Alert variant="destructive">
+                    <ShieldAlert className="h-4 w-4" />
+                    <AlertTitle>Security Warning</AlertTitle>
+                    <AlertDescription>
+                        Never share this key with anyone. Anyone with this key can steal your funds.
+                    </AlertDescription>
+                </Alert>
+
+                <div className="rounded-lg border bg-secondary p-4 text-center font-code break-all">
+                    {isBackupLoading ? (
+                        <Skeleton className="h-5 w-4/5 mx-auto" />
+                    ) : (
+                        wif
+                    )}
+                </div>
+              </div>
+              <AlertDialogFooter className="pt-4 gap-4">
+                  <AlertDialogCancel onClick={closeBackupDialog}>Close</AlertDialogCancel>
+                  <CopyButton
+                    textToCopy={wif || ''}
+                    disabled={isBackupLoading || !wif}
+                    toastMessage="Private key copied"
+                    onClick={closeBackupDialog}
+                    className="w-full sm:w-auto"
+                   >
+                    Copy Key & Close
+                   </CopyButton>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

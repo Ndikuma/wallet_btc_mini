@@ -73,6 +73,7 @@ const createWallet = (mnemonic: string) => axiosInstance.post('wallet/create_wal
 const generateNewAddress = () => axiosInstance.post<{ address: string }>('wallet/generate_address/');
 const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('wallet/generate_qr_code/', { data });
 const restoreWallet = (mnemonic: string) => axiosInstance.post('wallet/restore/', { data: mnemonic });
+const backupWallet = () => axiosInstance.get<{ wif: string }>('wallet/backup/');
 
 
 // Transactions
@@ -95,6 +96,7 @@ const api = {
     generateNewAddress,
     generateQrCode,
     restoreWallet,
+    backupWallet,
     getTransactions,
     sendTransaction
 };

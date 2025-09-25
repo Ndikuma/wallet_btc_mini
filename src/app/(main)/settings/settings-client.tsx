@@ -57,9 +57,12 @@ const restoreFormSchema = z.object({
     .refine(value => {
         const trimmed = value.trim();
         const wordCount = trimmed.split(/\s+/).length;
-        const isWif = (trimmed.length > 40 && trimmed.length < 60 && (trimmed.startsWith('L') || trimmed.startsWith('K') || trimmed.startsWith('5')));
-        return wordCount === 12 || wordCount === 24 || isWif;
-    }, "Please enter a valid 12/24-word phrase or a WIF private key."),
+        const isMnemonic = wordCount === 12 || wordCount === 24;
+        const isWif = (trimmed.startsWith('L') || trimmed.startsWith('K') || trimmed.startsWith('5'));
+        const isExtendedKey = /^(xpub|ypub|zpub|tpub|upub|vpub)/.test(trimmed);
+        
+        return isMnemonic || isWif || isExtendedKey;
+    }, "Please enter a valid 12/24-word phrase or a WIF/extended private key."),
 });
 
 export function SettingsClient() {
@@ -317,3 +320,5 @@ export function SettingsClient() {
     </>
   );
 }
+
+    

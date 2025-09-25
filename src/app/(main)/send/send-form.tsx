@@ -109,17 +109,15 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   // Update the form resolver and values when the balance changes.
   useEffect(() => {
     const newBalance = balance ? parseFloat(balance.balance) : 0;
-    form.reset({
+    (form.control as any)._resolver = zodResolver(formSchema(newBalance));
+     form.reset({
         ...form.getValues(),
         ...(initialData || {}),
       }, {
-      // This is a bit of a workaround to update the resolver
-      // See: https://github.com/react-hook-form/react-hook-form/issues/7951
       keepValues: true,
       keepDirty: true,
       keepErrors: true,
     });
-    (form as any)._resolver = zodResolver(formSchema(newBalance));
   }, [balance, form, initialData]);
 
 
@@ -329,7 +327,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" size="lg" disabled={!form.formState.isValid}>
+          <Button type="submit" className="w-full" size="lg" disabled={!form.formState.isValid || isBalanceLoading}>
             <ArrowUpRight className="mr-2 size-5" />
             Review Transaction
           </Button>

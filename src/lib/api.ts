@@ -75,7 +75,7 @@ const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>
 const restoreWallet = (data: string) => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = () => axiosInstance.get<{ wif: string }>('wallet/backup/');
 const estimateFee = (values: { recipient: string, amount: number }) => {
-    return axiosInstance.post<FeeEstimation>('wallet/estimate_fee/', {
+    return axiosInstance.post<FeeEstimation>('wallet/estimate-fee/', {
         to_address: values.recipient,
         amount: values.amount
     });
@@ -86,7 +86,12 @@ const estimateFee = (values: { recipient: string, amount: number }) => {
 const getTransactions = () => {
     return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
 };
-const sendTransaction = (values: any) => axiosInstance.post('transaction/send/', values);
+const sendTransaction = (values: { recipient: string; amount: number }) => {
+    return axiosInstance.post('transaction/send/', {
+        to_address: values.recipient,
+        amount: values.amount,
+    });
+};
 
 
 const api = {

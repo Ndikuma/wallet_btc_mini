@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -46,6 +46,21 @@ export function SettingsClient() {
   const [wif, setWif] = useState<string | null>(null);
   const [isBackupLoading, setIsBackupLoading] = useState(false);
   const [isBackupDialogOpen, setIsBackupDialogOpen] = useState(false);
+
+  useEffect(() => {
+    // This effect runs only on the client after initial render to sync with localStorage
+    const savedSettings = localStorage.getItem('walletSettings');
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        if (parsed.displayUnit) setDisplayUnit(parsed.displayUnit);
+        if (parsed.currency) setCurrency(parsed.currency);
+      } catch (e) {
+        console.error("Failed to parse settings from localStorage", e);
+      }
+    }
+  }, [setCurrency, setDisplayUnit]);
+
 
   const handleBackup = async () => {
     setIsBackupLoading(true);
@@ -164,7 +179,7 @@ export function SettingsClient() {
             <div className="flex flex-col space-y-1">
               <span>Backup Wallet</span>
               <span className="font-normal leading-snug text-muted-foreground">
-                Reveal your private key (WIF) for backup. Store it securely offline.
+                Reveal your Wallet Import Format (WIF) private key for backup. Store it securely offline.
               </span>
             </div>
             <Button onClick={handleBackup} className="w-full sm:w-auto">Backup Now</Button>
@@ -186,7 +201,7 @@ export function SettingsClient() {
               <AlertDialogHeader>
                   <AlertDialogTitle>Your Wallet Private Key (WIF)</AlertDialogTitle>
                   <AlertDialogDescription>
-                      This is your private key. It provides full access to your funds.
+                      This is your private key in Wallet Import Format. It provides full access to your funds.
                       Keep it secret and store it in a safe, offline location.
                   </AlertDialogDescription>
               </AlertDialogHeader>

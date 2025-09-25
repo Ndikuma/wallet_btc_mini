@@ -306,7 +306,7 @@ export function SettingsClient() {
                     textToCopy={wif || ''}
                     disabled={isBackupLoading || !wif}
                     toastMessage="Private key copied"
-                    onClick={closeBackupDialog}
+                    onCopy={closeBackupDialog}
                     className="w-full sm:w-auto"
                    >
                     Copy Key & Close

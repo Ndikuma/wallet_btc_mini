@@ -6,12 +6,13 @@ import { Button, type ButtonProps } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-interface CopyButtonProps extends ButtonProps {
+interface CopyButtonProps extends Omit<ButtonProps, 'onClick'> {
   textToCopy: string;
   toastMessage?: string;
+  onCopy?: () => void;
 }
 
-export function CopyButton({ textToCopy, toastMessage, children, className, ...props }: CopyButtonProps) {
+export function CopyButton({ textToCopy, toastMessage, children, className, onCopy, ...props }: CopyButtonProps) {
   const { toast } = useToast();
 
   const handleCopy = () => {
@@ -19,6 +20,9 @@ export function CopyButton({ textToCopy, toastMessage, children, className, ...p
     toast({
       title: toastMessage || "Copied to clipboard",
     });
+    if (onCopy) {
+      onCopy();
+    }
   };
 
   return (

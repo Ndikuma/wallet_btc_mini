@@ -48,7 +48,7 @@ const formSchema = (balance: number) => z.object({
 export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
 
 interface SendFormProps {
-  onFormSubmit: (SendFormValues) => void;
+  onFormSubmit: (values: SendFormValues) => void;
   initialData?: SendFormValues | null;
   isConfirmationStep?: boolean;
   onBack?: () => void;
@@ -66,7 +66,16 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   const [balance, setBalance] = useState<Balance | null>(null);
   const [isBalanceLoading, setIsBalanceLoading] = useState(true);
   
-  const [form, setForm] = useState<UseFormReturn<SendFormValues> | null>(null);
+  const currentBalance = balance ? parseFloat(balance.balance) : 0;
+
+  const form = useForm<SendFormValues>({
+    resolver: zodResolver(formSchema(currentBalance)),
+    defaultValues: initialData || {
+      recipient: "",
+      amount: "" as any,
+    },
+    mode: "onChange",
+  });
 
   useEffect(() => {
     async function fetchBalance() {
@@ -97,28 +106,25 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
     fetchBalance();
   }, [router, toast]);
   
-  const currentBalance = balance ? parseFloat(balance.balance) : 0;
-  
-  // Initialize form
+  // Update the form resolver and values when the balance changes.
   useEffect(() => {
-    const newForm = {
-      ...zodResolver(formSchema(currentBalance)),
-      defaultValues: initialData || {
-        recipient: "",
-        amount: "" as any,
-      },
-      mode: "onChange",
-    };
-    
-    // Hack to get ts to recognize the form
-    const f: any = useForm<SendFormValues>(newForm as any);
-    setForm(f);
-
-  }, [currentBalance, initialData]);
+    const newBalance = balance ? parseFloat(balance.balance) : 0;
+    form.reset({
+        ...form.getValues(),
+        ...(initialData || {}),
+      }, {
+      // This is a bit of a workaround to update the resolver
+      // See: https://github.com/react-hook-form/react-hook-form/issues/7951
+      keepValues: true,
+      keepDirty: true,
+      keepErrors: true,
+    });
+    (form as any)._resolver = zodResolver(formSchema(newBalance));
+  }, [balance, form, initialData]);
 
 
    useEffect(() => {
-    if (!isScanning || !form) return;
+    if (!isScanning) return;
 
     let stream: MediaStream | null = null;
     let animationFrameId: number;
@@ -179,7 +185,6 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   }, [isScanning, toast, form]);
 
   const handleSetAmount = (percentage: number) => {
-    if (!form) return;
     const newAmount = currentBalance * percentage;
     form.setValue("amount", parseFloat(newAmount.toFixed(8)));
   };
@@ -213,7 +218,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   if (isConfirmationStep) {
     return (
         <div className="flex flex-col gap-4">
-             <Button type="button" size="lg" onClick={form?.handleSubmit(onSubmit)} disabled={isLoading}>
+             <Button type="button" size="lg" onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
                 {isLoading ? 'Sending...' : (
                     <>
                         <ArrowUpRight className="mr-2 size-5" />
@@ -229,7 +234,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
     );
   }
 
-  if (isBalanceLoading || !form) {
+  if (isBalanceLoading) {
     return (
         <div className="space-y-8">
             <div className="space-y-2">

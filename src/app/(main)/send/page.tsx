@@ -118,7 +118,7 @@ export default function SendPage() {
                     />
                     <TransactionDetailRow
                         label="Amount"
-                        value={`${transactionDetails.amount} BTC`}
+                        value={`${transactionDetails.amount.toFixed(8)} BTC`}
                     />
                     {loadingFee ? (
                        <div className="flex justify-between items-center">

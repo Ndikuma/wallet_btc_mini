@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { Wallet, Balance } from "@/lib/types";
 import { AxiosError } from "axios";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formSchema = (balance: number) => z.object({
   recipient: z
@@ -47,7 +48,7 @@ const formSchema = (balance: number) => z.object({
 export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
 
 interface SendFormProps {
-  onFormSubmit: (values: SendFormValues) => void;
+  onFormSubmit: (SendFormValues) => void;
   initialData?: SendFormValues | null;
   isConfirmationStep?: boolean;
   onBack?: () => void;
@@ -63,9 +64,11 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
+  const [isBalanceLoading, setIsBalanceLoading] = useState(true);
 
   useEffect(() => {
     async function fetchBalance() {
+      setIsBalanceLoading(true);
       try {
         const response = await api.getWalletBalance();
         setBalance(response.data);
@@ -85,11 +88,13 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
                 description: "Could not fetch wallet data. Please try again later.",
             });
         }
+      } finally {
+        setIsBalanceLoading(false);
       }
     }
     fetchBalance();
   }, [router, toast]);
-
+  
   const currentBalance = balance?.btc_value || 0;
 
   const form = useForm<SendFormValues>({
@@ -98,7 +103,13 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
       recipient: "",
       amount: "" as any,
     },
+    mode: "onChange",
   });
+
+  useEffect(() => {
+    // Reset the form with the new resolver when the balance is loaded
+    form.reset(initialData || { recipient: "", amount: "" as any });
+  }, [currentBalance, form, initialData]);
 
    useEffect(() => {
     if (!isScanning) return;
@@ -191,7 +202,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
       onFormSubmit(values);
     }
   }
-
+  
   if (isConfirmationStep) {
     return (
         <div className="flex flex-col gap-4">
@@ -210,6 +221,23 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
         </div>
     );
   }
+
+  if (isBalanceLoading) {
+    return (
+        <div className="space-y-8">
+            <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-11 w-full" />
+        </div>
+    )
+  }
+
 
   return (
     <>
@@ -289,7 +317,7 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" size="lg">
+          <Button type="submit" className="w-full" size="lg" disabled={!form.formState.isValid}>
             <ArrowUpRight className="mr-2 size-5" />
             Review Transaction
           </Button>

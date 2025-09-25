@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 type DisplayUnit = 'btc' | 'sats' | 'usd';
 type Currency = 'usd' | 'eur' | 'jpy' | 'bif';
@@ -21,56 +21,51 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 const defaultSettings: Settings = { displayUnit: 'btc', currency: 'usd' };
 
-const getSettingsFromStorage = (): Settings => {
-    if (typeof window !== 'undefined') {
-        const savedSettings = localStorage.getItem('walletSettings');
-        if (savedSettings) {
-            try {
-                const parsed = JSON.parse(savedSettings);
-                return {
-                    displayUnit: parsed.displayUnit || 'btc',
-                    currency: parsed.currency || 'usd',
-                };
-            } catch (e) {
-                console.error("Failed to parse settings from localStorage", e);
-                return defaultSettings;
-            }
-        }
-    }
-    return defaultSettings;
-};
-
-
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
   useEffect(() => {
     // This effect runs only on the client after initial render to sync with localStorage
+    const getSettingsFromStorage = (): Settings => {
+      if (typeof window !== 'undefined') {
+          const savedSettings = localStorage.getItem('walletSettings');
+          if (savedSettings) {
+              try {
+                  const parsed = JSON.parse(savedSettings);
+                  return {
+                      displayUnit: parsed.displayUnit || 'btc',
+                      currency: parsed.currency || 'usd',
+                  };
+              } catch (e) {
+                  console.error("Failed to parse settings from localStorage", e);
+                  return defaultSettings;
+              }
+          }
+      }
+      return defaultSettings;
+    };
     setSettings(getSettingsFromStorage());
   }, []);
 
+  const updateSettings = useCallback((newSettings: Partial<Settings>) => {
+    setSettings(prevSettings => {
+      const updated = { ...prevSettings, ...newSettings };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('walletSettings', JSON.stringify(updated));
+      }
+      return updated;
+    });
+  }, []);
 
-  useEffect(() => {
-    // This effect saves settings to localStorage whenever they change
-    if (typeof window !== 'undefined') {
-        try {
-            // We only save if the settings are not the default ones from first load
-            if (settings !== defaultSettings) {
-              localStorage.setItem('walletSettings', JSON.stringify(settings));
-            }
-        } catch (e) {
-            console.error("Could not save settings to localStorage", e);
-        }
-    }
-  }, [settings]);
 
-  const setDisplayUnit = (displayUnit: DisplayUnit) => {
-    setSettings(s => ({ ...s, displayUnit }));
-  };
+  const setDisplayUnit = useCallback((displayUnit: DisplayUnit) => {
+    updateSettings({ displayUnit });
+  }, [updateSettings]);
 
-  const setCurrency = (currency: Currency) => {
-    setSettings(s => ({ ...s, currency }));
-  };
+  const setCurrency = useCallback((currency: Currency) => {
+    updateSettings({ currency });
+  }, [updateSettings]);
+
 
   return (
     <SettingsContext.Provider value={{ settings, setDisplayUnit, setCurrency }}>

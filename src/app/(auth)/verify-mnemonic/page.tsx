@@ -107,32 +107,22 @@ export default function VerifyMnemonicPage() {
 
     try {
       if (!mnemonic) throw new Error("Mnemonic not found");
-
-      // Construct the payload with only the challenged words and their indices (1-based for backend)
-      const verificationPayload: { [key: string]: string } = {};
-      challengeIndices.forEach(index => {
-        verificationPayload[String(index + 1)] = originalWords[index];
-      });
       
-      const finalPayload = {
-        mnemonic,
-        words_to_verify: verificationPayload
-      }
-
-      await api.verifyMnemonic(finalPayload);
+      // Verification is successful on the client, now create the wallet on the backend
+      await api.createWallet(mnemonic);
 
       toast({
-        title: "Verification Successful",
+        title: "Wallet Created Successfully",
         description: "Your wallet is ready and secured.",
       });
       localStorage.removeItem("tempMnemonic");
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.error?.details?.detail || error.response?.data?.message || "An error occurred during verification.";
+      const errorMsg = error.response?.data?.error?.details?.detail || error.response?.data?.message || "An error occurred during wallet creation.";
       toast({
         variant: "destructive",
-        title: "Verification Failed",
+        title: "Wallet Creation Failed",
         description: errorMsg,
       });
     } finally {

@@ -43,10 +43,10 @@ export interface Balance {
   wallet_name: string;
   bitcoin_address: string;
   balance: string;
-  btc_value: number;
-  sats_value: number;
-  usd_value: number;
-  bif_value: number;
+  btc_value: string;
+  sats_value: string;
+  usd_value: string;
+  bif_value: string;
   last_updated: string;
 }
 

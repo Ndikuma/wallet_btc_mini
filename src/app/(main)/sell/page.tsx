@@ -8,7 +8,7 @@ import { z } from "zod";
 import api from "@/lib/api";
 import type { Balance, SellProvider, FeeEstimation } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote } from "lucide-react";
+import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,6 +88,8 @@ export default function SellPage() {
         resolver: zodResolver(providerSchema),
         mode: "onChange",
     });
+    
+    const watchedProviderId = providerForm.watch("providerId");
 
     useEffect(() => {
         async function fetchInitialData() {
@@ -184,8 +186,8 @@ export default function SellPage() {
     }
     
     const selectedProvider = useMemo(() => {
-        return providers.find(p => String(p.id) === formData.providerId);
-    }, [providers, formData.providerId]);
+        return providers.find(p => String(p.id) === watchedProviderId);
+    }, [providers, watchedProviderId]);
 
 
     if (isBalanceLoading || loadingProviders) {
@@ -236,7 +238,7 @@ export default function SellPage() {
                                 <FormItem>
                                     <FormLabel>Amount in BTC</FormLabel>
                                     <div className="relative">
-                                        <FormControl><Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ""} className="pl-8 text-lg h-12"/></FormControl>
+                                        <FormControl><Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ''} className="pl-8 text-lg h-12"/></FormControl>
                                         <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     </div>
                                     <div className="flex gap-2 pt-2">
@@ -303,6 +305,20 @@ export default function SellPage() {
                                     </FormItem>
                                 )}
                             />
+                            {selectedProvider && (
+                                <Card className="bg-secondary/30">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <Info className="size-5 text-primary" />
+                                            Payment Instructions
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-muted-foreground">{selectedProvider.payment_info.instructions}</p>
+                                    </CardContent>
+                                </Card>
+                            )}
+
                              <FormField
                                 control={providerForm.control}
                                 name="paymentDetails"
@@ -387,3 +403,5 @@ export default function SellPage() {
         </div>
     );
 }
+
+    

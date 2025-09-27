@@ -134,7 +134,13 @@ export default function BuyWithProviderPage() {
     }
     setIsSubmitting(true);
     try {
-        const order = await api.createOrder(provider.id, data.amount, data.currency);
+        const orderPayload = {
+            provider_id: provider.id,
+            amount: data.amount,
+            amount_currency: data.currency,
+            direction: 'buy' as 'buy',
+        };
+        const order = await api.createOrder(orderPayload);
         toast({ title: 'Order Created', description: `Your order #${order.data.id} has been created.` });
         router.push(`/orders/${order.data.id}`);
     } catch (err: any) {

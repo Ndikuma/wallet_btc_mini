@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Bitcoin,
   AlertTriangle,
+  Banknote,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -262,7 +263,7 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3">
                            {getStatusIcon(order.status)}
                            <div>
-                                <CardTitle className="text-2xl">{order.direction === 'buy' ? 'Buy' : 'Sell'} Order #{order.id}</CardTitle>
+                                <CardTitle className="text-2xl capitalize">{order.direction} Order #{order.id}</CardTitle>
                                 <CardDescription>on {new Date(order.created_at).toLocaleDateString('en-us', { year: 'numeric', month: 'long', day: 'numeric'})}</CardDescription>
                            </div>
                         </div>
@@ -274,7 +275,7 @@ export default function OrderDetailsPage() {
                          <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>{order.amount} {order.amount_currency}</span></div>
                          <div className="flex justify-between"><span className="text-muted-foreground">Fee</span><span>{order.fee} {order.amount_currency}</span></div>
                          <Separator />
-                         <div className="flex justify-between font-bold text-base"><span >Total Paid</span><span>{order.total_amount} {order.amount_currency}</span></div>
+                         <div className="flex justify-between font-bold text-base"><span >Total</span><span>{order.total_amount} {order.amount_currency}</span></div>
                     </div>
                      <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
                          <div className="flex justify-between"><span className="text-muted-foreground">Provider</span><span className="font-semibold">{order.provider.name}</span></div>
@@ -288,6 +289,23 @@ export default function OrderDetailsPage() {
                     </Button>
                 </CardFooter>
             </Card>
+
+            {order.direction === 'sell' && order.payout_data?.details && (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                           <Banknote className="size-5 text-primary" />
+                           Payout Details
+                        </CardTitle>
+                        <CardDescription>Your funds will be sent to the following account:</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="font-mono text-sm font-semibold p-4 rounded-lg bg-secondary/30 border break-all">
+                            {order.payout_data.details}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {order.status === 'completed' && order.btc_amount && (
                 <Card>
@@ -331,7 +349,7 @@ export default function OrderDetailsPage() {
                 </Card>
             )}
 
-            {order.status === 'pending' && <PaymentProofForm order={order} onSuccessfulSubmit={handleSuccessfulSubmit} />}
+            {order.direction === 'buy' && order.status === 'pending' && <PaymentProofForm order={order} onSuccessfulSubmit={handleSuccessfulSubmit} />}
         </div>
     );
 }

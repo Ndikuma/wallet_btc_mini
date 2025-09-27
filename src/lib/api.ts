@@ -56,20 +56,21 @@ const createResponseInterceptor = (instance: typeof axiosInstance) => {
         if (error.code === 'ERR_NETWORK') {
             error.message = 'Network Error: Could not connect to the backend.';
         } else if (error.response?.data) {
-            // Use the more specific error from the response body if available
             const apiError = error.response.data.error;
             const apiMessage = error.response.data.message;
             let errorMessage = "An unknown error occurred.";
-            if (apiError && typeof apiError.details === 'object' && apiError.details !== null) {
+            if (apiMessage) {
+                errorMessage = apiMessage;
+            } else if (apiError && typeof apiError.details === 'object' && apiError.details !== null) {
                 // Extract first error message from details object
                 const firstErrorKey = Object.keys(apiError.details)[0];
                 if (firstErrorKey && Array.isArray(apiError.details[firstErrorKey]) && apiError.details[firstErrorKey].length > 0) {
                     errorMessage = apiError.details[firstErrorKey][0];
                 } else {
-                    errorMessage = apiMessage || (typeof apiError === 'string' ? apiError : errorMessage);
+                    errorMessage = typeof apiError === 'string' ? apiError : errorMessage;
                 }
-            } else if (apiMessage) {
-                errorMessage = apiMessage;
+            } else if (typeof apiError === 'string') {
+                errorMessage = apiError;
             }
             error.message = errorMessage;
         }
@@ -103,7 +104,7 @@ const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>
 const restoreWallet = (data: string) => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = () => axiosInstance.get<{ wif: string }>('wallet/backup/');
 const estimateFee = (values: { recipient: string, amount: number }) => {
-    return axiosInstance.post<FeeEstimation>('wallet/estimate-fee/', {
+    return axiosInstance.post<FeeEstimation>('wallet/estimate_fee/', {
         to_address: values.recipient,
         amount: values.amount
     });

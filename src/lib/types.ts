@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: number;
   username: string;
@@ -85,11 +86,33 @@ export interface FeeEstimation {
 }
 
 export interface BuyProvider {
-  id: string;
+  id: number;
   name: string;
   logo_url: string;
   description: string;
   supported_currencies: string[];
+  payment_info: {
+    method: string;
+    instructions: string;
+  }
+}
+
+export interface BuyFeeCalculation {
+    amount: string;
+    fee: string;
+    total_amount: string;
+    currency: string;
+}
+
+export interface Order {
+    id: number;
+    provider_id: number;
+    amount: string;
+    amount_currency: string;
+    fee: string;
+    total_amount: string;
+    status: 'pending' | 'completed' | 'failed' | 'expired';
+    // Add other fields as needed
 }
 
 

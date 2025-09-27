@@ -1,6 +1,6 @@
 
 
-import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider } from '@/lib/types';
+import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
 const BACKEND_URL = 'https://knives-resume-handbags-lighting.trycloudflare.com/';
@@ -123,8 +123,14 @@ const sendTransaction = (values: { recipient: string; amount: number }) => {
     });
 };
 
-// Buy Providers
+// Buy / Sell
 const getBuyProviders = (): Promise<AxiosResponse<BuyProvider[]>> => axiosInstance.get('providers/buy/');
+const calculateBuyFee = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<BuyFeeCalculation>> => {
+    return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount, currency });
+}
+const createOrder = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<Order>> => {
+    return axiosInstance.post('orders/', { provider_id: providerId, amount, amount_currency: currency });
+}
 
 
 const api = {
@@ -146,6 +152,8 @@ const api = {
     sendTransaction,
     estimateFee,
     getBuyProviders,
+    calculateBuyFee,
+    createOrder,
 };
 
 export default api;

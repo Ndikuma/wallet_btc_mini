@@ -1,5 +1,4 @@
 
-
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -7,30 +6,20 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('authToken');
   const { pathname } = request.nextUrl;
 
-  const authRoutes = [
-    '/login', 
-    '/register', 
-    '/create-or-restore', 
-    '/create-wallet', 
-    '/restore-wallet', 
-    '/verify-mnemonic'
-  ];
+  const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/create-or-restore') || pathname.startsWith('/create-wallet') || pathname.startsWith('/restore-wallet') || pathname.startsWith('/verify-mnemonic');
   
-  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
-  const isMainAppRoute = !isAuthRoute && pathname !== '/';
-
-
   // If the user is authenticated
   if (token) {
-    // If they are on an auth route, redirect to the main app page
-    if (isAuthRoute) {
+    // and tries to access an authentication page, redirect to the main dashboard.
+    if (isAuthPage) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   } 
   // If the user is not authenticated
   else {
-    // And they are trying to access a protected route (any route in the main app)
-    if (isMainAppRoute) {
+    // and tries to access any page other than the landing page or auth pages,
+    // redirect them to the login page.
+    if (pathname !== '/' && !isAuthPage) {
        return NextResponse.redirect(new URL('/login', request.url));
     }
   }

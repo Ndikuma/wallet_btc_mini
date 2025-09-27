@@ -82,7 +82,8 @@ export function SendForm() {
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
   const estimateFee = useCallback(async (amount: number) => {
-      if (amount > 0) {
+      const recipientState = form.getFieldState('recipient');
+      if (amount > 0 && !recipientState.invalid) {
         setIsEstimatingFee(true);
         setFeeError(null);
         try {
@@ -99,17 +100,11 @@ export function SendForm() {
         setFeeEstimation(null);
         setFeeError(null);
       }
-  }, []);
+  }, [form]);
 
   useEffect(() => {
-    const recipientState = form.getFieldState('recipient');
-    if (debouncedAmount > 0 && !recipientState.invalid) {
-        estimateFee(debouncedAmount);
-    } else {
-        setFeeEstimation(null);
-        setFeeError(null);
-    }
-  }, [debouncedAmount, form, estimateFee])
+    estimateFee(debouncedAmount);
+  }, [debouncedAmount, estimateFee])
 
 
   useEffect(() => {
@@ -303,7 +298,7 @@ export function SendForm() {
                  <div className="flex gap-2 pt-1">
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.25)}>25%</Button>
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.5)}>50%</Button>
-                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(1)}>Max</Button>
+                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.75)}>75%</Button>
                 </div>
                 <FormMessage />
               </FormItem>

@@ -76,13 +76,12 @@ export interface Transaction {
 }
 
 export interface FeeEstimation {
-    amount_btc: string;
-    to_address: string;
+    sendable_btc: string;
     network_fee_btc: string;
-    service_fee_btc: string;
-    total_fee_btc: string;
-    change_btc: string;
-    tx_size_bytes: number;
+    sendable_usd: number;
+    sendable_bif: number;
+    network_fee_usd: number;
+    network_fee_bif: number;
 }
 
 

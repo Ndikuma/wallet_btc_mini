@@ -2,9 +2,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import jsQR from "jsqr";
 import {
   Form,
@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Edit } from "lucide-react";
+import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,9 +30,12 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { Wallet, Balance } from "@/lib/types";
+import type { Balance, FeeEstimation } from "@/lib/types";
 import { AxiosError } from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/use-debounce";
+import { cn } from "@/lib/utils";
+import { useSettings } from "@/context/settings-context";
 
 const formSchema = (balance: number) => z.object({
   recipient: z
@@ -40,42 +43,75 @@ const formSchema = (balance: number) => z.object({
     .min(26, { message: "Bitcoin address is too short." })
     .max(62, { message: "Bitcoin address is too long." }),
   amount: z.coerce
-    .number()
+    .number({invalid_type_error: "Please enter a valid number."})
     .positive({ message: "Amount must be positive." })
     .max(balance, { message: `Insufficient balance. Available: ${balance.toFixed(8)} BTC` }),
 });
 
 export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
 
-interface SendFormProps {
-  onFormSubmit: (values: SendFormValues) => void;
-  initialData?: SendFormValues | null;
-  isConfirmationStep?: boolean;
-  onBack?: () => void;
-}
 
-export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false, onBack }: SendFormProps) {
+export function SendForm() {
   const { toast } = useToast();
   const router = useRouter();
+  const { settings } = useSettings();
+
   const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  
   const [balance, setBalance] = useState<Balance | null>(null);
   const [isBalanceLoading, setIsBalanceLoading] = useState(true);
+
+  const [feeEstimation, setFeeEstimation] = useState<FeeEstimation | null>(null);
+  const [isEstimatingFee, setIsEstimatingFee] = useState(false);
+  const [feeError, setFeeError] = useState<string | null>(null);
   
   const currentBalance = balance ? parseFloat(balance.balance) : 0;
 
   const form = useForm<SendFormValues>({
     resolver: zodResolver(formSchema(currentBalance)),
-    defaultValues: initialData || {
-      recipient: "",
-      amount: "" as any,
-    },
+    defaultValues: { recipient: "", amount: "" as any, },
     mode: "onChange",
   });
+
+  const watchedAmount = form.watch("amount");
+  const watchedRecipient = form.watch("recipient");
+  const debouncedAmount = useDebounce(watchedAmount, 500);
+
+  const estimateFee = useCallback(async (amount: number, recipient: string) => {
+      if (amount > 0 && recipient) {
+        setIsEstimatingFee(true);
+        setFeeError(null);
+        try {
+            const feeResponse = await api.estimateFee({ amount, recipient });
+            setFeeEstimation(feeResponse.data);
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
+            setFeeError(errorMsg);
+            setFeeEstimation(null);
+        } finally {
+            setIsEstimatingFee(false);
+        }
+      } else {
+        setFeeEstimation(null);
+        setFeeError(null);
+      }
+  }, []);
+
+  useEffect(() => {
+    const recipientState = form.getFieldState('recipient');
+    if (debouncedAmount > 0 && !recipientState.invalid && watchedRecipient) {
+        estimateFee(debouncedAmount, watchedRecipient);
+    } else {
+        setFeeEstimation(null);
+        setFeeError(null);
+    }
+  }, [debouncedAmount, watchedRecipient, form, estimateFee])
+
 
   useEffect(() => {
     async function fetchBalance() {
@@ -83,26 +119,16 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
       try {
         const response = await api.getWalletBalance();
         setBalance(response.data);
-        // After fetching the balance, trigger validation for the amount field
-        // as its validation rules depend on the balance.
         if (form.getValues("amount")) {
             form.trigger("amount");
         }
       } catch (error) {
         if (error instanceof AxiosError && error.response?.status === 401) {
-            toast({
-                variant: "destructive",
-                title: "Authentication Error",
-                description: "You need to be logged in to send Bitcoin. Redirecting to login...",
-            });
+            toast({ variant: "destructive", title: "Authentication Error", description: "Please log in to send Bitcoin." });
             router.push("/login");
         } else {
             console.error("Failed to fetch wallet data for send form", error);
-             toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Could not fetch wallet data. Please try again later.",
-            });
+             toast({ variant: "destructive", title: "Error", description: "Could not fetch wallet data." });
         }
       } finally {
         setIsBalanceLoading(false);
@@ -111,19 +137,11 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
     fetchBalance();
   }, [router, toast, form]);
   
-  // Update the form resolver and values when the balance changes.
   useEffect(() => {
     const newBalance = balance ? parseFloat(balance.balance) : 0;
     (form.control as any)._resolver = zodResolver(formSchema(newBalance));
-     form.reset({
-        ...form.getValues(),
-        ...(initialData || {}),
-      }, {
-      keepValues: true,
-      keepDirty: true,
-      keepErrors: true,
-    });
-  }, [balance, form, initialData]);
+     form.reset({ ...form.getValues() }, { keepValues: true, keepDirty: true, keepErrors: true });
+  }, [balance, form]);
 
 
    useEffect(() => {
@@ -147,11 +165,8 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
           
           if (code) {
             const address = code.data.replace(/^bitcoin:/, "").split("?")[0];
-            form.setValue("recipient", address);
-            toast({
-              title: "QR Code Scanned",
-              description: `Recipient address set.`
-            });
+            form.setValue("recipient", address, { shouldValidate: true });
+            toast({ title: "QR Code Scanned", description: `Recipient address set.` });
             setIsScanning(false);
             return; 
           }
@@ -178,87 +193,63 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
     startScan();
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
+      if (stream) stream.getTracks().forEach(track => track.stop());
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, [isScanning, toast, form]);
 
   const handleSetAmount = (percentage: number) => {
     const newAmount = currentBalance * percentage;
-    form.setValue("amount", parseFloat(newAmount.toFixed(8)));
-    form.trigger("amount");
+    form.setValue("amount", parseFloat(newAmount.toFixed(8)), { shouldValidate: true, shouldDirty: true });
   };
 
   async function onSubmit(values: SendFormValues) {
-    if (isConfirmationStep) {
-        setIsLoading(true);
-        try {
-            const response = await api.sendTransaction(values);
-            toast({
-                title: (response.data as any).message || "Transaction Submitted",
-                description: `Sending ${values.amount} BTC. You will be notified once confirmed.`,
-            });
-            setIsSuccessDialogOpen(true);
-        } catch(error: any) {
-            const errorDetails = error.response?.data?.error?.details;
-            const errorMsg = errorDetails?.error || errorDetails?.non_field_errors?.[0] || error.response?.data?.message || "An unexpected error occurred.";
-            toast({
-                variant: "destructive",
-                title: "Transaction Failed",
-                description: errorMsg,
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    } else {
-      onFormSubmit(values);
+    if (!feeEstimation) {
+        toast({ variant: "destructive", title: "Cannot Send", description: "Waiting for fee estimation to complete." });
+        return;
+    }
+    setIsLoading(true);
+    try {
+        const response = await api.sendTransaction({
+            recipient: values.recipient,
+            amount: parseFloat(feeEstimation.sendable_btc)
+        });
+        toast({
+            title: (response.data as any).message || "Transaction Submitted",
+            description: `Sending ${feeEstimation.sendable_btc} BTC.`,
+        });
+        setIsSuccessDialogOpen(true);
+    } catch(error: any) {
+        const errorDetails = error.response?.data?.error?.details;
+        const errorMsg = errorDetails?.error || errorDetails?.non_field_errors?.[0] || error.response?.data?.message || "An unexpected error occurred.";
+        toast({
+            variant: "destructive",
+            title: "Transaction Failed",
+            description: errorMsg,
+        });
+    } finally {
+        setIsLoading(false);
     }
   }
-  
-  if (isConfirmationStep) {
-    return (
-        <div className="flex flex-col gap-4">
-             <Button type="button" size="lg" onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
-                {isLoading ? 'Sending...' : (
-                    <>
-                        <ArrowUpRight className="mr-2 size-5" />
-                        Confirm & Send
-                    </>
-                )}
-            </Button>
-            <Button type="button" variant="outline" size="lg" onClick={onBack} disabled={isLoading}>
-                <Edit className="mr-2 size-5" />
-                Edit
-            </Button>
-        </div>
-    );
+
+  const getFiat = (val: number, currency: string) => {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(val);
   }
 
   if (isBalanceLoading) {
     return (
         <div className="space-y-8">
-            <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-10 w-full" />
-            </div>
-            <div className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-10 w-full" />
-            </div>
+            <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
             <Skeleton className="h-11 w-full" />
         </div>
     )
   }
 
-
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
             name="recipient"
@@ -271,33 +262,21 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
                   </FormControl>
                   <Dialog open={isScanning} onOpenChange={setIsScanning}>
                     <DialogTrigger asChild>
-                       <Button variant="outline" size="icon" type="button">
-                        <ScanLine className="size-5" />
-                        <span className="sr-only">Scan QR Code</span>
-                      </Button>
+                       <Button variant="outline" size="icon" type="button"><ScanLine className="size-5" /><span className="sr-only">Scan QR</span></Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader className="text-center">
                         <DialogTitle>Scan QR Code</DialogTitle>
-                        <DialogDescription>
-                          Point your camera at a Bitcoin address QR code.
-                        </DialogDescription>
+                        <DialogDescription>Point camera at a Bitcoin address QR code.</DialogDescription>
                       </DialogHeader>
                       <div className="flex flex-col items-center gap-4">
                         <div className="relative w-full aspect-square bg-muted rounded-md overflow-hidden">
                            <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
                            <canvas ref={canvasRef} className="hidden" />
-                           <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
-                             <div className="w-2/3 h-2/3 border-4 border-primary rounded-lg" />
-                          </div>
+                           <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none"><div className="w-2/3 h-2/3 border-4 border-primary rounded-lg" /></div>
                         </div>
                         {hasCameraPermission === false && (
-                          <Alert variant="destructive">
-                            <AlertTitle>Camera Access Required</AlertTitle>
-                            <AlertDescription>
-                              Please allow camera access in your browser settings to use this feature.
-                            </AlertDescription>
-                          </Alert>
+                          <Alert variant="destructive"><AlertTitle>Camera Access Required</AlertTitle><AlertDescription>Please allow camera access to use this feature.</AlertDescription></Alert>
                         )}
                       </div>
                     </DialogContent>
@@ -313,15 +292,11 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
             render={({ field }) => (
               <FormItem>
                  <div className="flex items-center justify-between">
-                    <FormLabel>Amount</FormLabel>
-                    <span className="text-xs text-muted-foreground">
-                        Balance: {currentBalance.toFixed(8)} BTC
-                    </span>
+                    <FormLabel>Amount to Send</FormLabel>
+                    <span className="text-xs text-muted-foreground">Balance: {currentBalance.toFixed(8)} BTC</span>
                  </div>
                  <div className="relative">
-                    <FormControl>
-                      <Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ""} className="pl-8"/>
-                    </FormControl>
+                    <FormControl><Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ""} className="pl-8"/></FormControl>
                     <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                  </div>
                  <div className="flex gap-2 pt-1">
@@ -333,35 +308,64 @@ export function SendForm({ onFormSubmit, initialData, isConfirmationStep = false
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" size="lg" disabled={!form.formState.isValid || isBalanceLoading}>
-            <ArrowUpRight className="mr-2 size-5" />
-            Review Transaction
+          
+          {(isEstimatingFee || feeEstimation || feeError) && (
+            <div className="space-y-4 rounded-lg border bg-secondary/30 p-4">
+                {isEstimatingFee && <div className="flex items-center justify-center text-sm text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin" /> Estimating fees...</div>}
+                {feeError && <div className="text-sm text-center text-destructive">{feeError}</div>}
+                {feeEstimation && (
+                    <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Network Fee</span>
+                            <span className="font-medium text-right font-code">{feeEstimation.network_fee_btc} BTC<br/><span className="text-muted-foreground text-xs">({getFiat(feeEstimation.network_fee_usd, 'USD')})</span></span>
+                        </div>
+                         <div className="border-t border-dashed"></div>
+                        <div className="flex justify-between items-center">
+                            <span className="font-bold">You will send</span>
+                            <span className="font-bold text-right font-code text-base">{feeEstimation.sendable_btc} BTC<br/><span className="text-muted-foreground text-xs">({getFiat(feeEstimation.sendable_usd, 'USD')})</span></span>
+                        </div>
+                    </div>
+                )}
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" size="lg" disabled={!form.formState.isValid || isLoading || isEstimatingFee || !feeEstimation}>
+            {isLoading ? 'Sending...' : <><ArrowUpRight className="mr-2 size-5" />Send Bitcoin</>}
           </Button>
         </form>
       </Form>
       <Dialog open={isSuccessDialogOpen} onOpenChange={(open) => {
-        if (!open) {
-            router.push("/dashboard");
-        }
+        if (!open) router.push("/dashboard");
         setIsSuccessDialogOpen(open);
       }}>
         <DialogContent>
           <DialogHeader className="items-center text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-                  <CheckCircle2 className="size-10 text-green-600 dark:text-green-400" />
-              </div>
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20"><CheckCircle2 className="size-10 text-green-600 dark:text-green-400" /></div>
               <div className="space-y-2 pt-4">
                   <DialogTitle>Transaction Sent</DialogTitle>
-                  <DialogDescription className="text-muted-foreground">
-                      Your Bitcoin has been sent. It may take a few moments to confirm on the network.
-                  </DialogDescription>
+                  <DialogDescription className="text-muted-foreground">Your Bitcoin has been sent. It may take a few moments to confirm.</DialogDescription>
               </div>
           </DialogHeader>
-          <DialogClose asChild>
-              <Button className="w-full max-w-xs mx-auto">Done</Button>
-          </DialogClose>
+          <DialogClose asChild><Button className="w-full max-w-xs mx-auto">Done</Button></DialogClose>
         </DialogContent>
       </Dialog>
     </>
   );
+}
+
+// hooks/use-debounce.ts
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 }

@@ -235,7 +235,7 @@ export function SendForm() {
   }
 
   const getFiat = (val: number, currency: string) => {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(val);
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(val);
   }
 
   if (isBalanceLoading) {
@@ -319,12 +319,12 @@ export function SendForm() {
                     <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Network Fee</span>
-                            <span className="font-medium text-right font-code">{feeEstimation.network_fee_btc} BTC<br/><span className="text-muted-foreground text-xs">({getFiat(feeEstimation.network_fee_usd, 'USD')})</span></span>
+                            <span className="font-medium text-right font-code">{feeEstimation.network_fee_btc} BTC<br/><span className="text-muted-foreground text-xs">({getFiat(feeEstimation.network_fee_usd, settings.currency)})</span></span>
                         </div>
                          <div className="border-t border-dashed"></div>
                         <div className="flex justify-between items-center">
                             <span className="font-bold">You will send</span>
-                            <span className="font-bold text-right font-code text-base">{feeEstimation.sendable_btc} BTC<br/><span className="text-muted-foreground text-xs">({getFiat(feeEstimation.sendable_usd, 'USD')})</span></span>
+                            <span className="font-bold text-right font-code text-base">{feeEstimation.sendable_btc} BTC<br/><span className="text-muted-foreground text-xs">({getFiat(feeEstimation.sendable_usd, settings.currency)})</span></span>
                         </div>
                     </div>
                 )}
@@ -354,7 +354,3 @@ export function SendForm() {
     </>
   );
 }
-
-    
-
-    

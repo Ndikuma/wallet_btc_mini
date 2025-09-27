@@ -15,9 +15,10 @@ import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import type { User, Wallet } from "@/lib/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowRight, User as UserIcon, BarChart2, Clock, Hash, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowRight, User as UserIcon, BarChart2, Clock, Hash, TrendingUp, TrendingDown, Copy } from "lucide-react";
 import Link from "next/link";
 import { shortenText } from "@/lib/utils";
+import { CopyButton } from "@/components/copy-button";
 
 interface StatCardProps {
   icon: React.ElementType;
@@ -171,10 +172,29 @@ export default function ProfilePage() {
           <StatCard icon={Clock} title="Wallet Age (Days)" value={walletStats?.wallet_age_days} isLoading={loading} />
           <StatCard icon={TrendingDown} title="Total Sent" value={walletStats?.total_sent} isLoading={loading} />
           <StatCard icon={TrendingUp} title="Total Received" value={walletStats?.total_received} isLoading={loading} />
-          <StatCard icon={UserIcon} title="Primary Address" value={shortenText(wallet?.primary_address, 10, 10)} isLoading={loading} />
+          <Card className="flex flex-col justify-between p-4">
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Primary Address</p>
+                <UserIcon className="size-5 text-muted-foreground" />
+            </div>
+            {loading ? (
+                <Skeleton className="mt-2 h-7 w-full" />
+            ) : (
+                <div className="flex items-center gap-2 mt-2">
+                    <p className="text-sm font-code font-semibold break-all">{shortenText(wallet?.primary_address, 10, 10)}</p>
+                    <CopyButton
+                        textToCopy={wallet?.primary_address || ''}
+                        toastMessage="Address copied"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                    >
+                        <Copy className="size-3.5" />
+                    </CopyButton>
+                </div>
+            )}
+        </Card>
        </div>
     </div>
   );
 }
-
-    

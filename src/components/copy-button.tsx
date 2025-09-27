@@ -25,6 +25,15 @@ export function CopyButton({ textToCopy, toastMessage, children, className, onCo
     }
   };
 
+  if (!children) {
+    return (
+       <Button onClick={handleCopy} className={className} {...props}>
+         <Copy className="size-4" />
+         <span className="sr-only">Copy</span>
+      </Button>
+    )
+  }
+
   return (
     <Button onClick={handleCopy} className={cn("w-full", className)} {...props}>
       <Copy className="mr-2 size-4" />

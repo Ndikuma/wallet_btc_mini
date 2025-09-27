@@ -85,7 +85,7 @@ export interface FeeEstimation {
     network_fee_bif: number;
 }
 
-export interface BuyProvider {
+export interface Provider {
   id: number;
   name: string;
   logo_url: string;
@@ -96,6 +96,12 @@ export interface BuyProvider {
     instructions: string;
   }
 }
+
+export interface BuyProvider extends Provider {}
+export interface SellProvider extends Provider {
+  can_sell: boolean;
+}
+
 
 export interface BuyFeeCalculation {
     amount: string;

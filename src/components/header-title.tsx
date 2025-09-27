@@ -9,6 +9,7 @@ const getTitleFromPath = (path: string) => {
     if (path.startsWith('/send')) return 'Send';
     if (path.startsWith('/receive')) return 'Receive';
     if (path.startsWith('/buy')) return 'Buy Bitcoin';
+    if (path.startsWith('/sell')) return 'Sell Bitcoin';
     if (path.startsWith('/orders')) return 'My Orders';
     if (path.startsWith('/transactions')) return 'Transactions';
     if (path.startsWith('/profile')) return 'Profile';

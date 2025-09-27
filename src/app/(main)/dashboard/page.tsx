@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -53,7 +52,7 @@ const ActionCard = () => (
         <ActionButton icon={Send} label="Send" href="/send" />
         <ActionButton icon={Download} label="Receive" href="/receive" />
         <ActionButton icon={ShoppingCart} label="Buy" href="/buy" />
-        <ActionButton icon={Receipt} label="Sell" href="#" disabled />
+        <ActionButton icon={Receipt} label="Sell" href="/sell" />
     </div>
 )
 

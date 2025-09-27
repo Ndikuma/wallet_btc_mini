@@ -10,7 +10,8 @@ import {
   Send,
   Settings,
   User,
-  ShoppingCart
+  ShoppingCart,
+  Receipt
 } from "lucide-react";
 import { BitcoinIcon } from "@/components/icons";
 import {
@@ -29,6 +30,8 @@ const mainNavItems = [
   { path: "/dashboard", icon: Home, label: "Dashboard" },
   { path: "/send", icon: Send, label: "Send" },
   { path: "/receive", icon: Download, label: "Receive" },
+  { path: "/buy", icon: ShoppingCart, label: "Buy" },
+  { path: "/sell", icon: Receipt, label: "Sell" },
   { path: "/transactions", icon: History, label: "Transactions" },
   { path: "/orders", icon: ShoppingCart, label: "Orders" },
 ];

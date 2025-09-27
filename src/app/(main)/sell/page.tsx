@@ -56,7 +56,7 @@ const paymentDetailsSchema = z.object({
 })
 .refine(data => data.account_number || data.email, {
     message: "Either Account Number or Email must be provided.",
-    path: ["account_number"], // Can be assigned to any of the two, e.g. a general error
+    path: ["account_number"],
 });
 
 
@@ -148,15 +148,10 @@ export default function SellPage() {
             if (isStepValid) setFormData(prev => ({...prev, ...providerForm.getValues()}))
         } else if (currentStep === 3) {
             isStepValid = await paymentDetailsForm.trigger();
-            if (isStepValid) setFormData(prev => ({...prev, paymentDetails: paymentDetailsForm.getValues()}))
-        } else if (currentStep === 4) {
-             isStepValid = true; // This is the confirmation step
-        }
-
-        if (isStepValid) {
-            if (currentStep === 3) { // After payment details, estimate fee for final step
-                 const newFormData = { ...formData, paymentDetails: paymentDetailsForm.getValues() };
-                if (newFormData.amount) {
+            if (isStepValid) {
+                const newFormData = { ...formData, paymentDetails: paymentDetailsForm.getValues() };
+                setFormData(newFormData);
+                 if (newFormData.amount) {
                     setIsEstimatingFee(true);
                     setFeeError(null);
                     try {
@@ -171,6 +166,9 @@ export default function SellPage() {
                     }
                 }
             }
+        }
+
+        if (isStepValid) {
             setCurrentStep(prev => prev + 1);
         }
     }
@@ -189,10 +187,8 @@ export default function SellPage() {
         }
 
         setIsSubmitting(true);
-
-        // Format paymentDetails into the array structure
         const payoutData = Object.entries(formData.paymentDetails)
-            .filter(([, value]) => value) // Remove empty/optional fields
+            .filter(([, value]) => value)
             .map(([field, value]) => ({ field, value }));
 
 

@@ -88,7 +88,7 @@ export default function DashboardPage() {
     setTransactionsError(null);
     try {
       const transactionsRes = await api.getTransactions();
-      setRecentTransactions(transactionsRes.data.results || []);
+      setRecentTransactions(transactionsRes.data || []);
     } catch (err: any) {
        if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
           setTransactionsError("Network error. Could not connect to the server.");

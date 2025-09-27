@@ -82,7 +82,15 @@ export interface FeeEstimation {
     sendable_bif: number;
     network_fee_usd: number;
     network_fee_bif: number;
-g}
+}
+
+export interface BuyProvider {
+  id: string;
+  name: string;
+  logo_url: string;
+  description: string;
+  supported_currencies: string[];
+}
 
 
 export interface ApiErrorDetails {

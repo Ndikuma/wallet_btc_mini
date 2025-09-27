@@ -52,7 +52,7 @@ const ActionCard = () => (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <ActionButton icon={Send} label="Send" href="/send" />
         <ActionButton icon={Download} label="Receive" href="/receive" />
-        <ActionButton icon={ShoppingCart} label="Buy" href="#" disabled />
+        <ActionButton icon={ShoppingCart} label="Buy" href="/buy" />
         <ActionButton icon={Receipt} label="Sell" href="#" disabled />
     </div>
 )

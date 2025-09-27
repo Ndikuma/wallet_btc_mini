@@ -36,7 +36,6 @@ export default function ReceivePage() {
         await generateNewAddressFn(true); // First time generation
       }
     } catch (error) {
-      console.error("Failed to fetch wallet address, generating new one.", error);
       await generateNewAddressFn(true);
     } finally {
       setLoading(false);

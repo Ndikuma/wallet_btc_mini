@@ -33,7 +33,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { Badge, badgeVariants } from "@/components/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { VariantProps } from "class-variance-authority";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -262,7 +262,7 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3">
                            {getStatusIcon(order.status)}
                            <div>
-                                <CardTitle className="text-2xl">Order #{order.id}</CardTitle>
+                                <CardTitle className="text-2xl">{order.direction === 'buy' ? 'Buy' : 'Sell'} Order #{order.id}</CardTitle>
                                 <CardDescription>on {new Date(order.created_at).toLocaleDateString('en-us', { year: 'numeric', month: 'long', day: 'numeric'})}</CardDescription>
                            </div>
                         </div>

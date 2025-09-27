@@ -109,6 +109,7 @@ export interface Order {
     user: string;
     provider: BuyProvider; // Nested provider details
     provider_id: number;
+    direction: 'buy' | 'sell';
     amount_currency: string;
     amount: string;
     fee: string;

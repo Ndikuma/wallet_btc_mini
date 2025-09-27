@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, ArrowRight, ShoppingCart, Clock, CircleCheck, CircleX } from "lucide-react";
+import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/badge";
 import { cn } from "@/lib/utils";
@@ -45,7 +45,7 @@ const OrderCard = ({ order }: { order: Order }) => (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 {getStatusIcon(order.status)}
-                <CardTitle className="text-lg">Order #{order.id}</CardTitle>
+                <CardTitle className="text-lg">{order.direction === 'buy' ? 'Buy' : 'Sell'} Order #{order.id}</CardTitle>
             </div>
             <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status}</Badge>
         </div>

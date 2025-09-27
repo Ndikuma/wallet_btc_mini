@@ -129,7 +129,12 @@ const calculateBuyFee = (providerId: number, amount: number, currency: string): 
     return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount, currency });
 }
 const createOrder = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<Order>> => {
-    return axiosInstance.post('orders/', { provider_id: providerId, amount, amount_currency: currency });
+    return axiosInstance.post('orders/', { 
+        provider_id: providerId, 
+        amount, 
+        amount_currency: currency,
+        direction: 'buy',
+    });
 }
 
 // Orders

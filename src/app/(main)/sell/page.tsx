@@ -142,10 +142,16 @@ export default function SellPage() {
         let isStepValid = false;
         if (currentStep === 1) {
             isStepValid = await amountForm.trigger();
-            if (isStepValid) setFormData(prev => ({...prev, ...amountForm.getValues()}))
+            if (isStepValid) {
+                setFormData(prev => ({...prev, ...amountForm.getValues()}));
+                setCurrentStep(2);
+            }
         } else if (currentStep === 2) {
             isStepValid = await providerForm.trigger();
-            if (isStepValid) setFormData(prev => ({...prev, ...providerForm.getValues()}))
+            if (isStepValid) {
+                setFormData(prev => ({...prev, ...providerForm.getValues()}));
+                setCurrentStep(3);
+            }
         } else if (currentStep === 3) {
             isStepValid = await paymentDetailsForm.trigger();
             if (isStepValid) {
@@ -165,11 +171,8 @@ export default function SellPage() {
                         setIsEstimatingFee(false);
                     }
                 }
+                setCurrentStep(4);
             }
-        }
-
-        if (isStepValid) {
-            setCurrentStep(prev => prev + 1);
         }
     }
 

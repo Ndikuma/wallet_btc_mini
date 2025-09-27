@@ -140,7 +140,9 @@ export function SendForm() {
   useEffect(() => {
     const newBalance = balance ? parseFloat(balance.balance) : 0;
     (form.control as any)._resolver = zodResolver(formSchema(newBalance));
-     form.reset({ ...form.getValues() }, { keepValues: true, keepDirty: true, keepErrors: true });
+     if (form.formState.isDirty) {
+      form.trigger("amount");
+    }
   }, [balance, form]);
 
 
@@ -351,21 +353,4 @@ export function SendForm() {
       </Dialog>
     </>
   );
-}
-
-// hooks/use-debounce.ts
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
 }

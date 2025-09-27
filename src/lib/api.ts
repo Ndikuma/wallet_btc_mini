@@ -34,35 +34,28 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 const createResponseInterceptor = (instance: typeof axios) => {
-    const onResponse = (response: AxiosResponse<ApiResponse<any>>) => {
-        // For paginated responses, the actual data is in `results`
-        if (response.data?.data && typeof response.data.data === 'object' && 'results' in response.data.data) {
-          return { ...response, data: response.data.data.results };
-        }
-        // For standard data responses
-        if (response.data?.data) {
-          return { ...response, data: response.data.data };
-        }
-        // For success responses that might not have a `data` wrapper (like logout)
-        if (response.data?.success) {
-            return response;
-        }
-        // Handle cases where `success` is false
-        if (response.data && !response.data.success) {
-           return Promise.reject(response.data);
-        }
+    const onResponse = (response: AxiosResponse) => {
+      // The backend wraps successful responses in a `data` object.
+      // We extract it here to simplify data access in the components.
+      if (response.data && response.data.success) {
+        return { ...response, data: response.data.data };
+      }
+      // For cases like logout that might just return { success: true }
+      if (response.data && response.data.success === true && response.data.data === undefined) {
         return response;
+      }
+      return response;
     };
 
     const onError = (error: AxiosError<ApiResponse<any>>) => {
         if (error.code === 'ERR_NETWORK') {
             error.message = 'Network Error: Could not connect to the backend.';
-        } else if (error.response?.data) {
-            const apiMessage = error.response.data.message;
+        } else if (error.response?.data?.error) {
             const apiError = error.response.data.error;
             let errorMessage = "An unexpected error occurred.";
 
-            if (apiError?.details && typeof apiError.details === 'object' && Object.keys(apiError.details).length > 0) {
+            // Attempt to find the most specific error message
+            if (apiError.details && typeof apiError.details === 'object' && Object.keys(apiError.details).length > 0) {
                 const firstErrorKey = Object.keys(apiError.details)[0];
                 const errorValue = apiError.details[firstErrorKey];
                 if (Array.isArray(errorValue) && errorValue.length > 0) {
@@ -70,14 +63,19 @@ const createResponseInterceptor = (instance: typeof axios) => {
                 } else if (typeof errorValue === 'string') {
                     errorMessage = errorValue;
                 }
-            } else if (apiMessage) {
-                errorMessage = apiMessage;
-            } else if (typeof apiError === 'string') {
+            } else if (apiError.message) {
+                 errorMessage = apiError.message;
+            } else if (error.response.data.message) {
+                errorMessage = error.response.data.message;
+            } else if (typeof apiError === 'string') { // Fallback for simple string errors
                 errorMessage = apiError;
             }
-
+            
             error.message = errorMessage;
+        } else if (error.response?.data?.message) {
+             error.message = error.response.data.message;
         }
+
         return Promise.reject(error);
     };
 
@@ -89,34 +87,34 @@ createResponseInterceptor(publicAxiosInstance);
 
 
 // Authentication - Use public instance
-const login = (credentials: any) => publicAxiosInstance.post<AuthResponse>('auth/login/', credentials);
-const register = (userInfo: any) => publicAxiosInstance.post<AuthResponse>('auth/register/', userInfo);
+const login = (credentials: any): Promise<AxiosResponse<AuthResponse>> => publicAxiosInstance.post('auth/login/', credentials);
+const register = (userInfo: any): Promise<AxiosResponse<AuthResponse>> => publicAxiosInstance.post('auth/register/', userInfo);
 const logout = () => axiosInstance.post('auth/logout/');
 
 // User Profile
-const getUserProfile = () => axiosInstance.get<User>('user/profile/');
-const updateUserProfile = (data: { first_name?: string, last_name?: string }) => axiosInstance.patch<User>('user/profile/', data);
-const getUser = () => axiosInstance.get<User>('user/');
+const getUserProfile = (): Promise<AxiosResponse<User>> => axiosInstance.get('user/profile/');
+const updateUserProfile = (data: { first_name?: string, last_name?: string }): Promise<AxiosResponse<User>> => axiosInstance.patch('user/profile/', data);
+const getUser = (): Promise<AxiosResponse<User>> => axiosInstance.get('user/');
 
 
 // Wallet
-const getWallets = () => axiosInstance.get<Wallet[]>('wallet/');
-const getWalletBalance = () => axiosInstance.get<Balance>('wallet/balance/');
-const generateMnemonic = () => axiosInstance.post<{ mnemonic: string }>('wallet/generate_mnemonic/');
+const getWallets = (): Promise<AxiosResponse<Wallet[]>> => axiosInstance.get('wallet/');
+const getWalletBalance = (): Promise<AxiosResponse<Balance>> => axiosInstance.get('wallet/balance/');
+const generateMnemonic = (): Promise<AxiosResponse<{ mnemonic: string }>> => axiosInstance.post('wallet/generate_mnemonic/');
 const createWallet = (mnemonic: string) => axiosInstance.post('wallet/create_wallet/', { mnemonic });
-const generateNewAddress = () => axiosInstance.post<{ address: string }>('wallet/generate_address/');
-const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('wallet/generate_qr_code/', { data });
+const generateNewAddress = (): Promise<AxiosResponse<{ address: string }>> => axiosInstance.post('wallet/generate_address/');
+const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }>> => axiosInstance.post('wallet/generate_qr_code/', { data });
 const restoreWallet = (data: string) => axiosInstance.post('wallet/restore/', { data });
-const backupWallet = () => axiosInstance.get<{ wif: string }>('wallet/backup/');
-const estimateFee = (values: { amount: number }) => {
-    return axiosInstance.post<FeeEstimation>('wallet/estimate_fee/', {
+const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
+const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstimation>> => {
+    return axiosInstance.post('wallet/estimate_fee/', {
         amount: values.amount
     });
 }
 
 
 // Transactions
-const getTransactions = () => axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
+const getTransactions = (): Promise<AxiosResponse<PaginatedResponse<Transaction>>> => axiosInstance.get('transaction/');
 const sendTransaction = (values: { recipient: string; amount: number }) => {
     return axiosInstance.post('transaction/send/', {
         to_address: values.recipient,
@@ -146,3 +144,5 @@ const api = {
 };
 
 export default api;
+
+    

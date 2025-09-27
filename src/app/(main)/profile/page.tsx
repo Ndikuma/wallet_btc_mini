@@ -17,7 +17,7 @@ import type { User, Wallet } from "@/lib/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowRight, User as UserIcon, BarChart2, Clock, Hash, TrendingUp, TrendingDown } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { shortenText } from "@/lib/utils";
 
 interface StatCardProps {
   icon: React.ElementType;
@@ -177,3 +177,4 @@ export default function ProfilePage() {
   );
 }
 
+    

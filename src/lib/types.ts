@@ -82,7 +82,7 @@ export interface FeeEstimation {
     sendable_bif: number;
     network_fee_usd: number;
     network_fee_bif: number;
-}
+g}
 
 
 export interface ApiErrorDetails {
@@ -90,15 +90,15 @@ export interface ApiErrorDetails {
 }
 
 export interface ApiError {
-    code: number;
-    message: string;
-    details: ApiErrorDetails;
+    code?: number;
+    message?: string;
+    details?: ApiErrorDetails;
 }
 
 export interface ApiResponse<T> {
     success: boolean;
-    data: T;
-    message: string;
+    data?: T;
+    message?: string;
     error?: ApiError;
     timestamp?: string;
 }
@@ -109,3 +109,5 @@ export interface PaginatedResponse<T> {
     previous: string | null;
     results: T[];
 }
+
+    

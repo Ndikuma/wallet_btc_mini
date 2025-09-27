@@ -46,8 +46,12 @@ const amountSchema = z.object({
 
 const providerSchema = z.object({
     providerId: z.string({ required_error: "Please select a provider." }),
+});
+
+const paymentDetailsSchema = z.object({
     paymentDetails: z.string().min(3, "Please enter valid payment details."),
 });
+
 
 type FormData = {
     amount?: number;
@@ -84,8 +88,13 @@ export default function SellPage() {
         mode: "onChange",
     });
 
-    const providerForm = useForm<{ providerId: string, paymentDetails: string }>({
+    const providerForm = useForm<{ providerId: string }>({
         resolver: zodResolver(providerSchema),
+        mode: "onChange",
+    });
+
+    const paymentDetailsForm = useForm<{ paymentDetails: string }>({
+        resolver: zodResolver(paymentDetailsSchema),
         mode: "onChange",
     });
     
@@ -124,31 +133,42 @@ export default function SellPage() {
         }
     }, [balance, amountForm]);
 
-    const handleNextStep1 = (data: { amount: number }) => {
-        setFormData(prev => ({ ...prev, ...data }));
-        setCurrentStep(2);
-    };
+    const handleNext = async () => {
+        let isStepValid = false;
+        if (currentStep === 1) {
+            isStepValid = await amountForm.trigger();
+            if (isStepValid) setFormData(prev => ({...prev, ...amountForm.getValues()}))
+        } else if (currentStep === 2) {
+            isStepValid = await providerForm.trigger();
+            if (isStepValid) setFormData(prev => ({...prev, ...providerForm.getValues()}))
+        } else if (currentStep === 3) {
+            isStepValid = await paymentDetailsForm.trigger();
+            if(isStepValid) {
+                const newFormData = { ...formData, ...paymentDetailsForm.getValues() };
+                setFormData(newFormData);
 
-    const handleNextStep2 = async (data: { providerId: string, paymentDetails: string }) => {
-        const newFormData = { ...formData, ...data };
-        setFormData(newFormData);
-        setCurrentStep(3);
-
-        if (newFormData.amount) {
-            setIsEstimatingFee(true);
-            setFeeError(null);
-            try {
-                const feeResponse = await api.estimateFee({ amount: newFormData.amount });
-                setFeeEstimation(feeResponse.data);
-            } catch (error: any) {
-                const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
-                setFeeError(errorMsg);
-                setFeeEstimation(null);
-            } finally {
-                setIsEstimatingFee(false);
+                if (newFormData.amount) {
+                    setIsEstimatingFee(true);
+                    setFeeError(null);
+                    try {
+                        const feeResponse = await api.estimateFee({ amount: newFormData.amount });
+                        setFeeEstimation(feeResponse.data);
+                    } catch (error: any) {
+                        const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
+                        setFeeError(errorMsg);
+                        setFeeEstimation(null);
+                    } finally {
+                        setIsEstimatingFee(false);
+                    }
+                }
             }
         }
-    };
+
+        if (isStepValid) {
+            setCurrentStep(prev => prev + 1);
+        }
+    }
+
 
     const handleBack = () => {
         setCurrentStep(prev => Math.max(1, prev - 1));
@@ -186,8 +206,9 @@ export default function SellPage() {
     }
     
     const selectedProvider = useMemo(() => {
-        return providers.find(p => String(p.id) === watchedProviderId);
-    }, [providers, watchedProviderId]);
+        const providerId = formData.providerId || watchedProviderId;
+        return providers.find(p => String(p.id) === providerId);
+    }, [providers, formData.providerId, watchedProviderId]);
 
 
     if (isBalanceLoading || loadingProviders) {
@@ -208,8 +229,8 @@ export default function SellPage() {
             </div>
             
             <div className="space-y-4">
-                <Progress value={(currentStep / 3) * 100} className="w-full h-2" />
-                <p className="text-sm text-muted-foreground text-center">Step {currentStep} of 3</p>
+                <Progress value={(currentStep / 4) * 100} className="w-full h-2" />
+                <p className="text-sm text-muted-foreground text-center">Step {currentStep} of 4</p>
             </div>
             
             {currentStep > 1 && (
@@ -225,7 +246,7 @@ export default function SellPage() {
                         <CardDescription>Specify how much Bitcoin you want to sell.</CardDescription>
                     </CardHeader>
                     <Form {...amountForm}>
-                    <form onSubmit={amountForm.handleSubmit(handleNextStep1)}>
+                    <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                         <CardContent className="space-y-6">
                              <div className="p-4 rounded-lg bg-secondary border">
                                 <p className="text-sm text-muted-foreground">Your available balance</p>
@@ -258,28 +279,23 @@ export default function SellPage() {
                     </Form>
                 </Card>
             )}
-
+            
             {currentStep === 2 && (
                  <Card>
                     <CardHeader>
                         <CardTitle>Step 2: Select Provider</CardTitle>
-                        <CardDescription>Choose a provider and enter your payment details.</CardDescription>
+                        <CardDescription>Choose a provider to handle your sell transaction.</CardDescription>
                     </CardHeader>
                      <Form {...providerForm}>
-                    <form onSubmit={providerForm.handleSubmit(handleNextStep2)}>
+                    <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                         <CardContent className="space-y-6">
-                           <div className="p-4 rounded-lg bg-secondary border">
-                                <p className="text-sm text-muted-foreground">Amount to sell</p>
-                                <p className="text-xl font-bold font-mono">{formData.amount?.toFixed(8)} BTC</p>
-                           </div>
-                           
                             {providersError && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{providersError}</AlertDescription></Alert>}
                             <FormField
                                 control={providerForm.control}
                                 name="providerId"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Provider</FormLabel>
+                                        <FormLabel>Available Providers</FormLabel>
                                         <FormControl>
                                             <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
                                                 {providers.map(provider => (
@@ -305,12 +321,30 @@ export default function SellPage() {
                                     </FormItem>
                                 )}
                             />
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" className="w-full" size="lg">Next</Button>
+                        </CardFooter>
+                    </form>
+                    </Form>
+                </Card>
+            )}
+
+             {currentStep === 3 && (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Step 3: Enter Payout Details</CardTitle>
+                        <CardDescription>Provide your account information to receive the funds.</CardDescription>
+                    </CardHeader>
+                     <Form {...paymentDetailsForm}>
+                    <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+                        <CardContent className="space-y-6">
                             {selectedProvider && (
                                 <Card className="bg-secondary/30">
                                     <CardHeader className="pb-2">
                                         <CardTitle className="text-base flex items-center gap-2">
                                             <Info className="size-5 text-primary" />
-                                            Payment Instructions
+                                            Payment Instructions for {selectedProvider.name}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
@@ -318,15 +352,14 @@ export default function SellPage() {
                                     </CardContent>
                                 </Card>
                             )}
-
                              <FormField
-                                control={providerForm.control}
+                                control={paymentDetailsForm.control}
                                 name="paymentDetails"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Your Payment Details</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="e.g., Account number, Phone number, Wallet address" {...field} />
+                                            <Input placeholder="e.g., Account number, Phone number" {...field} />
                                         </FormControl>
                                         <FormDescription>This is where your money will be sent. Double-check for accuracy.</FormDescription>
                                         <FormMessage />
@@ -342,10 +375,11 @@ export default function SellPage() {
                 </Card>
             )}
 
-            {currentStep === 3 && (
+
+            {currentStep === 4 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Step 3: Confirm & Sell</CardTitle>
+                        <CardTitle>Step 4: Confirm & Sell</CardTitle>
                         <CardDescription>Review your transaction details before confirming the sale.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -403,5 +437,3 @@ export default function SellPage() {
         </div>
     );
 }
-
-    

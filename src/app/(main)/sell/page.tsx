@@ -67,6 +67,10 @@ export default function SellPage() {
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState<FormData>({});
     
+    const [feeEstimation, setFeeEstimation] = useState<FeeEstimation | null>(null);
+    const [isEstimatingFee, setIsEstimatingFee] = useState(false);
+    const [feeError, setFeeError] = useState<string | null>(null);
+    
     const currentBalance = balance ? parseFloat(balance.balance) : 0;
 
     const amountForm = useForm<{ amount: number }>({
@@ -119,13 +123,31 @@ export default function SellPage() {
         setCurrentStep(2);
     };
 
-    const handleNextStep2 = (data: { providerId: string, paymentDetails: string }) => {
-        setFormData(prev => ({ ...prev, ...data }));
+    const handleNextStep2 = async (data: { providerId: string, paymentDetails: string }) => {
+        const newFormData = { ...formData, ...data };
+        setFormData(newFormData);
         setCurrentStep(3);
+
+        if (newFormData.amount) {
+            setIsEstimatingFee(true);
+            setFeeError(null);
+            try {
+                const feeResponse = await api.estimateFee({ amount: newFormData.amount });
+                setFeeEstimation(feeResponse.data);
+            } catch (error: any) {
+                const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
+                setFeeError(errorMsg);
+                setFeeEstimation(null);
+            } finally {
+                setIsEstimatingFee(false);
+            }
+        }
     };
 
     const handleBack = () => {
         setCurrentStep(prev => Math.max(1, prev - 1));
+        setFeeEstimation(null);
+        setFeeError(null);
     };
     
     const selectedProvider = useMemo(() => {
@@ -156,7 +178,7 @@ export default function SellPage() {
             </div>
             
             {currentStep > 1 && (
-                <Button variant="ghost" onClick={handleBack} className="mb-4">
+                <Button variant="ghost" onClick={handleBack} className="-mb-2">
                     <ArrowLeft className="mr-2 size-4" /> Back
                 </Button>
             )}
@@ -278,26 +300,34 @@ export default function SellPage() {
                         <CardDescription>Review your transaction details before confirming the sale.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="p-4 rounded-lg bg-secondary border space-y-3 text-sm">
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Selling</span>
-                                <span className="font-mono font-bold text-base">{formData.amount?.toFixed(8)} BTC</span>
+                        {(isEstimatingFee || feeEstimation || feeError) && (
+                            <div className="p-4 rounded-lg bg-secondary border space-y-3 text-sm">
+                                {isEstimatingFee && <div className="flex items-center justify-center"><Loader2 className="mr-2 size-4 animate-spin" />Estimating...</div>}
+                                {feeError && <p className="text-destructive text-center">{feeError}</p>}
+                                {feeEstimation && (
+                                    <>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Selling</span>
+                                            <span className="font-mono font-bold text-base">{formData.amount?.toFixed(8)} BTC</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Network Fee</span>
+                                            <span className="font-mono">{feeEstimation.network_fee_btc} BTC</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Provider Fee</span>
+                                            <span className="font-mono">... BTC</span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Network Fee</span>
-                                <span className="font-mono">... BTC</span>
-                            </div>
-                             <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Provider Fee</span>
-                                <span className="font-mono">... BTC</span>
-                            </div>
-                        </div>
+                        )}
                         <div className="p-4 rounded-lg bg-secondary border space-y-2">
                              <div className="flex justify-between font-bold text-base">
                                 <span >You Will Receive (Estimate)</span>
-                                <span className="font-mono">$0.00</span>
+                                <span className="font-mono">${feeEstimation?.sendable_usd.toFixed(2) ?? '0.00'}</span>
                              </div>
-                             <div className="text-right text-muted-foreground font-mono text-sm">0 BIF</div>
+                             <div className="text-right text-muted-foreground font-mono text-sm">{feeEstimation?.sendable_bif.toLocaleString() ?? '0'} BIF</div>
                         </div>
 
                          <Card className="bg-secondary/30">
@@ -313,7 +343,10 @@ export default function SellPage() {
                     </CardContent>
                     <CardFooter className="grid grid-cols-2 gap-4">
                         <Button variant="outline" size="lg" onClick={handleBack}>Cancel</Button>
-                        <Button size="lg">Sell Bitcoin</Button>
+                        <Button size="lg" disabled={isEstimatingFee || !feeEstimation}>
+                            {isEstimatingFee ? <Loader2 className="mr-2 size-4 animate-spin"/> : null}
+                            Sell Bitcoin
+                        </Button>
                     </CardFooter>
                 </Card>
             )}

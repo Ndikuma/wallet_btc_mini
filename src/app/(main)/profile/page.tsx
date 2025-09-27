@@ -2,9 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Card,
   CardContent,
@@ -13,52 +10,55 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
-import type { User } from "@/lib/types";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import type { User, Wallet } from "@/lib/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ArrowRight, User as UserIcon, BarChart2, Clock, Hash, TrendingUp, TrendingDown } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-const profileFormSchema = z.object({
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-});
+interface StatCardProps {
+  icon: React.ElementType;
+  title: string;
+  value: string | number | undefined;
+  isLoading: boolean;
+}
 
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, isLoading }) => {
+    return (
+        <Card className="flex flex-col justify-between p-4">
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{title}</p>
+                <Icon className="size-5 text-muted-foreground" />
+            </div>
+            {isLoading ? (
+                <Skeleton className="mt-2 h-7 w-20" />
+            ) : (
+                <p className="text-2xl font-bold">{value}</p>
+            )}
+        </Card>
+    );
+};
 
 export default function ProfilePage() {
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-    },
-  });
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.getUserProfile();
-        setUser(response.data);
-        form.reset({
-          first_name: response.data.first_name || "",
-          last_name: response.data.last_name || "",
-        });
+        const [userResponse, walletResponse] = await Promise.all([
+            api.getUserProfile(),
+            api.getWallets()
+        ]);
+        setUser(userResponse.data);
+        if (walletResponse.data && walletResponse.data.length > 0) {
+          setWallet(walletResponse.data[0]);
+        }
       } catch (error: any) {
         const errorMsg = error.response?.data?.error?.details?.detail || "Could not fetch user data. Please try again later.";
         toast({
@@ -70,49 +70,48 @@ export default function ProfilePage() {
         setLoading(false);
       }
     };
-    fetchUser();
-  }, [toast, form]);
+    fetchData();
+  }, [toast]);
 
-  const onSubmit = async (data: ProfileFormValues) => {
-    setIsSaving(true);
-    try {
-      const response = await api.updateUserProfile(data);
-      setUser(response.data);
-      form.reset(response.data);
-      toast({
-        title: "Profile Updated",
-        description: "Your profile information has been saved.",
-      });
-    } catch (error: any) {
-        const errorMsg = error.message || "An unexpected error occurred.";
-        toast({
-            variant: "destructive",
-            title: "Update Failed",
-            description: errorMsg,
-        });
-    } finally {
-        setIsSaving(false);
-    }
-  };
+
+  const getInitials = () => {
+      if (!user) return "";
+      const firstNameInitial = user.first_name?.[0] || '';
+      const lastNameInitial = user.last_name?.[0] || '';
+      return `${firstNameInitial}${lastNameInitial}`.toUpperCase() || user.username?.[0].toUpperCase();
+  }
+
+  const walletStats = wallet?.stats;
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-2xl space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6">
         <div className="space-y-2">
           <Skeleton className="h-9 w-48" />
           <Skeleton className="h-5 w-72" />
         </div>
         <Card>
           <CardHeader>
-            <Skeleton className="h-7 w-40" />
-            <Skeleton className="h-4 w-60" />
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-7 w-40" />
+                <Skeleton className="h-4 w-60" />
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4 pt-6">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+          <CardContent>
+            <Skeleton className="h-10 w-32" />
           </CardContent>
         </Card>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} className="p-4 space-y-2">
+                    <Skeleton className="h-5 w-1/2" />
+                    <Skeleton className="h-7 w-1/4" />
+                </Card>
+            ))}
+        </div>
       </div>
     );
   }
@@ -125,19 +124,12 @@ export default function ProfilePage() {
     );
   }
 
-  const getInitials = () => {
-      const firstNameInitial = user?.first_name?.[0] || '';
-      const lastNameInitial = user?.last_name?.[0] || '';
-      return `${firstNameInitial}${lastNameInitial}`.toUpperCase() || user?.username?.[0].toUpperCase();
-  }
-
-
   return (
-    <div className="mx-auto max-w-xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">My Profile</h1>
         <p className="text-muted-foreground">
-          View and manage your account details.
+          View your account details and wallet statistics.
         </p>
       </div>
       <Card>
@@ -149,57 +141,39 @@ export default function ProfilePage() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-xl sm:text-2xl">{user.first_name || user.username} {user.last_name}</CardTitle>
-              <CardDescription>Update your profile information.</CardDescription>
+              <CardTitle className="text-xl sm:text-2xl">{user.first_name && user.last_name ? `${user.first_name} ${user.last_name}`: user.username}</CardTitle>
+              <CardDescription>
+                <span className="font-mono">{user.username}</span> - {user.email}
+              </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="first_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Your first name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="last_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Your last name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={user.email} readOnly disabled />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" type="text" value={user.username} readOnly disabled />
-              </div>
-              <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="w-full sm:w-auto">
-                {isSaving ? "Saving..." : "Save Changes"}
-              </Button>
-            </form>
-          </Form>
+          <Button asChild>
+            <Link href="/profile/edit">
+              Edit Profile
+              <ArrowRight className="ml-2 size-4" />
+            </Link>
+          </Button>
         </CardContent>
       </Card>
+      
+      <div className="space-y-2">
+        <h2 className="text-xl font-bold tracking-tight md:text-2xl">Wallet Statistics</h2>
+        <p className="text-muted-foreground">
+          An overview of your wallet's activity.
+        </p>
+      </div>
+
+       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <StatCard icon={BarChart2} title="Current Balance" value={wallet?.balance_formatted} isLoading={loading} />
+          <StatCard icon={Hash} title="Total Transactions" value={walletStats?.total_transactions} isLoading={loading} />
+          <StatCard icon={Clock} title="Wallet Age (Days)" value={walletStats?.wallet_age_days} isLoading={loading} />
+          <StatCard icon={TrendingDown} title="Total Sent" value={walletStats?.total_sent} isLoading={loading} />
+          <StatCard icon={TrendingUp} title="Total Received" value={walletStats?.total_received} isLoading={loading} />
+          <StatCard icon={UserIcon} title="Primary Address" value={shortenText(wallet?.primary_address, 10, 10)} isLoading={loading} />
+       </div>
     </div>
   );
 }
+

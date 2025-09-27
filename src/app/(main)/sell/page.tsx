@@ -339,7 +339,6 @@ export default function SellPage() {
                      <Form {...paymentDetailsForm}>
                     <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                         <CardContent className="space-y-6">
-                            
                              <FormField
                                 control={paymentDetailsForm.control}
                                 name="paymentDetails"
@@ -347,7 +346,7 @@ export default function SellPage() {
                                     <FormItem>
                                         <FormLabel>Your Payment Details</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="e.g., Account number, Phone number" {...field} />
+                                            <Input placeholder="e.g., Account number, Phone number" {...field} value={field.value ?? ''} />
                                         </FormControl>
                                         <FormDescription>This is where your money will be sent. Double-check for accuracy.</FormDescription>
                                         <FormMessage />
@@ -424,5 +423,3 @@ export default function SellPage() {
         </div>
     );
 }
-
-    

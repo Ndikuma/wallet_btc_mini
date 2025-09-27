@@ -2,6 +2,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Card,
   CardContent,
@@ -9,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,17 +19,46 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import type { User } from "@/lib/types";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+const profileFormSchema = z.object({
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function ProfilePage() {
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+    },
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await api.getUserProfile();
         setUser(response.data);
+        form.reset({
+          first_name: response.data.first_name || "",
+          last_name: response.data.last_name || "",
+        });
       } catch (error: any) {
         const errorMsg = error.response?.data?.error?.details?.detail || "Could not fetch user data. Please try again later.";
         toast({
@@ -40,7 +71,29 @@ export default function ProfilePage() {
       }
     };
     fetchUser();
-  }, [toast]);
+  }, [toast, form]);
+
+  const onSubmit = async (data: ProfileFormValues) => {
+    setIsSaving(true);
+    try {
+      const response = await api.updateUserProfile(data);
+      setUser(response.data);
+      form.reset(response.data);
+      toast({
+        title: "Profile Updated",
+        description: "Your profile information has been saved.",
+      });
+    } catch (error: any) {
+        const errorMsg = error.message || "An unexpected error occurred.";
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: errorMsg,
+        });
+    } finally {
+        setIsSaving(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -54,7 +107,7 @@ export default function ProfilePage() {
             <Skeleton className="h-7 w-40" />
             <Skeleton className="h-4 w-60" />
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-6">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
@@ -72,12 +125,12 @@ export default function ProfilePage() {
     );
   }
 
-  const handleSaveChanges = () => {
-      toast({
-          title: "Coming Soon",
-          description: "Profile editing is not yet implemented.",
-      })
+  const getInitials = () => {
+      const firstNameInitial = user?.first_name?.[0] || '';
+      const lastNameInitial = user?.last_name?.[0] || '';
+      return `${firstNameInitial}${lastNameInitial}`.toUpperCase() || user?.username?.[0].toUpperCase();
   }
+
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -90,11 +143,9 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-            <Avatar className="h-20 w-20 sm:h-16 sm:w-16">
-              <AvatarImage src={`https://picsum.photos/seed/${user.email}/80/80`} alt="Avatar" data-ai-hint="avatar" />
+             <Avatar className="h-20 w-20 sm:h-16 sm:w-16 text-3xl font-bold">
               <AvatarFallback>
-                {user.first_name?.[0]}
-                {user.last_name?.[0]}
+                {getInitials()}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -103,26 +154,50 @@ export default function ProfilePage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="first-name">First Name</Label>
-                    <Input id="first-name" defaultValue={user.first_name || ""} />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="last-name">Last Name</Label>
-                    <Input id="last-name" defaultValue={user.last_name || ""} />
-                </div>
-            </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={user.email} readOnly disabled />
-          </div>
-           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input id="username" type="text" value={user.username} readOnly disabled />
-          </div>
-          <Button onClick={handleSaveChanges} className="w-full sm:w-auto">Save Changes</Button>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="first_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Your first name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="last_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Your last name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={user.email} readOnly disabled />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" type="text" value={user.username} readOnly disabled />
+              </div>
+              <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="w-full sm:w-auto">
+                {isSaving ? "Saving..." : "Save Changes"}
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>

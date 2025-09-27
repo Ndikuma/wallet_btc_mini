@@ -95,6 +95,7 @@ const logout = () => axiosInstance.post('auth/logout/');
 
 // User Profile
 const getUserProfile = () => axiosInstance.get<User>('user/profile/');
+const updateUserProfile = (data: { first_name?: string, last_name?: string }) => axiosInstance.patch<User>('user/profile/', data);
 const getUser = () => axiosInstance.get<User>('user/');
 
 
@@ -129,6 +130,7 @@ const api = {
     register,
     logout,
     getUserProfile,
+    updateUserProfile,
     getUser,
     getWallets,
     getWalletBalance,

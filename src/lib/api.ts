@@ -33,19 +33,21 @@ axiosInstance.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
-const createResponseInterceptor = (instance: typeof axiosInstance) => {
+const createResponseInterceptor = (instance: typeof axios) => {
     const onResponse = (response: AxiosResponse<ApiResponse<any>>) => {
-        if (response.data && response.data.success) {
-            // For paginated responses, the actual data is in `results`
-            if (response.data.data && typeof response.data.data === 'object' && response.data.data !== null && 'results' in response.data.data) {
-                return { ...response, data: response.data.data.results };
-            }
-             // For standard data responses
-            if (response.data.data) {
-                return { ...response, data: response.data.data };
-            }
+        // For paginated responses, the actual data is in `results`
+        if (response.data?.data && typeof response.data.data === 'object' && 'results' in response.data.data) {
+          return { ...response, data: response.data.data.results };
         }
-        // Handle cases where `success` is true but `data` is not present, or success is false
+        // For standard data responses
+        if (response.data?.data) {
+          return { ...response, data: response.data.data };
+        }
+        // For success responses that might not have a `data` wrapper (like logout)
+        if (response.data?.success) {
+            return response;
+        }
+        // Handle cases where `success` is false
         if (response.data && !response.data.success) {
            return Promise.reject(response.data);
         }
@@ -56,18 +58,16 @@ const createResponseInterceptor = (instance: typeof axiosInstance) => {
         if (error.code === 'ERR_NETWORK') {
             error.message = 'Network Error: Could not connect to the backend.';
         } else if (error.response?.data) {
-            const apiError = error.response.data.error;
             const apiMessage = error.response.data.message;
-            let errorMessage = "An unknown error occurred.";
+            const apiError = error.response.data.error;
+            let errorMessage = "An unexpected error occurred.";
+
             if (apiMessage) {
                 errorMessage = apiMessage;
             } else if (apiError && typeof apiError.details === 'object' && apiError.details !== null) {
-                // Extract first error message from details object
                 const firstErrorKey = Object.keys(apiError.details)[0];
                 if (firstErrorKey && Array.isArray(apiError.details[firstErrorKey]) && apiError.details[firstErrorKey].length > 0) {
                     errorMessage = apiError.details[firstErrorKey][0];
-                } else {
-                    errorMessage = typeof apiError === 'string' ? apiError : errorMessage;
                 }
             } else if (typeof apiError === 'string') {
                 errorMessage = apiError;

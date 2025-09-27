@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CopyButton } from "@/components/copy-button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ShareButton } from "./share-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw } from "lucide-react";
@@ -27,7 +27,30 @@ export default function ReceivePage() {
   const [generating, setGenerating] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
 
-  const fetchAddress = async () => {
+  const generateNewAddressFn = useCallback(async (isInitial = false) => {
+    setGenerating(true);
+    try {
+      const response = await api.generateNewAddress();
+      setAddress(response.data.address);
+      if (!isInitial) {
+         toast({
+          title: "New Address Generated",
+          description: "A new receiving address has been created for you.",
+        });
+      }
+    } catch (error: any) {
+      const errorMsg = error.message || "Could not generate a new address. Please try again.";
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMsg,
+      });
+    } finally {
+      setGenerating(false);
+    }
+  }, [toast]);
+  
+  const fetchAddress = useCallback(async () => {
     try {
       const response = await api.getWallets();
       if (response.data && Array.isArray(response.data) && response.data.length > 0 && response.data[0].address) {
@@ -40,35 +63,11 @@ export default function ReceivePage() {
     } finally {
       setLoading(false);
     }
-  }
-  
-  const generateNewAddressFn = async (isInitial = false) => {
-    setGenerating(true);
-    try {
-      const response = await api.generateNewAddress();
-      setAddress(response.data.address);
-      if (!isInitial) {
-         toast({
-          title: "New Address Generated",
-          description: "A new receiving address has been created for you.",
-        });
-      }
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.error?.details?.detail || "Could not generate a new address. Please try again.";
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMsg,
-      });
-    } finally {
-      setGenerating(false);
-    }
-  }
-
+  }, [generateNewAddressFn]);
 
   useEffect(() => {
     fetchAddress();
-  }, []);
+  }, [fetchAddress]);
 
   useEffect(() => {
     if (!address) return;

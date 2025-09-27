@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import api from "@/lib/api"
 import type { User } from "@/lib/types"
 import { Skeleton } from "./ui/skeleton";
@@ -30,8 +30,7 @@ export function UserNav() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
       setLoading(true);
       try {
         const response = await api.getUser();
@@ -41,9 +40,11 @@ export function UserNav() {
       } finally {
         setLoading(false);
       }
-    }
+    }, []);
+
+  useEffect(() => {
     fetchUser();
-  }, []);
+  }, [fetchUser]);
 
   const handleLogout = async () => {
     try {

@@ -339,19 +339,7 @@ export default function SellPage() {
                      <Form {...paymentDetailsForm}>
                     <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                         <CardContent className="space-y-6">
-                            {selectedProvider && (
-                                <Card className="bg-secondary/30">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-base flex items-center gap-2">
-                                            <Info className="size-5 text-primary" />
-                                            Payment Instructions for {selectedProvider.name}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-muted-foreground">{selectedProvider.payment_info.instructions}</p>
-                                    </CardContent>
-                                </Card>
-                            )}
+                            
                              <FormField
                                 control={paymentDetailsForm.control}
                                 name="paymentDetails"
@@ -420,7 +408,6 @@ export default function SellPage() {
                             </CardHeader>
                             <CardContent>
                                 <p className="font-mono font-semibold break-all">{formData.paymentDetails}</p>
-                                <p className="text-sm text-muted-foreground mt-1">{selectedProvider?.payment_info.instructions}</p>
                             </CardContent>
                         </Card>
                     </CardContent>
@@ -437,3 +424,5 @@ export default function SellPage() {
         </div>
     );
 }
+
+    

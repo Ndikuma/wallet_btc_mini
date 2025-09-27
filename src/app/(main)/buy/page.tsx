@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowRight, Landmark } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -24,13 +24,19 @@ const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
   <Card className="hover:border-primary/50 transition-colors">
     <Link href={`/buy/${provider.id}`} className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-start gap-4">
-        <Image
-          src={provider.logo_url}
-          alt={`${provider.name} logo`}
-          width={48}
-          height={48}
-          className="rounded-lg border"
-        />
+        {provider.logo_url ? (
+            <Image
+            src={provider.logo_url}
+            alt={`${provider.name} logo`}
+            width={48}
+            height={48}
+            className="rounded-lg border"
+            />
+        ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-secondary">
+                <Landmark className="size-6 text-muted-foreground" />
+            </div>
+        )}
         <div>
           <CardTitle>{provider.name}</CardTitle>
           <CardDescription>{provider.description}</CardDescription>

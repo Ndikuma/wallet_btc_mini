@@ -38,10 +38,13 @@ const createResponseInterceptor = (instance: typeof axiosInstance) => {
         (response: AxiosResponse<ApiResponse<any>>) => {
             if (response.data && response.data.success) {
                 // For paginated responses, the actual data is in `results`
-                if (response.data.data && 'results' in response.data.data) {
+                if (response.data.data && typeof response.data.data === 'object' && 'results' in response.data.data) {
+                    return { ...response, data: response.data.data.results };
+                }
+                 // For standard data responses
+                if (response.data.data) {
                     return { ...response, data: response.data.data };
                 }
-                return { ...response, data: response.data.data };
             }
             return response;
         },
@@ -66,7 +69,7 @@ const getUser = () => axiosInstance.get<User>('user/');
 
 
 // Wallet
-const getWallets = () => axiosInstance.get<PaginatedResponse<Wallet>>('wallet/');
+const getWallets = () => axiosInstance.get<Wallet[]>('wallet/');
 const getWalletBalance = () => axiosInstance.get<Balance>('wallet/balance/');
 const generateMnemonic = () => axiosInstance.post<{ mnemonic: string }>('wallet/generate_mnemonic/');
 const createWallet = (mnemonic: string) => axiosInstance.post('wallet/create_wallet/', { mnemonic });
@@ -84,7 +87,7 @@ const estimateFee = (values: { recipient: string, amount: number }) => {
 
 // Transactions
 const getTransactions = () => {
-    return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
+    return axiosInstance.get<Transaction[]>('transaction/');
 };
 const sendTransaction = (values: { recipient: string; amount: number }) => {
     return axiosInstance.post('transaction/send/', {

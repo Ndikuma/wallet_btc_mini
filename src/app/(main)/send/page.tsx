@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -26,7 +25,7 @@ export default function SendPage() {
             </div>
             <CardDescription>
             Enter the recipient's address and amount to send. The optimal
-            fee will be calculated for you. Avoid sending your entire balance as this can cause errors with fee estimation.
+            fee will be calculated for you based on UTXOs. Avoid sending your entire balance as this can cause errors with fee estimation.
             </CardDescription>
         </CardHeader>
         <CardContent>

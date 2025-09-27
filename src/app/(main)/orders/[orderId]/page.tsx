@@ -37,6 +37,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 const paymentProofSchema = z.object({
     payment_proof_ref: z.string().min(4, "Please enter a valid payment reference."),
@@ -259,4 +260,3 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
-

@@ -74,7 +74,7 @@ export function SendForm() {
 
   const form = useForm<SendFormValues>({
     resolver: zodResolver(formSchema(currentBalance)),
-    defaultValues: { recipient: "", amount: "" as any, },
+    defaultValues: { recipient: "", amount: undefined },
     mode: "onChange",
   });
 
@@ -122,7 +122,6 @@ export function SendForm() {
             toast({ variant: "destructive", title: "Network Error", description: "Could not connect to the backend to fetch balance." });
         }
         else {
-            console.error("Failed to fetch wallet data for send form", error);
              toast({ variant: "destructive", title: "Error", description: "Could not fetch wallet data." });
         }
       } finally {
@@ -182,7 +181,6 @@ export function SendForm() {
           animationFrameId = requestAnimationFrame(scanQRCode);
         }
       } catch (error) {
-        console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
       }
     };
@@ -355,7 +353,3 @@ export function SendForm() {
     </>
   );
 }
-
-    
-
-    

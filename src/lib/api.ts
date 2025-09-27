@@ -62,16 +62,20 @@ const createResponseInterceptor = (instance: typeof axios) => {
             const apiError = error.response.data.error;
             let errorMessage = "An unexpected error occurred.";
 
-            if (apiMessage) {
-                errorMessage = apiMessage;
-            } else if (apiError && typeof apiError.details === 'object' && apiError.details !== null) {
+            if (apiError?.details && typeof apiError.details === 'object' && Object.keys(apiError.details).length > 0) {
                 const firstErrorKey = Object.keys(apiError.details)[0];
-                if (firstErrorKey && Array.isArray(apiError.details[firstErrorKey]) && apiError.details[firstErrorKey].length > 0) {
-                    errorMessage = apiError.details[firstErrorKey][0];
+                const errorValue = apiError.details[firstErrorKey];
+                if (Array.isArray(errorValue) && errorValue.length > 0) {
+                    errorMessage = errorValue[0];
+                } else if (typeof errorValue === 'string') {
+                    errorMessage = errorValue;
                 }
+            } else if (apiMessage) {
+                errorMessage = apiMessage;
             } else if (typeof apiError === 'string') {
                 errorMessage = apiError;
             }
+
             error.message = errorMessage;
         }
         return Promise.reject(error);

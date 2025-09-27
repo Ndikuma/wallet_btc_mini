@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { cn, shortenText } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import type { Transaction } from "@/lib/types";
 import { AxiosError } from "axios";
@@ -32,44 +32,47 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const [isWalletReady, setIsWalletReady] = useState(false);
 
 
   useEffect(() => {
     async function checkWalletStatus() {
       try {
-        // A simple API call to check if the wallet is ready
         await api.getWalletBalance();
+        setIsWalletReady(true);
       } catch (err: any) {
          if (err instanceof AxiosError && err.response?.status === 403) {
             setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
+        } else {
+            setError("Could not connect to the wallet service. Please try again later.")
         }
       }
     }
     checkWalletStatus();
   }, []);
 
-  useEffect(() => {
-    async function fetchTransactions() {
-      setLoadingTransactions(true);
-      setTransactionsError(null);
-      try {
-        const transactionsRes = await api.getTransactions();
-        setRecentTransactions(transactionsRes.data || []);
-      } catch (err: any) {
-        console.error("Failed to fetch recent transactions", err);
-         if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
-            setTransactionsError("Network error. Could not connect to the server.");
-         } else {
-            setTransactionsError("Could not load recent transactions.");
-         }
-      } finally {
-        setLoadingTransactions(false);
-      }
+  const fetchTransactions = useCallback(async () => {
+    setLoadingTransactions(true);
+    setTransactionsError(null);
+    try {
+      const transactionsRes = await api.getTransactions();
+      setRecentTransactions(transactionsRes.data || []);
+    } catch (err: any) {
+       if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
+          setTransactionsError("Network error. Could not connect to the server.");
+       } else {
+          setTransactionsError("Could not load recent transactions.");
+       }
+    } finally {
+      setLoadingTransactions(false);
     }
-    if (!error) {
+  }, []);
+
+  useEffect(() => {
+    if (isWalletReady) {
       fetchTransactions();
     }
-  }, [error]);
+  }, [isWalletReady, fetchTransactions]);
 
   
     if (error) {

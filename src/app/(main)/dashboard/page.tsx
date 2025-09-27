@@ -8,6 +8,10 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Send,
+  Download,
+  ShoppingCart,
+  Receipt,
 } from "lucide-react";
 import {
   Card,
@@ -25,6 +29,34 @@ import api from "@/lib/api";
 import type { Transaction } from "@/lib/types";
 import { AxiosError } from "axios";
 import { BalanceDisplay } from "@/components/balance-display";
+
+const ActionButton = ({ icon: Icon, label, href, disabled = false }: { icon: React.ElementType, label: string, href: string, disabled?: boolean }) => {
+  const content = (
+    <div className={cn(
+      "flex flex-col items-center justify-center space-y-3 rounded-lg border p-6 text-center transition-colors",
+      disabled ? "cursor-not-allowed opacity-50 bg-secondary" : "hover:bg-accent hover:text-accent-foreground"
+    )}>
+      <Icon className="size-8 text-primary" />
+      <h3 className="font-semibold">{label}</h3>
+    </div>
+  );
+
+  if (disabled) {
+    return content;
+  }
+
+  return <Link href={href}>{content}</Link>;
+};
+
+const ActionCard = () => (
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <ActionButton icon={Send} label="Send" href="/send" />
+        <ActionButton icon={Download} label="Receive" href="/receive" />
+        <ActionButton icon={ShoppingCart} label="Buy" href="#" disabled />
+        <ActionButton icon={Receipt} label="Sell" href="#" disabled />
+    </div>
+)
+
 
 export default function DashboardPage() {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
@@ -114,6 +146,8 @@ export default function DashboardPage() {
             <BalanceDisplay isVisible={isBalanceVisible} />
         </CardContent>
       </Card>
+      
+      <ActionCard />
 
 
        <div className="grid grid-cols-1 gap-4 md:gap-6">

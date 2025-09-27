@@ -45,7 +45,7 @@ const OrderCard = ({ order }: { order: Order }) => (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 {getStatusIcon(order.status)}
-                <CardTitle className="text-lg">{order.direction === 'buy' ? 'Buy' : 'Sell'} Order #{order.id}</CardTitle>
+                <CardTitle className="text-lg capitalize">{order.direction} Order #{order.id}</CardTitle>
             </div>
             <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status}</Badge>
         </div>
@@ -93,7 +93,7 @@ export default function OrdersPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">My Orders</h1>
         <p className="text-muted-foreground">
-          View the history and status of all your buy orders.
+          View the history and status of all your buy and sell orders.
         </p>
       </div>
 

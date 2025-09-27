@@ -90,7 +90,7 @@ export interface BuyProvider {
   name: string;
   logo_url: string;
   description: string;
-  supported_currencies: string[];
+  currencies: string[];
   payment_info: {
     method: string;
     instructions: string;

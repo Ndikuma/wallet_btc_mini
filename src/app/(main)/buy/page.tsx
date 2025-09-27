@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -37,7 +38,7 @@ const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
       </CardHeader>
       <CardContent className="flex-grow">
          <div className="flex flex-wrap gap-2">
-            {provider.supported_currencies.map((currency) => (
+            {(provider.currencies || []).map((currency) => (
               <Badge key={currency} variant="secondary">{currency.toUpperCase()}</Badge>
             ))}
         </div>

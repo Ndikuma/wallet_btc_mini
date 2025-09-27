@@ -79,15 +79,14 @@ export function SendForm() {
   });
 
   const watchedAmount = form.watch("amount");
-  const watchedRecipient = form.watch("recipient");
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
-  const estimateFee = useCallback(async (amount: number, recipient: string) => {
-      if (amount > 0 && recipient) {
+  const estimateFee = useCallback(async (amount: number) => {
+      if (amount > 0) {
         setIsEstimatingFee(true);
         setFeeError(null);
         try {
-            const feeResponse = await api.estimateFee({ amount, recipient });
+            const feeResponse = await api.estimateFee({ amount });
             setFeeEstimation(feeResponse.data);
         } catch (error: any) {
             const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
@@ -104,13 +103,13 @@ export function SendForm() {
 
   useEffect(() => {
     const recipientState = form.getFieldState('recipient');
-    if (debouncedAmount > 0 && !recipientState.invalid && watchedRecipient) {
-        estimateFee(debouncedAmount, watchedRecipient);
+    if (debouncedAmount > 0 && !recipientState.invalid) {
+        estimateFee(debouncedAmount);
     } else {
         setFeeEstimation(null);
         setFeeError(null);
     }
-  }, [debouncedAmount, watchedRecipient, form, estimateFee])
+  }, [debouncedAmount, form, estimateFee])
 
 
   useEffect(() => {

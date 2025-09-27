@@ -38,7 +38,7 @@ const createResponseInterceptor = (instance: typeof axiosInstance) => {
         if (response.data && response.data.success) {
             // For paginated responses, the actual data is in `results`
             if (response.data.data && typeof response.data.data === 'object' && response.data.data !== null && 'results' in response.data.data) {
-                return { ...response, data: { ...response.data.data, results: response.data.data.results }};
+                return { ...response, data: response.data.data.results };
             }
              // For standard data responses
             if (response.data.data) {
@@ -103,9 +103,8 @@ const generateNewAddress = () => axiosInstance.post<{ address: string }>('wallet
 const generateQrCode = (data: string) => axiosInstance.post<{ qr_code: string }>('wallet/generate_qr_code/', { data });
 const restoreWallet = (data: string) => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = () => axiosInstance.get<{ wif: string }>('wallet/backup/');
-const estimateFee = (values: { recipient: string, amount: number }) => {
+const estimateFee = (values: { amount: number }) => {
     return axiosInstance.post<FeeEstimation>('wallet/estimate_fee/', {
-        to_address: values.recipient,
         amount: values.amount
     });
 }

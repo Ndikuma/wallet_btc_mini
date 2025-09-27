@@ -10,16 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CopyButton } from "@/components/copy-button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { ShareButton } from "./share-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bitcoin, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import type { Wallet } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
@@ -28,9 +25,7 @@ export default function ReceivePage() {
   const [address, setAddress] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [amount, setAmount] = useState("");
   const [qrCode, setQrCode] = useState<string | null>(null);
-  const [paymentUri, setPaymentUri] = useState("");
 
   const fetchAddress = async () => {
     try {
@@ -79,11 +74,7 @@ export default function ReceivePage() {
   useEffect(() => {
     if (!address) return;
 
-    let uri = `bitcoin:${address}`;
-    if (amount && parseFloat(amount) > 0) {
-      uri += `?amount=${amount}`;
-    }
-    setPaymentUri(uri);
+    const uri = `bitcoin:${address}`;
 
     const generateQrCodeFn = async () => {
         try {
@@ -97,7 +88,7 @@ export default function ReceivePage() {
     };
 
     generateQrCodeFn();
-  }, [amount, address]);
+  }, [address]);
 
 
   return (
@@ -106,7 +97,7 @@ export default function ReceivePage() {
         <CardHeader className="text-center">
           <CardTitle>Receive Bitcoin</CardTitle>
           <CardDescription>
-            Share your address to receive BTC. You can specify an amount.
+            Share your address to receive BTC.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">
@@ -126,20 +117,6 @@ export default function ReceivePage() {
           </div>
           
           <div className="w-full space-y-4">
-             <div className="relative">
-                <Label htmlFor="amount" className="sr-only" >Amount (BTC)</Label>
-                <Bitcoin className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-                <Input
-                    id="amount"
-                    type="number"
-                    step="0.00000001"
-                    placeholder="Set an amount (optional)"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="pl-10 text-center"
-                />
-             </div>
-             
             <div className="text-sm text-muted-foreground break-all font-code p-3 rounded-md bg-secondary border text-center">
                 {loading ? <Skeleton className="h-5 w-4/5 mx-auto" /> : address || '...'}
             </div>
@@ -163,22 +140,6 @@ export default function ReceivePage() {
                   Share Address
                 </ShareButton>
              </div>
-
-             <Separator />
-
-             <CopyButton 
-                textToCopy={paymentUri}
-                disabled={loading || !address || !amount}
-                toastMessage="Payment request copied"
-              >
-                  Copy Payment Request
-             </CopyButton>
-              <ShareButton 
-                shareData={{ title: "Bitcoin Payment Request", text: `Please pay ${amount} BTC to this address`, url: paymentUri }}
-                disabled={loading || !address || !amount}
-              >
-                  Share Payment Request
-             </ShareButton>
 
              <Separator />
              

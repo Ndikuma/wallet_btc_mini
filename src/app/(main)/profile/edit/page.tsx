@@ -62,11 +62,10 @@ export default function EditProfilePage() {
           last_name: response.data.last_name || "",
         });
       } catch (error: any) {
-        const errorMsg = error.response?.data?.error?.details?.detail || "Could not fetch user data. Please try again later.";
         toast({
           variant: "destructive",
           title: "Failed to load profile",
-          description: errorMsg,
+          description: error.message || "Could not fetch user data.",
         });
       } finally {
         setLoading(false);
@@ -76,9 +75,10 @@ export default function EditProfilePage() {
   }, [toast, form]);
 
   const onSubmit = async (data: ProfileFormValues) => {
+    if (!user) return;
     setIsSaving(true);
     try {
-      const response = await api.updateUserProfile(data);
+      const response = await api.updateUserProfile(user.id, data);
       setUser(response.data);
       form.reset(response.data);
       toast({
@@ -146,7 +146,7 @@ export default function EditProfilePage() {
             <CardTitle className="text-2xl">Edit Profile</CardTitle>
             <CardDescription>Update your personal information.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -187,5 +187,3 @@ export default function EditProfilePage() {
     </div>
   );
 }
-
-    

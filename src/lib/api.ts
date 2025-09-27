@@ -93,7 +93,7 @@ const logout = () => axiosInstance.post('auth/logout/');
 
 // User Profile
 const getUserProfile = (): Promise<AxiosResponse<User>> => axiosInstance.get('user/profile/');
-const updateUserProfile = (data: { first_name?: string, last_name?: string }): Promise<AxiosResponse<User>> => axiosInstance.patch('user/profile/', data);
+const updateUserProfile = (id: number, data: { first_name?: string, last_name?: string }): Promise<AxiosResponse<User>> => axiosInstance.patch(`user/${id}/`, data);
 const getUser = (): Promise<AxiosResponse<User>> => axiosInstance.get('user/');
 
 
@@ -144,5 +144,3 @@ const api = {
 };
 
 export default api;
-
-    

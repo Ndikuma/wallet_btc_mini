@@ -1,15 +1,14 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/lib/api";
 import type { Balance, SellProvider, FeeEstimation } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { useDebounce } from "@/hooks/use-debounce";
-import { AlertCircle, ArrowRight, Bitcoin, Landmark, Loader2 } from "lucide-react";
+import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,188 +33,209 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { useSettings } from "@/context/settings-context";
-import { cn } from "@/lib/utils";
-import { BalanceDisplay } from "@/components/balance-display";
+import { Progress } from "@/components/ui/progress";
 
-const sellFormSchema = (balance: number) => z.object({
+
+const amountSchema = z.object({
   amount: z.coerce
     .number({ invalid_type_error: "Please enter a valid amount." })
-    .positive({ message: "Amount must be positive." })
-    .max(balance, { message: `Insufficient balance. Available: ${balance.toFixed(8)} BTC` }),
-  providerId: z.string().min(1, "Please select a provider."),
+    .positive({ message: "Amount must be positive." }),
 });
 
-type SellFormValues = z.infer<ReturnType<typeof sellFormSchema>>;
+const providerSchema = z.object({
+    providerId: z.string({ required_error: "Please select a provider." }),
+    paymentDetails: z.string().min(3, "Please enter valid payment details."),
+});
+
+type FormData = {
+    amount?: number;
+    providerId?: string;
+    paymentDetails?: string;
+};
 
 
 export default function SellPage() {
-  const { toast } = useToast();
-  const { settings } = useSettings();
+    const { toast } = useToast();
+    const [balance, setBalance] = useState<Balance | null>(null);
+    const [isBalanceLoading, setIsBalanceLoading] = useState(true);
 
-  const [balance, setBalance] = useState<Balance | null>(null);
-  const [isBalanceLoading, setIsBalanceLoading] = useState(true);
+    const [providers, setProviders] = useState<SellProvider[]>([]);
+    const [loadingProviders, setLoadingProviders] = useState(true);
+    const [providersError, setProvidersError] = useState<string | null>(null);
 
-  const [providers, setProviders] = useState<SellProvider[]>([]);
-  const [loadingProviders, setLoadingProviders] = useState(true);
-  const [providersError, setProvidersError] = useState<string | null>(null);
-  
-  const currentBalance = balance ? parseFloat(balance.balance) : 0;
-  
-  const form = useForm<SellFormValues>({
-    resolver: zodResolver(sellFormSchema(currentBalance)),
-    mode: "onChange",
-  });
-
-  const watchedAmount = form.watch("amount");
-  const watchedProviderId = form.watch("providerId");
-
-  useEffect(() => {
-    async function fetchBalance() {
-      setIsBalanceLoading(true);
-      try {
-        const response = await api.getWalletBalance();
-        setBalance(response.data);
-      } catch (error) {
-        toast({ variant: "destructive", title: "Error", description: "Could not fetch wallet balance." });
-      } finally {
-        setIsBalanceLoading(false);
-      }
-    }
+    const [currentStep, setCurrentStep] = useState(1);
+    const [formData, setFormData] = useState<FormData>({});
     
-    async function fetchProviders() {
-      setLoadingProviders(true);
-      setProvidersError(null);
-      try {
-        const response = await api.getSellProviders();
-        setProviders(response.data.filter(p => p.can_sell));
-      } catch (err: any) {
-        setProvidersError(err.message || "Failed to load sell providers.");
-      } finally {
-        setLoadingProviders(false);
-      }
+    const currentBalance = balance ? parseFloat(balance.balance) : 0;
+
+    const amountForm = useForm<{ amount: number }>({
+        resolver: zodResolver(amountSchema.extend({
+            amount: z.coerce.number().positive().max(currentBalance, `Insufficient balance. Available: ${currentBalance.toFixed(8)} BTC`)
+        })),
+        mode: "onChange",
+    });
+
+    const providerForm = useForm<{ providerId: string, paymentDetails: string }>({
+        resolver: zodResolver(providerSchema),
+        mode: "onChange",
+    });
+
+    useEffect(() => {
+        async function fetchInitialData() {
+            setIsBalanceLoading(true);
+            setLoadingProviders(true);
+            try {
+                const [balanceRes, providersRes] = await Promise.all([
+                    api.getWalletBalance(),
+                    api.getSellProviders(),
+                ]);
+                setBalance(balanceRes.data);
+                setProviders(providersRes.data.filter(p => p.can_sell));
+            } catch (err: any) {
+                toast({ variant: "destructive", title: "Error", description: err.message || "Could not load required data." });
+                setProvidersError(err.message || "Failed to load providers.");
+            } finally {
+                setIsBalanceLoading(false);
+                setLoadingProviders(false);
+            }
+        }
+        fetchInitialData();
+    }, [toast]);
+    
+    useEffect(() => {
+        const newBalance = balance ? parseFloat(balance.balance) : 0;
+        const schema = amountSchema.extend({
+            amount: z.coerce.number().positive().max(newBalance, `Insufficient balance. Available: ${newBalance.toFixed(8)} BTC`)
+        });
+        (amountForm.control as any)._resolver = zodResolver(schema);
+        if (amountForm.formState.isDirty) {
+            amountForm.trigger("amount");
+        }
+    }, [balance, amountForm]);
+
+    const handleNextStep1 = (data: { amount: number }) => {
+        setFormData(prev => ({ ...prev, ...data }));
+        setCurrentStep(2);
+    };
+
+    const handleNextStep2 = (data: { providerId: string, paymentDetails: string }) => {
+        setFormData(prev => ({ ...prev, ...data }));
+        setCurrentStep(3);
+    };
+
+    const handleBack = () => {
+        setCurrentStep(prev => Math.max(1, prev - 1));
+    };
+    
+    const selectedProvider = useMemo(() => {
+        return providers.find(p => String(p.id) === formData.providerId);
+    }, [providers, formData.providerId]);
+
+
+    if (isBalanceLoading || loadingProviders) {
+        return (
+            <div className="mx-auto max-w-2xl space-y-6">
+                <Skeleton className="h-9 w-48" />
+                <Skeleton className="h-5 w-72" />
+                <Card><CardContent className="p-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
+            </div>
+        )
     }
 
-    fetchBalance();
-    fetchProviders();
-  }, [toast]);
-  
-   useEffect(() => {
-    const newBalance = balance ? parseFloat(balance.balance) : 0;
-    (form.control as any)._resolver = zodResolver(sellFormSchema(newBalance));
-     if (form.formState.isDirty) {
-      form.trigger("amount");
-    }
-  }, [balance, form]);
-
-  const handleSetAmount = (percentage: number) => {
-    const newAmount = currentBalance * percentage;
-    form.setValue("amount", parseFloat(newAmount.toFixed(8)), { shouldValidate: true, shouldDirty: true });
-  };
-  
-  const onSubmit = async (data: SellFormValues) => {
-    //
-  }
-
-  const selectedProvider = providers.find(p => String(p.id) === watchedProviderId);
-
-  return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Sell Bitcoin</h1>
-        <p className="text-muted-foreground">
-          Choose an amount and a provider to receive payment.
-        </p>
-      </div>
-
-       <Card>
-        <CardHeader>
-            <CardTitle className="text-lg">Your Balance</CardTitle>
-            <CardDescription>Your current available wallet balance.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {isBalanceLoading ? (
-                 <Skeleton className="h-10 w-48" />
-            ) : (
-                <div className="text-3xl font-bold font-mono">
-                    {currentBalance.toFixed(8)} BTC
-                </div>
+    return (
+        <div className="mx-auto max-w-2xl space-y-6">
+            <div className="space-y-2">
+                <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Sell Bitcoin</h1>
+                <p className="text-muted-foreground">Follow the steps to sell your Bitcoin securely.</p>
+            </div>
+            
+            <div className="space-y-4">
+                <Progress value={(currentStep / 3) * 100} className="w-full h-2" />
+                <p className="text-sm text-muted-foreground text-center">Step {currentStep} of 3</p>
+            </div>
+            
+            {currentStep > 1 && (
+                <Button variant="ghost" onClick={handleBack} className="mb-4">
+                    <ArrowLeft className="mr-2 size-4" /> Back
+                </Button>
             )}
-        </CardContent>
-      </Card>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            <div className="space-y-6">
+
+            {currentStep === 1 && (
                  <Card>
                     <CardHeader>
-                        <CardTitle>Amount to Sell</CardTitle>
+                        <CardTitle>Step 1: Enter Amount</CardTitle>
+                        <CardDescription>Specify how much Bitcoin you want to sell.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                         <FormField
-                            control={form.control}
-                            name="amount"
-                            render={({ field }) => (
-                            <FormItem>
-                                <div className="flex items-center justify-between">
+                    <Form {...amountForm}>
+                    <form onSubmit={amountForm.handleSubmit(handleNextStep1)}>
+                        <CardContent className="space-y-6">
+                             <div className="p-4 rounded-lg bg-secondary border">
+                                <p className="text-sm text-muted-foreground">Your available balance</p>
+                                <p className="text-2xl font-bold font-mono">{currentBalance.toFixed(8)} BTC</p>
+                            </div>
+                            <FormField
+                                control={amountForm.control}
+                                name="amount"
+                                render={({ field }) => (
+                                <FormItem>
                                     <FormLabel>Amount in BTC</FormLabel>
-                                </div>
-                                <div className="relative">
-                                    <FormControl><Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ""} className="pl-8 text-lg h-12"/></FormControl>
-                                    <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                </div>
-                                <div className="flex gap-2 pt-2">
-                                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.25)}>25%</Button>
-                                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.50)}>50%</Button>
-                                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.75)}>75%</Button>
-                                    <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(1.00)}>100%</Button>
-                                </div>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                    </CardContent>
-                 </Card>
-                 
+                                    <div className="relative">
+                                        <FormControl><Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ""} className="pl-8 text-lg h-12"/></FormControl>
+                                        <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    </div>
+                                    <div className="flex gap-2 pt-2">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.25).toFixed(8)), { shouldValidate: true })}>25%</Button>
+                                        <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.50).toFixed(8)), { shouldValidate: true })}>50%</Button>
+                                        <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.75).toFixed(8)), { shouldValidate: true })}>75%</Button>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" className="w-full" size="lg">Next</Button>
+                        </CardFooter>
+                    </form>
+                    </Form>
+                </Card>
+            )}
+
+            {currentStep === 2 && (
                  <Card>
                     <CardHeader>
-                        <CardTitle>Choose a Provider</CardTitle>
-                        <CardDescription>Select where you want to receive your payment.</CardDescription>
+                        <CardTitle>Step 2: Select Provider</CardTitle>
+                        <CardDescription>Choose a provider and enter your payment details.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        {loadingProviders && <Skeleton className="h-24 w-full" />}
-                        {providersError && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{providersError}</AlertDescription></Alert>}
-                        
-                        {!loadingProviders && !providersError && (
-                             <FormField
-                                control={form.control}
+                     <Form {...providerForm}>
+                    <form onSubmit={providerForm.handleSubmit(handleNextStep2)}>
+                        <CardContent className="space-y-6">
+                           <div className="p-4 rounded-lg bg-secondary border">
+                                <p className="text-sm text-muted-foreground">Amount to sell</p>
+                                <p className="text-xl font-bold font-mono">{formData.amount?.toFixed(8)} BTC</p>
+                           </div>
+                           
+                            {providersError && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{providersError}</AlertDescription></Alert>}
+                            <FormField
+                                control={providerForm.control}
                                 name="providerId"
                                 render={({ field }) => (
                                     <FormItem>
+                                        <FormLabel>Provider</FormLabel>
                                         <FormControl>
-                                            <RadioGroup
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                                className="space-y-4"
-                                            >
+                                            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
                                                 {providers.map(provider => (
-                                                    <FormItem key={provider.id} className="relative">
+                                                    <FormItem key={provider.id}>
                                                         <FormControl>
                                                              <RadioGroupItem value={String(provider.id)} id={`provider-${provider.id}`} className="peer sr-only" />
                                                         </FormControl>
                                                         <Label htmlFor={`provider-${provider.id}`} className="block rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
                                                             <div className="flex items-start gap-4">
-                                                                {provider.logo_url ? (
-                                                                    <Image src={provider.logo_url} alt={`${provider.name} logo`} width={40} height={40} className="rounded-lg border" />
-                                                                ) : (
-                                                                    <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-secondary"><Landmark className="size-5 text-muted-foreground" /></div>
-                                                                )}
-                                                                <div className="flex-1">
+                                                                {provider.logo_url ? <Image src={provider.logo_url} alt={`${provider.name} logo`} width={40} height={40} className="rounded-lg border" /> : <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-secondary"><Landmark className="size-5 text-muted-foreground" /></div>}
+                                                                <div>
                                                                     <p className="font-semibold">{provider.name}</p>
                                                                     <p className="text-sm text-muted-foreground">{provider.description}</p>
-                                                                    <div className="flex flex-wrap gap-2 mt-2">
-                                                                        {provider.currencies.map(c => <Badge key={c} variant="secondary">{c.toUpperCase()}</Badge>)}
-                                                                    </div>
+                                                                    <div className="flex flex-wrap gap-2 mt-2">{provider.currencies.map(c => <Badge key={c} variant="secondary">{c.toUpperCase()}</Badge>)}</div>
                                                                 </div>
                                                             </div>
                                                         </Label>
@@ -227,50 +247,76 @@ export default function SellPage() {
                                     </FormItem>
                                 )}
                             />
-                        )}
-                        
-                    </CardContent>
-                 </Card>
-            </div>
-            <div className="space-y-6 lg:sticky lg:top-24">
-                 <Card>
+                             <FormField
+                                control={providerForm.control}
+                                name="paymentDetails"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Your Payment Details</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., Account number, Phone number, Wallet address" {...field} />
+                                        </FormControl>
+                                        <FormDescription>This is where your money will be sent. Double-check for accuracy.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" className="w-full" size="lg">Next</Button>
+                        </CardFooter>
+                    </form>
+                    </Form>
+                </Card>
+            )}
+
+            {currentStep === 3 && (
+                <Card>
                     <CardHeader>
-                        <CardTitle>You Will Receive</CardTitle>
-                        <CardDescription>This is an estimate of what you'll get after fees.</CardDescription>
+                        <CardTitle>Step 3: Confirm & Sell</CardTitle>
+                        <CardDescription>Review your transaction details before confirming the sale.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                         <div className="space-y-2 text-sm">
-                            <div className="flex justify-between"><span className="text-muted-foreground">BTC to Sell</span><span className="font-mono">{watchedAmount || '0.00'} BTC</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Network Fee</span><span className="font-mono">... BTC</span></div>
-                            <div className="flex justify-between"><span className="text-muted-foreground">Provider Fee</span><span className="font-mono">... BTC</span></div>
-                         </div>
-                         <div className="border-t border-dashed"></div>
-                         <div className="space-y-2">
-                             <div className="flex justify-between font-bold text-base"><span >Net Amount (USD)</span><span className="font-mono">$0.00</span></div>
-                             <div className="flex justify-between font-bold text-base"><span >Net Amount (BIF)</span><span className="font-mono">0 BIF</span></div>
-                         </div>
-                         {selectedProvider && (
-                            <Card className="bg-secondary/50">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-base flex items-center gap-2"><Landmark className="size-4" /> Payment via {selectedProvider.name}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground">{selectedProvider.payment_info.instructions}</p>
-                                </CardContent>
-                            </Card>
-                         )}
-                    </CardContent>
-                    <CardFooter>
-                       <Button type="submit" className="w-full" size="lg">
-                            Sell Bitcoin
-                        </Button>
-                    </CardFooter>
-                 </Card>
-            </div>
-        </form>
-      </Form>
-    </div>
-  );
-}
+                        <div className="p-4 rounded-lg bg-secondary border space-y-3 text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Selling</span>
+                                <span className="font-mono font-bold text-base">{formData.amount?.toFixed(8)} BTC</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Network Fee</span>
+                                <span className="font-mono">... BTC</span>
+                            </div>
+                             <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Provider Fee</span>
+                                <span className="font-mono">... BTC</span>
+                            </div>
+                        </div>
+                        <div className="p-4 rounded-lg bg-secondary border space-y-2">
+                             <div className="flex justify-between font-bold text-base">
+                                <span >You Will Receive (Estimate)</span>
+                                <span className="font-mono">$0.00</span>
+                             </div>
+                             <div className="text-right text-muted-foreground font-mono text-sm">0 BIF</div>
+                        </div>
 
+                         <Card className="bg-secondary/30">
+                            <CardHeader className="flex-row items-center gap-4 space-y-0 pb-2">
+                                {selectedProvider?.logo_url ? <Image src={selectedProvider.logo_url} alt="" width={32} height={32} className="rounded-lg border" /> : <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-secondary"><Landmark className="size-4 text-muted-foreground" /></div>}
+                                <CardTitle className="text-base">Receiving via {selectedProvider?.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="font-mono font-semibold break-all">{formData.paymentDetails}</p>
+                                <p className="text-sm text-muted-foreground mt-1">{selectedProvider?.payment_info.instructions}</p>
+                            </CardContent>
+                        </Card>
+                    </CardContent>
+                    <CardFooter className="grid grid-cols-2 gap-4">
+                        <Button variant="outline" size="lg" onClick={handleBack}>Cancel</Button>
+                        <Button size="lg">Sell Bitcoin</Button>
+                    </CardFooter>
+                </Card>
+            )}
+
+        </div>
+    );
     

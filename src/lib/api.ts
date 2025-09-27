@@ -34,24 +34,32 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 const createResponseInterceptor = (instance: typeof axiosInstance) => {
-    instance.interceptors.response.use(
-        (response: AxiosResponse<ApiResponse<any>>) => {
-            if (response.data && response.data.success) {
-                // For paginated responses, the actual data is in `results`
-                if (response.data.data && typeof response.data.data === 'object' && 'results' in response.data.data) {
-                    return { ...response, data: response.data.data.results };
-                }
-                 // For standard data responses
-                if (response.data.data) {
-                    return { ...response, data: response.data.data };
-                }
+    const onResponse = (response: AxiosResponse<ApiResponse<any>>) => {
+        if (response.data && response.data.success) {
+            // For paginated responses, the actual data is in `results`
+            if (response.data.data && typeof response.data.data === 'object' && response.data.data !== null && 'results' in response.data.data) {
+                return { ...response, data: response.data.data.results };
             }
-            return response;
-        },
-        (error: AxiosError<ApiResponse<any>>) => {
-            return Promise.reject(error);
+             // For standard data responses
+            if (response.data.data) {
+                return { ...response, data: response.data.data };
+            }
         }
-    );
+        // Handle cases where `success` is true but `data` is not present, or success is false
+        if (response.data && !response.data.success) {
+           return Promise.reject(response.data.error || new Error(response.data.message || 'An unknown API error occurred'));
+        }
+        return response;
+    };
+
+    const onError = (error: AxiosError<ApiResponse<any>>) => {
+        if (error.code === 'ERR_NETWORK') {
+            error.message = 'Network Error: Could not connect to the backend.';
+        }
+        return Promise.reject(error);
+    };
+
+    instance.interceptors.response.use(onResponse, onError);
 }
 
 createResponseInterceptor(axiosInstance);
@@ -87,7 +95,7 @@ const estimateFee = (values: { recipient: string, amount: number }) => {
 
 // Transactions
 const getTransactions = () => {
-    return axiosInstance.get<Transaction[]>('transaction/');
+    return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/').then(res => res.data);
 };
 const sendTransaction = (values: { recipient: string; amount: number }) => {
     return axiosInstance.post('transaction/send/', {

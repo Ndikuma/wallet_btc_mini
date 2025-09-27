@@ -1,3 +1,4 @@
+
 import {NextResponse} from 'next/server';
 import fs from 'fs-extra';
 import path from 'path';
@@ -22,7 +23,7 @@ async function readData(filePath: string) {
     }
     return null;
   } catch (error) {
-    console-error(`Failed to read data from ${filePath}:`, error);
+    console.error(`Failed to read data from ${filePath}:`, error);
     return null;
   }
 }

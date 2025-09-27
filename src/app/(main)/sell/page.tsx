@@ -8,7 +8,7 @@ import { z } from "zod";
 import api from "@/lib/api";
 import type { Balance, SellProvider, FeeEstimation } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info } from "lucide-react";
+import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,14 +49,21 @@ const providerSchema = z.object({
 });
 
 const paymentDetailsSchema = z.object({
-    paymentDetails: z.string().min(3, "Please enter valid payment details."),
+    full_name: z.string().min(1, "Full name is required."),
+    phone_number: z.string().min(1, "Phone number is required."),
+    account_number: z.string().optional(),
+    email: z.string().email("Please enter a valid email.").optional(),
+})
+.refine(data => data.account_number || data.email, {
+    message: "Either Account Number or Email must be provided.",
+    path: ["account_number"], // Can be assigned to any of the two, e.g. a general error
 });
 
 
 type FormData = {
     amount?: number;
     providerId?: string;
-    paymentDetails?: string;
+    paymentDetails?: z.infer<typeof paymentDetailsSchema>;
 };
 
 
@@ -93,13 +100,11 @@ export default function SellPage() {
         mode: "onChange",
     });
 
-    const paymentDetailsForm = useForm<{ paymentDetails: string }>({
+    const paymentDetailsForm = useForm<z.infer<typeof paymentDetailsSchema>>({
         resolver: zodResolver(paymentDetailsSchema),
         mode: "onChange",
     });
     
-    const watchedProviderId = providerForm.watch("providerId");
-
     useEffect(() => {
         async function fetchInitialData() {
             setIsBalanceLoading(true);
@@ -143,10 +148,14 @@ export default function SellPage() {
             if (isStepValid) setFormData(prev => ({...prev, ...providerForm.getValues()}))
         } else if (currentStep === 3) {
             isStepValid = await paymentDetailsForm.trigger();
-            if(isStepValid) {
-                const newFormData = { ...formData, ...paymentDetailsForm.getValues() };
-                setFormData(newFormData);
+            if (isStepValid) setFormData(prev => ({...prev, paymentDetails: paymentDetailsForm.getValues()}))
+        } else if (currentStep === 4) {
+             isStepValid = true; // This is the confirmation step
+        }
 
+        if (isStepValid) {
+            if (currentStep === 3) { // After payment details, estimate fee for final step
+                 const newFormData = { ...formData, paymentDetails: paymentDetailsForm.getValues() };
                 if (newFormData.amount) {
                     setIsEstimatingFee(true);
                     setFeeError(null);
@@ -162,9 +171,6 @@ export default function SellPage() {
                     }
                 }
             }
-        }
-
-        if (isStepValid) {
             setCurrentStep(prev => prev + 1);
         }
     }
@@ -183,15 +189,20 @@ export default function SellPage() {
         }
 
         setIsSubmitting(true);
+
+        // Format paymentDetails into the array structure
+        const payoutData = Object.entries(formData.paymentDetails)
+            .filter(([, value]) => value) // Remove empty/optional fields
+            .map(([field, value]) => ({ field, value }));
+
+
         try {
             const orderPayload = {
                 provider_id: Number(formData.providerId),
                 amount: formData.amount,
                 amount_currency: 'BTC',
                 direction: 'sell' as 'sell',
-                payout_data: {
-                    details: formData.paymentDetails,
-                }
+                payout_data: payoutData,
             };
             
             const response = await api.createOrder(orderPayload);
@@ -206,9 +217,8 @@ export default function SellPage() {
     }
     
     const selectedProvider = useMemo(() => {
-        const providerId = formData.providerId || watchedProviderId;
-        return providers.find(p => String(p.id) === providerId);
-    }, [providers, formData.providerId, watchedProviderId]);
+        return providers.find(p => String(p.id) === formData.providerId);
+    }, [providers, formData.providerId]);
 
 
     if (isBalanceLoading || loadingProviders) {
@@ -330,25 +340,64 @@ export default function SellPage() {
                 </Card>
             )}
 
-             {currentStep === 3 && (
+            {currentStep === 3 && (
                  <Card>
                     <CardHeader>
                         <CardTitle>Step 3: Enter Payout Details</CardTitle>
-                        <CardDescription>Provide your account information to receive the funds.</CardDescription>
+                        <CardDescription>Provide your account information to receive the funds. This is where your money will be sent, so please double-check for accuracy.</CardDescription>
                     </CardHeader>
                      <Form {...paymentDetailsForm}>
                     <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-4">
                              <FormField
                                 control={paymentDetailsForm.control}
-                                name="paymentDetails"
+                                name="full_name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Your Payment Details</FormLabel>
+                                        <FormLabel>Full Name</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="e.g., Account number, Phone number" {...field} value={field.value ?? ''} />
+                                            <Input placeholder="e.g., Alice Ndayizeye" {...field} value={field.value ?? ''} />
                                         </FormControl>
-                                        <FormDescription>This is where your money will be sent. Double-check for accuracy.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={paymentDetailsForm.control}
+                                name="phone_number"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Phone Number</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., +25779988777" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="text-sm text-muted-foreground font-medium text-center py-2">Provide at least one of the following</div>
+                             <FormField
+                                control={paymentDetailsForm.control}
+                                name="account_number"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Account Number (Optional)</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., 987654321" {...field} value={field.value ?? ''} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={paymentDetailsForm.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email (Optional)</FormLabel>
+                                        <FormControl>
+                                            <Input type="email" placeholder="e.g., alice@example.com" {...field} value={field.value ?? ''} />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -370,28 +419,26 @@ export default function SellPage() {
                         <CardDescription>Review your transaction details before confirming the sale.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {(isEstimatingFee || feeEstimation || feeError) && (
-                            <div className="p-4 rounded-lg bg-secondary border space-y-3 text-sm">
-                                {isEstimatingFee && <div className="flex items-center justify-center"><Loader2 className="mr-2 size-4 animate-spin" />Estimating...</div>}
-                                {feeError && <p className="text-destructive text-center">{feeError}</p>}
-                                {feeEstimation && (
-                                    <>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Selling</span>
-                                            <span className="font-mono font-bold text-base">{formData.amount?.toFixed(8)} BTC</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Network Fee</span>
-                                            <span className="font-mono">{feeEstimation.network_fee_btc} BTC</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">Provider Fee</span>
-                                            <span className="font-mono">... BTC</span>
-                                        </div>
-                                    </>
-                                )}
+                        <div className="p-4 rounded-lg bg-secondary border space-y-3 text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Selling</span>
+                                <span className="font-mono font-bold text-base">{formData.amount?.toFixed(8)} BTC</span>
                             </div>
-                        )}
+                            {isEstimatingFee && <div className="flex items-center justify-center"><Loader2 className="mr-2 size-4 animate-spin" />Estimating fee...</div>}
+                            {feeError && <p className="text-destructive text-center">{feeError}</p>}
+                            {feeEstimation && (
+                                <>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-muted-foreground">Network Fee</span>
+                                        <span className="font-mono">{feeEstimation.network_fee_btc} BTC</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-muted-foreground">Provider Fee</span>
+                                        <span className="font-mono">... BTC</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                         <div className="p-4 rounded-lg bg-secondary border space-y-2">
                              <div className="flex justify-between font-bold text-base">
                                 <span >You Will Receive (Estimate)</span>
@@ -401,12 +448,31 @@ export default function SellPage() {
                         </div>
 
                          <Card className="bg-secondary/30">
-                            <CardHeader className="flex-row items-center gap-4 space-y-0 pb-2">
-                                {selectedProvider?.logo_url ? <Image src={selectedProvider.logo_url} alt="" width={32} height={32} className="rounded-lg border" /> : <div className="flex h-8 w-8 items-center justify-center rounded-lg border bg-secondary"><Landmark className="size-4 text-muted-foreground" /></div>}
-                                <CardTitle className="text-base">Receiving via {selectedProvider?.name}</CardTitle>
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-base">Payout Details</CardTitle>
+                                <CardDescription>Funds will be sent via {selectedProvider?.name} to the following:</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <p className="font-mono font-semibold break-all">{formData.paymentDetails}</p>
+                            <CardContent className="space-y-3 text-sm">
+                                <div className="flex items-center gap-3">
+                                    <UserIcon className="size-4 text-muted-foreground" />
+                                    <span className="font-semibold">{formData.paymentDetails?.full_name}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Phone className="size-4 text-muted-foreground" />
+                                    <span className="font-semibold">{formData.paymentDetails?.phone_number}</span>
+                                </div>
+                                {formData.paymentDetails?.account_number && (
+                                     <div className="flex items-center gap-3">
+                                        <Landmark className="size-4 text-muted-foreground" />
+                                        <span className="font-semibold">{formData.paymentDetails.account_number}</span>
+                                    </div>
+                                )}
+                                {formData.paymentDetails?.email && (
+                                     <div className="flex items-center gap-3">
+                                        <Mail className="size-4 text-muted-foreground" />
+                                        <span className="font-semibold">{formData.paymentDetails.email}</span>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </CardContent>

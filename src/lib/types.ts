@@ -128,7 +128,7 @@ export interface Order {
     btc_amount: string | null;
     btc_txid: string | null;
     created_at: string;
-    payout_data?: { details: string };
+    payout_data?: { field: string, value: string }[];
 }
 
 

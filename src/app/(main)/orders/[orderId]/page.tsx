@@ -20,6 +20,9 @@ import {
   Bitcoin,
   AlertTriangle,
   Banknote,
+  User as UserIcon,
+  Phone,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -190,6 +193,20 @@ const getStatusIcon = (status: string) => {
     }
 }
 
+const PayoutDetailItem = ({ icon, label, value }: { icon: React.ElementType, label: string, value?: string }) => {
+    if (!value) return null;
+    const Icon = icon;
+    return (
+        <div className="flex items-center gap-3">
+            <Icon className="size-4 text-muted-foreground" />
+            <div>
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="font-semibold">{value}</p>
+            </div>
+        </div>
+    )
+}
+
 export default function OrderDetailsPage() {
     const params = useParams();
     const router = useRouter();
@@ -247,6 +264,11 @@ export default function OrderDetailsPage() {
     }
 
     if (!order) return null;
+
+    const payoutDetails = order.payout_data?.reduce((acc, item) => {
+        acc[item.field] = item.value;
+        return acc;
+    }, {} as { [key: string]: string });
     
     return (
         <div className="mx-auto max-w-2xl space-y-6">
@@ -290,7 +312,7 @@ export default function OrderDetailsPage() {
                 </CardFooter>
             </Card>
 
-            {order.direction === 'sell' && order.payout_data?.details && (
+            {order.direction === 'sell' && payoutDetails && (
                  <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -299,10 +321,11 @@ export default function OrderDetailsPage() {
                         </CardTitle>
                         <CardDescription>Your funds will be sent to the following account:</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <div className="font-mono text-sm font-semibold p-4 rounded-lg bg-secondary/30 border break-all">
-                            {order.payout_data.details}
-                        </div>
+                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                        <PayoutDetailItem icon={UserIcon} label="Full Name" value={payoutDetails.full_name} />
+                        <PayoutDetailItem icon={Phone} label="Phone Number" value={payoutDetails.phone_number} />
+                        <PayoutDetailItem icon={Landmark} label="Account Number" value={payoutDetails.account_number} />
+                        <PayoutDetailItem icon={Mail} label="Email" value={payoutDetails.email} />
                     </CardContent>
                 </Card>
             )}
@@ -357,3 +380,4 @@ export default function OrderDetailsPage() {
     
 
     
+

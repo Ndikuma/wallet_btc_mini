@@ -126,7 +126,7 @@ const sendTransaction = (values: { recipient: string; amount: number }) => {
 // Buy / Sell
 const getBuyProviders = (): Promise<AxiosResponse<BuyProvider[]>> => axiosInstance.get('providers/buy/');
 const calculateBuyFee = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<BuyFeeCalculation>> => {
-    return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount, currency });
+    return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount: String(amount), currency });
 }
 const createOrder = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<Order>> => {
     return axiosInstance.post('orders/', { 

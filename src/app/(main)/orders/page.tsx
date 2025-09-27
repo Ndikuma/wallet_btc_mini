@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge, badgeVariants } from "@/components/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { VariantProps } from "class-variance-authority";
 

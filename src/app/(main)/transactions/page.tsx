@@ -26,7 +26,7 @@ import type { Transaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Badge, badgeVariants } from "@/components/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Accordion,

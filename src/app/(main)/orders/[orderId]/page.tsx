@@ -18,6 +18,7 @@ import {
   Copy,
   ExternalLink,
   Bitcoin,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -280,6 +281,12 @@ export default function OrderDetailsPage() {
                          <div className="flex justify-between"><span className="text-muted-foreground">Payment Method</span><span className="font-semibold">{order.provider.payment_info.method}</span></div>
                     </div>
                 </CardContent>
+                 <CardFooter className="justify-end">
+                    <Button variant="destructive">
+                        <AlertTriangle className="mr-2 size-4" />
+                        Report Order
+                    </Button>
+                </CardFooter>
             </Card>
 
             {order.status === 'completed' && order.btc_amount && (
@@ -328,5 +335,7 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
+
+    
 
     

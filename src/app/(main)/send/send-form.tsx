@@ -119,9 +119,6 @@ export function SendForm() {
       try {
         const response = await api.getWalletBalance();
         setBalance(response.data);
-        if (form.getValues("amount")) {
-            form.trigger("amount");
-        }
       } catch (error) {
         if (error instanceof AxiosError && error.response?.status === 401) {
             toast({ variant: "destructive", title: "Authentication Error", description: "Please log in to send Bitcoin." });
@@ -135,7 +132,7 @@ export function SendForm() {
       }
     }
     fetchBalance();
-  }, [router, toast, form]);
+  }, [router, toast]);
   
   useEffect(() => {
     const newBalance = balance ? parseFloat(balance.balance) : 0;
@@ -354,3 +351,5 @@ export function SendForm() {
     </>
   );
 }
+
+    

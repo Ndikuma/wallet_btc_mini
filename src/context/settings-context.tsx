@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
-type DisplayUnit = 'btc' | 'sats' | 'usd';
+type DisplayUnit = 'btc' | 'sats' | 'usd' | 'bif';
 type Currency = 'usd' | 'eur' | 'jpy' | 'bif';
 
 interface Settings {

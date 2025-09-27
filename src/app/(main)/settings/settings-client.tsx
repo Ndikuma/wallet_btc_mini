@@ -164,8 +164,8 @@ export function SettingsClient() {
             <p className="text-sm text-muted-foreground pt-1">Select the main unit for displaying your balance.</p>
             <RadioGroup
               value={settings.displayUnit}
-              onValueChange={(value) => setDisplayUnit(value as "btc" | "sats" | "usd")}
-              className="mt-3 grid grid-cols-3 gap-2 sm:gap-4"
+              onValueChange={(value) => setDisplayUnit(value as "btc" | "sats" | "usd" | "bif")}
+              className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4"
             >
               <div>
                 <RadioGroupItem value="btc" id="btc" className="peer sr-only" />
@@ -183,6 +183,12 @@ export function SettingsClient() {
                 <RadioGroupItem value="usd" id="usd" className="peer sr-only" />
                 <Label htmlFor="usd" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:py-4 sm:text-base">
                   USD
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="bif" id="bif" className="peer sr-only" />
+                <Label htmlFor="bif" className="flex h-16 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 text-center text-sm hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary sm:h-auto sm:py-4 sm:text-base">
+                  BIF
                 </Label>
               </div>
             </RadioGroup>
@@ -320,5 +326,3 @@ export function SettingsClient() {
     </>
   );
 }
-
-    

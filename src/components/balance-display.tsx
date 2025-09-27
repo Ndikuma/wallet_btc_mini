@@ -47,6 +47,7 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
     switch (settings.displayUnit) {
       case "sats": return balance.sats_value;
       case "usd": return balance.usd_value;
+      case "bif": return balance.bif_value;
       case "btc":
       default:
         return balance.btc_value;
@@ -58,6 +59,7 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
     switch (settings.displayUnit) {
       case "sats": return { val1: balance.btc_value, val2: balance.usd_value };
       case "usd": return { val1: balance.btc_value, val2: balance.sats_value };
+      case "bif": return { val1: balance.btc_value, val2: balance.usd_value };
       case "btc":
       default:
         return { val1: balance.sats_value, val2: balance.usd_value };
@@ -105,9 +107,13 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
         <div className="space-y-1">
             <p className="font-medium">{isVisible ? val2 : hiddenBalance}</p>
         </div>
-        <div className="space-y-1">
-             <p className="font-medium">{isVisible ? balance.bif_value : hiddenBalance}</p>
-        </div>
+         {settings.displayUnit !== 'bif' && (
+          <div className="space-y-1">
+            <p className="font-medium">
+              {isVisible ? balance.bif_value : hiddenBalance}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

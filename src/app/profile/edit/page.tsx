@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/form";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import MainLayout from "@/app/main-layout";
 
 const profileFormSchema = z.object({
   first_name: z.string().max(50).optional(),
@@ -37,7 +39,7 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-export default function EditProfilePage() {
+function EditProfilePage() {
   const { toast } = useToast();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -188,4 +190,11 @@ export default function EditProfilePage() {
   );
 }
 
-    
+
+export default function EditProfileLayout() {
+    return (
+        <MainLayout>
+            <EditProfilePage />
+        </MainLayout>
+    )
+}

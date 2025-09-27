@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [
-  { path: "/dashboard", icon: Home, label: "Dashboard" },
+  { path: "/", icon: Home, label: "Dashboard" },
   { path: "/send", icon: Send, label: "Send" },
   { path: "/receive", icon: Download, label: "Receive" },
   { path: "/buy", icon: ShoppingCart, label: "Buy" },
@@ -47,7 +47,7 @@ export function MainNav() {
   return (
     <>
       <SidebarHeader className="p-4">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <BitcoinIcon className="size-7" />
           <h2 className="text-lg font-semibold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
             mini wallet
@@ -61,7 +61,7 @@ export function MainNav() {
               <SidebarMenuItem key={item.path}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.path)}
+                  isActive={pathname === item.path}
                   tooltip={item.label}
                 >
                   <Link href={item.path}>
@@ -98,3 +98,5 @@ export function MainNav() {
     </>
   );
 }
+
+    

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -41,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import MainLayout from "@/app/main-layout";
 
 
 const buySchema = z.object({
@@ -52,7 +54,7 @@ const buySchema = z.object({
 
 type BuyFormValues = z.infer<typeof buySchema>;
 
-export default function BuyWithProviderPage() {
+function BuyWithProviderPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -286,4 +288,11 @@ export default function BuyWithProviderPage() {
   );
 }
 
-    
+
+export default function BuyWithProviderLayout() {
+    return (
+        <MainLayout>
+            <BuyWithProviderPage />
+        </MainLayout>
+    )
+}

@@ -34,7 +34,7 @@ export function UserNav() {
       setLoading(true);
       try {
         const response = await api.getUser();
-        setUser(response.data);
+        setUser(response);
       } catch (error) {
         // This is expected if the user is not logged in, so we don't need to log an error.
       } finally {
@@ -43,7 +43,12 @@ export function UserNav() {
     }, []);
 
   useEffect(() => {
-    fetchUser();
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        fetchUser();
+    } else {
+        setLoading(false);
+    }
   }, [fetchUser]);
 
   const handleLogout = async () => {

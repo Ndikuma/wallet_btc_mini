@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { VariantProps } from "class-variance-authority";
+import MainLayout from "@/app/main-layout";
 
 const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
   switch (status.toLowerCase()) {
@@ -69,7 +71,7 @@ const OrderCard = ({ order }: { order: Order }) => (
   </Card>
 );
 
-export default function OrdersPage() {
+function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,4 +136,11 @@ export default function OrdersPage() {
   );
 }
 
-    
+
+export default function OrdersLayout() {
+    return (
+        <MainLayout>
+            <OrdersPage />
+        </MainLayout>
+    )
+}

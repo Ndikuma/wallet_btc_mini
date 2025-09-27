@@ -87,7 +87,7 @@ export function SendForm() {
       setFeeError(null);
       try {
           const feeResponse = await api.estimateFee({ amount });
-          setFeeEstimation(feeResponse.data);
+          setFeeEstimation(feeResponse);
       } catch (error: any) {
           const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
           setFeeError(errorMsg);
@@ -113,7 +113,7 @@ export function SendForm() {
       setIsBalanceLoading(true);
       try {
         const response = await api.getWalletBalance();
-        setBalance(response.data);
+        setBalance(response);
       } catch (error) {
         if (error instanceof AxiosError && error.response?.status === 401) {
             toast({ variant: "destructive", title: "Authentication Error", description: "Please log in to send Bitcoin." });
@@ -205,12 +205,12 @@ export function SendForm() {
     }
     setIsLoading(true);
     try {
-        const response = await api.sendTransaction({
+        const response:any = await api.sendTransaction({
             recipient: values.recipient,
             amount: parseFloat(feeEstimation.sendable_btc)
         });
         toast({
-            title: (response.data as any).message || "Transaction Submitted",
+            title: response.message || "Transaction Submitted",
             description: `Sending ${feeEstimation.sendable_btc} BTC.`,
         });
         setIsSuccessDialogOpen(true);
@@ -336,7 +336,7 @@ export function SendForm() {
         </form>
       </Form>
       <Dialog open={isSuccessDialogOpen} onOpenChange={(open) => {
-        if (!open) router.push("/dashboard");
+        if (!open) router.push("/");
         setIsSuccessDialogOpen(open);
       }}>
         <DialogContent>

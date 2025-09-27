@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/card";
 import { SendForm } from "./send-form";
 import { Bitcoin } from "lucide-react";
+import MainLayout from "@/app/main-layout";
 
 
-export default function SendPage() {
+function SendPage() {
 
   return (
     <div className="mx-auto max-w-lg">
@@ -37,4 +38,11 @@ export default function SendPage() {
   );
 }
 
-    
+
+export default function SendLayout() {
+    return (
+        <MainLayout>
+            <SendPage />
+        </MainLayout>
+    )
+}

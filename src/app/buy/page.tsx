@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,6 +20,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import MainLayout from "@/app/main-layout";
 
 const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
   <Card className="hover:border-primary/50 transition-colors">
@@ -59,7 +61,7 @@ const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
   </Card>
 );
 
-export default function BuyPage() {
+function BuyPage() {
   const [providers, setProviders] = useState<BuyProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -134,4 +136,11 @@ export default function BuyPage() {
   );
 }
 
-    
+
+export default function BuyLayout() {
+    return (
+        <MainLayout>
+            <BuyPage />
+        </MainLayout>
+    )
+}

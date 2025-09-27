@@ -28,8 +28,8 @@ export default function CreateWalletPage() {
     async function generateMnemonic() {
       try {
         const response = await api.generateMnemonic();
-        setMnemonic(response.data.mnemonic);
-        localStorage.setItem("tempMnemonic", response.data.mnemonic);
+        setMnemonic(response.mnemonic);
+        localStorage.setItem("tempMnemonic", response.mnemonic);
       } catch (error: any) {
         const errorMsg = error.response?.data?.error?.details?.detail || "Could not generate a recovery phrase. Please try again.";
         toast({
@@ -101,3 +101,5 @@ export default function CreateWalletPage() {
     </div>
   );
 }
+
+    

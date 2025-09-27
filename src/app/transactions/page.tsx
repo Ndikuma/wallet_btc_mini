@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -36,6 +37,7 @@ import {
 } from "@/components/ui/accordion";
 import { type VariantProps } from "class-variance-authority";
 import { AxiosError } from "axios";
+import MainLayout from "@/app/main-layout";
 
 const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | null, children?: React.ReactNode }) => {
   const { toast } = useToast();
@@ -154,7 +156,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
 }
 
 
-export default function TransactionsPage() {
+function TransactionsPage() {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
@@ -222,4 +224,11 @@ export default function TransactionsPage() {
   );
 }
 
-    
+
+export default function TransactionsLayout() {
+    return (
+        <MainLayout>
+            <TransactionsPage />
+        </MainLayout>
+    )
+}

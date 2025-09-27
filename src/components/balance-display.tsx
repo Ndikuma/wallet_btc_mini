@@ -25,7 +25,7 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
       setError(null);
       try {
         const balanceRes = await api.getWalletBalance();
-        setBalance(balanceRes.data);
+        setBalance(balanceRes);
       } catch (err: any) {
         if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
             setError("Network error. Please check your connection.");
@@ -118,3 +118,5 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
     </div>
   );
 }
+
+    

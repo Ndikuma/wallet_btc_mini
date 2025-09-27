@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -48,6 +49,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CopyButton } from "@/components/copy-button";
 import { shortenText } from "@/lib/utils";
+import MainLayout from "@/app/main-layout";
 
 const paymentProofSchema = z.object({
     payment_proof_ref: z.string().min(4, "Please enter a valid payment reference."),
@@ -207,7 +209,7 @@ const PayoutDetailItem = ({ icon, label, value }: { icon: React.ElementType, lab
     )
 }
 
-export default function OrderDetailsPage() {
+function OrderDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
@@ -377,4 +379,10 @@ export default function OrderDetailsPage() {
     );
 }
 
-    
+export default function OrderDetailsLayout() {
+    return (
+        <MainLayout>
+            <OrderDetailsPage />
+        </MainLayout>
+    )
+}

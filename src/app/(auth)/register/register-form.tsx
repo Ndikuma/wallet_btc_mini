@@ -46,7 +46,7 @@ export function RegisterForm() {
     setIsLoading(true);
     try {
       const response = await api.register(values);
-      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('authToken', response.token);
       toast({
         title: "Account Created",
         description: "Please set up your wallet to continue.",
@@ -129,3 +129,5 @@ export function RegisterForm() {
     </Form>
   );
 }
+
+    

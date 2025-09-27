@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { path: "/dashboard", icon: Home, label: "Home" },
+  { path: "/", icon: Home, label: "Home" },
   { path: "/orders", icon: Receipt, label: "Orders" },
   { path: "/send", icon: ScanLine, label: "Scan" }, // Special item for the center button
   { path: "/transactions", icon: History, label: "History" },
@@ -27,7 +27,7 @@ export function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-20 h-20 border-t bg-background/95 backdrop-blur-sm md:hidden">
       <div className="relative grid h-full grid-cols-5 items-center">
         {menuItems.map((item) => {
-          const isActive = pathname.startsWith(item.path);
+          const isActive = pathname === item.path;
 
           if (item.label === "Scan") {
             return (
@@ -60,3 +60,5 @@ export function MobileNav() {
     </nav>
   );
 }
+
+    

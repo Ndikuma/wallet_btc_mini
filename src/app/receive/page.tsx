@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Image from "next/image";
@@ -19,8 +20,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import MainLayout from "@/app/main-layout";
 
-export default function ReceivePage() {
+function ReceivePage() {
   const { toast } = useToast();
   const [address, setAddress] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -152,4 +154,11 @@ export default function ReceivePage() {
   );
 }
 
-    
+
+export default function ReceiveLayout() {
+    return (
+        <MainLayout>
+            <ReceivePage />
+        </MainLayout>
+    )
+}

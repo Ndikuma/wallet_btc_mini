@@ -7,8 +7,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SettingsClient } from "./settings-client";
+import MainLayout from "@/app/main-layout";
 
-export default function SettingsPage() {
+function SettingsPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="space-y-2">
@@ -22,4 +23,10 @@ export default function SettingsPage() {
   );
 }
 
-    
+export default function SettingsLayout() {
+    return (
+        <MainLayout>
+            <SettingsPage />
+        </MainLayout>
+    )
+}

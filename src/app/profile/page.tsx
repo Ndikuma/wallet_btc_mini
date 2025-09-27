@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,6 +20,7 @@ import { ArrowRight, User as UserIcon, BarChart2, Clock, Hash, TrendingUp, Trend
 import Link from "next/link";
 import { shortenText } from "@/lib/utils";
 import { CopyButton } from "@/components/copy-button";
+import MainLayout from "@/app/main-layout";
 
 interface StatCardProps {
   icon: React.ElementType;
@@ -43,7 +45,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, isLoading
     );
 };
 
-export default function ProfilePage() {
+function ProfilePage() {
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
@@ -197,4 +199,11 @@ export default function ProfilePage() {
   );
 }
 
-    
+
+export default function ProfileLayout() {
+    return (
+        <MainLayout>
+            <ProfilePage />
+        </MainLayout>
+    )
+}

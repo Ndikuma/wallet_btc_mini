@@ -1,5 +1,4 @@
 
-
 export interface User {
   id: number;
   username: string;
@@ -156,3 +155,5 @@ export interface PaginatedResponse<T> {
     previous: string | null;
     results: T[];
 }
+
+    

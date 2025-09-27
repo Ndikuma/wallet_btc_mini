@@ -85,7 +85,7 @@ export function SettingsClient() {
     setIsBackupDialogOpen(true);
     try {
         const response = await api.backupWallet();
-        setWif(response.data.wif);
+        setWif(response.wif);
     } catch(error: any) {
         const errorMsg = error.response?.data?.message || "Could not retrieve backup key. Please try again.";
         toast({
@@ -326,3 +326,5 @@ export function SettingsClient() {
     </>
   );
 }
+
+    

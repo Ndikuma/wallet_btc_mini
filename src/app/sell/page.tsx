@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -36,6 +37,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useRouter } from "next/navigation";
+import MainLayout from "@/app/main-layout";
 
 
 const amountSchema = z.object({
@@ -67,7 +69,7 @@ type FormData = {
 };
 
 
-export default function SellPage() {
+function SellPage() {
     const { toast } = useToast();
     const router = useRouter();
     const [balance, setBalance] = useState<Balance | null>(null);
@@ -488,4 +490,10 @@ export default function SellPage() {
     );
 }
 
-    
+export default function SellLayout() {
+    return (
+        <MainLayout>
+            <SellPage />
+        </MainLayout>
+    )
+}

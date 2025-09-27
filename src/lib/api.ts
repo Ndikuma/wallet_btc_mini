@@ -1,5 +1,4 @@
 
-
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
@@ -39,7 +38,11 @@ const createResponseInterceptor = (instance: AxiosInstance) => {
       // The backend wraps successful responses in a `data` object.
       // We extract it here to simplify data access in the components.
       if (response.data && response.data.success) {
-        return { ...response, data: response.data.data };
+        // For paginated responses, return the results array directly
+        if (response.data.data && typeof response.data.data === 'object' && 'results' in response.data.data) {
+             return (response.data.data as PaginatedResponse<any>).results;
+        }
+        return response.data.data;
       }
       // For cases like logout that might just return { success: true }
       if (response.data && response.data.success === true && response.data.data === undefined) {
@@ -88,26 +91,26 @@ createResponseInterceptor(publicAxiosInstance);
 
 
 // Authentication - Use public instance
-const login = (credentials: any): Promise<AxiosResponse<AuthResponse>> => publicAxiosInstance.post('auth/login/', credentials);
-const register = (userInfo: any): Promise<AxiosResponse<AuthResponse>> => publicAxiosInstance.post('auth/register/', userInfo);
+const login = (credentials: any): Promise<AuthResponse> => publicAxiosInstance.post('auth/login/', credentials);
+const register = (userInfo: any): Promise<AuthResponse> => publicAxiosInstance.post('auth/register/', userInfo);
 const logout = () => axiosInstance.post('auth/logout/');
 
 // User Profile
-const getUserProfile = (): Promise<AxiosResponse<User>> => axiosInstance.get('user/profile/');
-const updateUserProfile = (id: number, data: { first_name?: string, last_name?: string }): Promise<AxiosResponse<User>> => axiosInstance.patch(`user/${id}/`, data);
-const getUser = (): Promise<AxiosResponse<User>> => axiosInstance.get('user/');
+const getUserProfile = (): Promise<User> => axiosInstance.get('user/profile/');
+const updateUserProfile = (id: number, data: { first_name?: string, last_name?: string }): Promise<User> => axiosInstance.patch(`user/${id}/`, data);
+const getUser = (): Promise<User> => axiosInstance.get('user/');
 
 
 // Wallet
-const getWallets = (): Promise<AxiosResponse<Wallet[]>> => axiosInstance.get('wallet/');
-const getWalletBalance = (): Promise<AxiosResponse<Balance>> => axiosInstance.get('wallet/balance/');
-const generateMnemonic = (): Promise<AxiosResponse<{ mnemonic: string }>> => axiosInstance.post('wallet/generate_mnemonic/');
+const getWallets = (): Promise<Wallet[]> => axiosInstance.get('wallet/');
+const getWalletBalance = (): Promise<Balance> => axiosInstance.get('wallet/balance/');
+const generateMnemonic = (): Promise<{ mnemonic: string }> => axiosInstance.post('wallet/generate_mnemonic/');
 const createWallet = (mnemonic: string) => axiosInstance.post('wallet/create_wallet/', { mnemonic });
-const generateNewAddress = (): Promise<AxiosResponse<{ address: string }>> => axiosInstance.post('wallet/generate_address/');
-const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }>> => axiosInstance.post('wallet/generate_qr_code/', { data });
+const generateNewAddress = (): Promise<{ address: string }> => axiosInstance.post('wallet/generate_address/');
+const generateQrCode = (data: string): Promise<{ qr_code: string }> => axiosInstance.post('wallet/generate_qr_code/', { data });
 const restoreWallet = (data: string) => axiosInstance.post('wallet/restore/', { data });
-const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
-const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstimation>> => {
+const backupWallet = (): Promise<{ wif: string }> => axiosInstance.get('wallet/backup/');
+const estimateFee = (values: { amount: number }): Promise<FeeEstimation> => {
     return axiosInstance.post('wallet/estimate_fee/', {
         amount: values.amount
     });
@@ -115,7 +118,7 @@ const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstim
 
 
 // Transactions
-const getTransactions = (): Promise<AxiosResponse<PaginatedResponse<Transaction>>> => axiosInstance.get('transaction/');
+const getTransactions = (): Promise<Transaction[]> => axiosInstance.get('transaction/');
 const sendTransaction = (values: { recipient: string; amount: number }) => {
     return axiosInstance.post('transaction/send/', {
         to_address: values.recipient,
@@ -124,20 +127,20 @@ const sendTransaction = (values: { recipient: string; amount: number }) => {
 };
 
 // Buy / Sell
-const getBuyProviders = (): Promise<AxiosResponse<BuyProvider[]>> => axiosInstance.get('providers/buy/');
-const getSellProviders = (): Promise<AxiosResponse<SellProvider[]>> => axiosInstance.get('providers/sell/');
+const getBuyProviders = (): Promise<BuyProvider[]> => axiosInstance.get('providers/buy/');
+const getSellProviders = (): Promise<SellProvider[]> => axiosInstance.get('providers/sell/');
 
-const calculateBuyFee = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<BuyFeeCalculation>> => {
+const calculateBuyFee = (providerId: number, amount: number, currency: string): Promise<BuyFeeCalculation> => {
     return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount: String(amount), currency });
 }
 
 // Orders
-const createOrder = (payload: { provider_id: number; amount: number; amount_currency: string; direction: 'buy' | 'sell'; payout_data?: any; }): Promise<AxiosResponse<Order>> => {
+const createOrder = (payload: { provider_id: number; amount: number; amount_currency: string; direction: 'buy' | 'sell'; payout_data?: any; }): Promise<Order> => {
     return axiosInstance.post('orders/', payload);
 }
-const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');
-const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);
-const updateOrder = (orderId: number, data: { payment_proof?: any; note?: string | null }): Promise<AxiosResponse<Order>> => {
+const getOrders = (): Promise<Order[]> => axiosInstance.get('orders/');
+const getOrder = (orderId: number): Promise<Order> => axiosInstance.get(`orders/${orderId}/`);
+const updateOrder = (orderId: number, data: { payment_proof?: any; note?: string | null }): Promise<Order> => {
     return axiosInstance.patch(`orders/${orderId}/`, data);
 }
 
@@ -170,3 +173,5 @@ const api = {
 };
 
 export default api;
+
+    

@@ -116,7 +116,7 @@ export default function VerifyMnemonicPage() {
         description: "Your wallet is ready and secured.",
       });
       localStorage.removeItem("tempMnemonic");
-      router.push("/dashboard");
+      router.push("/");
       router.refresh();
     } catch (error: any) {
       const errorMsg = error.response?.data?.error?.details?.detail || error.response?.data?.message || "An error occurred during wallet creation.";
@@ -205,3 +205,5 @@ export default function VerifyMnemonicPage() {
     </div>
   );
 }
+
+    

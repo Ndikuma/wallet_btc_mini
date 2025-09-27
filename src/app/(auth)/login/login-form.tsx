@@ -44,15 +44,15 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       const response = await api.login(values);
-      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('authToken', response.token);
       toast({
         title: "Login Successful",
         description: "Welcome back!",
       });
 
-      const { user } = response.data;
+      const { user } = response;
       if (user.wallet_created) {
-        router.push("/dashboard");
+        router.push("/");
       } else {
         router.push("/create-or-restore");
       }
@@ -121,3 +121,5 @@ export function LoginForm() {
     </Form>
   );
 }
+
+    

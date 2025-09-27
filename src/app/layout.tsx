@@ -3,6 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter, Source_Code_Pro } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { SettingsProvider } from '@/context/settings-context';
+import { Suspense } from 'react';
 
 const fontBody = Inter({
   subsets: ['latin'],
@@ -30,8 +32,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={cn("font-body antialiased", fontBody.variable, fontCode.variable)}>
-        {children}
-        <Toaster />
+          <SettingsProvider>
+            <Suspense>
+             {children}
+            </Suspense>
+            <Toaster />
+        </SettingsProvider>
       </body>
     </html>
   );

@@ -123,7 +123,10 @@ export function SendForm() {
         if (error instanceof AxiosError && error.response?.status === 401) {
             toast({ variant: "destructive", title: "Authentication Error", description: "Please log in to send Bitcoin." });
             router.push("/login");
-        } else {
+        } else if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
+            toast({ variant: "destructive", title: "Network Error", description: "Could not connect to the backend to fetch balance." });
+        }
+        else {
             console.error("Failed to fetch wallet data for send form", error);
              toast({ variant: "destructive", title: "Error", description: "Could not fetch wallet data." });
         }
@@ -351,5 +354,7 @@ export function SendForm() {
     </>
   );
 }
+
+    
 
     

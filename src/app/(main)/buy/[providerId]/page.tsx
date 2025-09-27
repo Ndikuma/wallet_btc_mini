@@ -136,8 +136,7 @@ export default function BuyWithProviderPage() {
     try {
         const order = await api.createOrder(provider.id, data.amount, data.currency);
         toast({ title: 'Order Created', description: `Your order #${order.data.id} has been created.` });
-        // TODO: Redirect to order details page
-        router.push('/dashboard');
+        router.push(`/orders/${order.data.id}`);
     } catch (err: any) {
         toast({ variant: 'destructive', title: 'Order Failed', description: err.message || 'Could not create your order.' });
     } finally {
@@ -273,5 +272,7 @@ export default function BuyWithProviderPage() {
     </div>
   );
 }
+
+    
 
     

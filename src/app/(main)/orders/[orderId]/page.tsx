@@ -47,10 +47,20 @@ import { shortenText } from "@/lib/utils";
 const paymentProofSchema = z.object({
     payment_proof_ref: z.string().min(4, "Please enter a valid payment reference."),
     note: z.string().optional(),
-    payment_proof_image: z.any().optional(), // For file upload UI
+    payment_proof_image: z.any().optional(),
 });
 
 type PaymentProofFormValues = z.infer<typeof paymentProofSchema>;
+
+
+function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
+}
 
 function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSuccessfulSubmit: (updatedOrder: Order) => void }) {
     const { toast } = useToast();
@@ -62,14 +72,26 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
             note: "",
         },
     });
+    
+    const fileRef = form.register("payment_proof_image");
 
     const onSubmit = async (values: PaymentProofFormValues) => {
         setIsSubmitting(true);
         try {
+            let image_base64: string | null = null;
+            if (values.payment_proof_image && values.payment_proof_image.length > 0) {
+                const file = values.payment_proof_image[0];
+                image_base64 = await fileToBase64(file);
+            }
+
             const payload = {
-                payment_proof: { tx_id: values.payment_proof_ref },
+                payment_proof: { 
+                    tx_id: values.payment_proof_ref,
+                    image_base64: image_base64,
+                },
                 note: values.note,
             };
+
             const response = await api.updateOrder(order.id, payload);
             toast({ title: "Payment Proof Submitted", description: "Your proof has been sent for confirmation." });
             onSuccessfulSubmit(response.data);
@@ -128,7 +150,13 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
                         />
                          <div className="space-y-2">
                             <Label htmlFor="payment_proof_image">Upload Screenshot (Optional)</Label>
-                            <Input id="payment_proof_image" type="file" className="text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:py-2 file:px-4 file:text-sm file:font-semibold file:text-primary hover:file:bg-primary/20" />
+                            <Input 
+                                id="payment_proof_image" 
+                                type="file" 
+                                accept="image/*"
+                                {...fileRef}
+                                className="text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:py-2 file:px-4 file:text-sm file:font-semibold file:text-primary hover:file:bg-primary/20" 
+                             />
                          </div>
                     </CardContent>
                     <CardFooter>

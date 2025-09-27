@@ -9,7 +9,8 @@ import {
   Home,
   Send,
   Settings,
-  User
+  User,
+  ShoppingCart
 } from "lucide-react";
 import { BitcoinIcon } from "@/components/icons";
 import {
@@ -29,6 +30,7 @@ const mainNavItems = [
   { path: "/send", icon: Send, label: "Send" },
   { path: "/receive", icon: Download, label: "Receive" },
   { path: "/transactions", icon: History, label: "Transactions" },
+  { path: "/orders", icon: ShoppingCart, label: "Orders" },
 ];
 
 const footerNavItems = [

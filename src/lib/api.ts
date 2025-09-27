@@ -132,6 +132,13 @@ const createOrder = (providerId: number, amount: number, currency: string): Prom
     return axiosInstance.post('orders/', { provider_id: providerId, amount, amount_currency: currency });
 }
 
+// Orders
+const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');
+const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);
+const updateOrder = (orderId: number, data: { payment_proof?: any; note?: string | null }): Promise<AxiosResponse<Order>> => {
+    return axiosInstance.patch(`orders/${orderId}/`, data);
+}
+
 
 const api = {
     login,
@@ -154,6 +161,9 @@ const api = {
     getBuyProviders,
     calculateBuyFee,
     createOrder,
+    getOrders,
+    getOrder,
+    updateOrder,
 };
 
 export default api;

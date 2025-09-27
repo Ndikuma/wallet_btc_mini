@@ -106,13 +106,20 @@ export interface BuyFeeCalculation {
 
 export interface Order {
     id: number;
+    user: string;
+    provider: BuyProvider; // Nested provider details
     provider_id: number;
-    amount: string;
     amount_currency: string;
+    amount: string;
     fee: string;
     total_amount: string;
-    status: 'pending' | 'completed' | 'failed' | 'expired';
-    // Add other fields as needed
+    payment_proof: { [key: string]: any };
+    status: 'pending' | 'completed' | 'failed';
+    note: string | null;
+    btc_address: string | null;
+    btc_amount: string | null;
+    btc_txid: string | null;
+    created_at: string;
 }
 
 

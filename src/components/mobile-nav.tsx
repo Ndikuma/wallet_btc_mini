@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 const menuItems = [
   { path: "/dashboard", icon: Home, label: "Home" },
-  { path: "/receive", icon: Receipt, label: "Orders" },
+  { path: "/orders", icon: Receipt, label: "Orders" },
   { path: "/send", icon: ScanLine, label: "Scan" }, // Special item for the center button
   { path: "/transactions", icon: History, label: "History" },
   { path: "/profile", icon: User, label: "Profile" },

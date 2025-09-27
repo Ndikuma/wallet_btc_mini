@@ -193,7 +193,7 @@ export default function BuyWithProviderPage() {
                                 <Label htmlFor="amount" className="text-base font-semibold">Amount to Buy</Label>
                                 <div className="relative">
                                     <FormControl>
-                                        <Input id="amount" type="number" placeholder="100.00" {...field} className="pr-20 text-lg h-12" />
+                                        <Input id="amount" type="number" placeholder="100.00" {...field} value={field.value ?? ''} className="pr-20 text-lg h-12" />
                                     </FormControl>
                                     <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-2 border-l pl-3">
                                         <span className="font-semibold text-muted-foreground">USD</span>

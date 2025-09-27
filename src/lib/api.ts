@@ -2,7 +2,7 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
 
-const BACKEND_URL = 'https://atlas-thy-adaptation-thus.trycloudflare.com/';
+const BACKEND_URL = 'https://targeted-gave-spring-watershed.trycloudflare.com/';
 
 // Main instance for authenticated requests
 const axiosInstance = axios.create({

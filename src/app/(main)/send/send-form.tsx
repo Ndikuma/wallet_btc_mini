@@ -251,13 +251,13 @@ export function SendForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Recipient Address</FormLabel>
-                <div className="flex gap-2">
+                <div className="relative">
                   <FormControl>
-                    <Input placeholder="bc1q..." {...field} />
+                    <Input placeholder="bc1q..." {...field} className="pr-10"/>
                   </FormControl>
                   <Dialog open={isScanning} onOpenChange={setIsScanning}>
                     <DialogTrigger asChild>
-                       <Button variant="outline" size="icon" type="button"><ScanLine className="size-5" /><span className="sr-only">Scan QR</span></Button>
+                       <Button variant="ghost" size="icon" type="button" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"><ScanLine className="size-5" /><span className="sr-only">Scan QR</span></Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader className="text-center">
@@ -353,3 +353,5 @@ export function SendForm() {
     </>
   );
 }
+
+    

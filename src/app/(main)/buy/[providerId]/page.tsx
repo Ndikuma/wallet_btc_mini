@@ -34,11 +34,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 
 const buySchema = z.object({
   amount: z.coerce
     .number({ invalid_type_error: "Please enter a valid amount." })
     .min(1, { message: "Amount must be at least 1." }),
+  currency: z.string().min(1, "Please select a currency."),
 });
 
 type BuyFormValues = z.infer<typeof buySchema>;
@@ -64,6 +73,7 @@ export default function BuyWithProviderPage() {
   });
 
   const watchedAmount = form.watch("amount");
+  const watchedCurrency = form.watch("currency");
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
   useEffect(() => {
@@ -78,6 +88,9 @@ export default function BuyWithProviderPage() {
         const foundProvider = response.data.find((p: BuyProvider) => p.id === providerId);
         if (foundProvider) {
           setProvider(foundProvider);
+          if (foundProvider.currencies.length > 0) {
+            form.setValue('currency', foundProvider.currencies[0]);
+          }
         } else {
           setError("Provider not found.");
         }
@@ -88,14 +101,14 @@ export default function BuyWithProviderPage() {
       }
     }
     fetchProvider();
-  }, [providerId]);
+  }, [providerId, form]);
   
-  const calculateFee = useCallback(async (amount: number) => {
-    if (!provider) return;
+  const calculateFee = useCallback(async (amount: number, currency: string) => {
+    if (!provider || !currency) return;
     setIsCalculating(true);
     setCalcError(null);
     try {
-      const response = await api.calculateBuyFee(provider.id, amount, 'USD');
+      const response = await api.calculateBuyFee(provider.id, amount, currency);
       setFeeCalc(response.data);
     } catch (err: any) {
       setCalcError(err.message || "Could not calculate fee.");
@@ -106,13 +119,13 @@ export default function BuyWithProviderPage() {
   }, [provider]);
 
   useEffect(() => {
-    if (debouncedAmount > 0 && form.formState.isValid) {
-      calculateFee(debouncedAmount);
+    if (debouncedAmount > 0 && watchedCurrency && form.formState.isValid) {
+      calculateFee(debouncedAmount, watchedCurrency);
     } else {
       setFeeCalc(null);
       setCalcError(null);
     }
-  }, [debouncedAmount, form.formState.isValid, calculateFee]);
+  }, [debouncedAmount, watchedCurrency, form.formState.isValid, calculateFee]);
 
   const onSubmit = async (data: BuyFormValues) => {
     if (!provider || !feeCalc) {
@@ -121,7 +134,7 @@ export default function BuyWithProviderPage() {
     }
     setIsSubmitting(true);
     try {
-        const order = await api.createOrder(provider.id, data.amount, 'USD');
+        const order = await api.createOrder(provider.id, data.amount, data.currency);
         toast({ title: 'Order Created', description: `Your order #${order.data.id} has been created.` });
         // TODO: Redirect to order details page
         router.push('/dashboard');
@@ -185,24 +198,43 @@ export default function BuyWithProviderPage() {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardContent className="space-y-6">
-                    <FormField
-                        control={form.control}
-                        name="amount"
-                        render={({ field }) => (
-                            <FormItem>
-                                <Label htmlFor="amount" className="text-base font-semibold">Amount to Buy</Label>
-                                <div className="relative">
+                    <div className="space-y-2">
+                      <Label htmlFor="amount" className="text-base font-semibold">Amount to Buy</Label>
+                      <div className="flex gap-2">
+                        <FormField
+                            control={form.control}
+                            name="amount"
+                            render={({ field }) => (
+                                <FormItem className="flex-1">
                                     <FormControl>
-                                        <Input id="amount" type="number" placeholder="100.00" {...field} value={field.value ?? ''} className="pr-20 text-lg h-12" />
+                                        <Input id="amount" type="number" placeholder="100.00" {...field} value={field.value ?? ''} className="text-lg h-12" />
                                     </FormControl>
-                                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-2 border-l pl-3">
-                                        <span className="font-semibold text-muted-foreground">USD</span>
-                                    </div>
-                                </div>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="currency"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="h-12 w-32">
+                                                <SelectValue placeholder="Currency" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {provider.currencies.map(c => <SelectItem key={c} value={c}>{c.toUpperCase()}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                      </div>
+                    </div>
+
 
                     {(isCalculating || feeCalc || calcError) && (
                         <div className="space-y-3 rounded-lg border bg-secondary/30 p-4 text-sm">
@@ -241,3 +273,5 @@ export default function BuyWithProviderPage() {
     </div>
   );
 }
+
+    

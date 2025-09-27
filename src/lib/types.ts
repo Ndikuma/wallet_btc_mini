@@ -102,6 +102,7 @@ export interface BuyFeeCalculation {
     fee: string;
     total_amount: string;
     currency: string;
+    btc_amount: string;
 }
 
 export interface Order {

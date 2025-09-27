@@ -10,7 +10,7 @@ import api from "@/lib/api";
 import type { BuyProvider, BuyFeeCalculation, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/use-debounce";
-import { ArrowLeft, Banknote, Landmark, Loader2, Receipt, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Banknote, Landmark, Loader2, Receipt, ShoppingCart, Bitcoin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -236,15 +236,22 @@ export default function BuyWithProviderPage() {
 
 
                     {(isCalculating || feeCalc || calcError) && (
-                        <div className="space-y-3 rounded-lg border bg-secondary/30 p-4 text-sm">
-                            {isCalculating && <div className="flex items-center justify-center text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin" />Calculating...</div>}
-                            {calcError && <div className="text-center text-destructive">{calcError}</div>}
+                        <div className="space-y-3 rounded-lg border bg-secondary/30 p-4">
+                            {isCalculating && <div className="flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="mr-2 size-4 animate-spin" />Calculating...</div>}
+                            {calcError && <div className="text-center text-sm text-destructive">{calcError}</div>}
                             {feeCalc && (
-                                <div className="space-y-2">
-                                    <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>{feeCalc.amount} {feeCalc.currency}</span></div>
-                                    <div className="flex justify-between"><span className="text-muted-foreground">Fee</span><span>{feeCalc.fee} {feeCalc.currency}</span></div>
-                                    <Separator />
-                                    <div className="flex justify-between font-bold text-base"><span >Total to Pay</span><span>{feeCalc.total_amount} {feeCalc.currency}</span></div>
+                                <div className="space-y-4">
+                                     <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>{feeCalc.amount} {feeCalc.currency}</span></div>
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Fee</span><span>{feeCalc.fee} {feeCalc.currency}</span></div>
+                                        <Separator />
+                                        <div className="flex justify-between font-bold text-base"><span >Total to Pay</span><span>{feeCalc.total_amount} {feeCalc.currency}</span></div>
+                                    </div>
+                                    <Separator className="border-dashed" />
+                                    <div className="flex items-center justify-between text-base">
+                                        <span className="font-semibold flex items-center gap-2"><Bitcoin className="size-5 text-primary" /> You will receive</span>
+                                        <span className="font-bold font-mono">{feeCalc.btc_amount} BTC</span>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -272,7 +279,3 @@ export default function BuyWithProviderPage() {
     </div>
   );
 }
-
-    
-
-    

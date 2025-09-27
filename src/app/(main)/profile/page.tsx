@@ -188,9 +188,7 @@ export default function ProfilePage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                    >
-                        <Copy className="size-3.5" />
-                    </CopyButton>
+                    />
                 </div>
             )}
         </Card>

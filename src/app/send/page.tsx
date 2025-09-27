@@ -1,48 +1,46 @@
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-"use client";
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('authToken');
+  const { pathname } = request.nextUrl;
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { SendForm } from "./send-form";
-import { Bitcoin } from "lucide-react";
-import MainLayout from "@/app/main-layout";
+  const authRoutes = [
+    '/login', 
+    '/register', 
+    '/create-or-restore', 
+    '/create-wallet', 
+    '/restore-wallet', 
+    '/verify-mnemonic'
+  ];
+  
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+  const isMainAppRoute = !isAuthRoute && pathname !== '/';
 
 
-function SendPage() {
+  // If the user is authenticated
+  if (token) {
+    // If they are on an auth route, redirect to the main app page
+    if (isAuthRoute) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  } 
+  // If the user is not authenticated
+  else {
+    // And they are trying to access a protected route (any route in the main app)
+    if (isMainAppRoute) {
+       return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
 
-  return (
-    <div className="mx-auto max-w-lg">
-      <Card>
-        <CardHeader>
-            <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Bitcoin className="size-6 text-primary" />
-            </div>
-            <CardTitle>Send Bitcoin</CardTitle>
-            </div>
-            <CardDescription>
-            Enter the recipient's address and amount to send. The optimal
-            fee will be calculated for you based on UTXOs. Avoid sending your entire balance as this can cause errors with fee estimation.
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <SendForm />
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return NextResponse.next();
 }
 
-
-export default function SendLayout() {
-    return (
-        <MainLayout>
-            <SendPage />
-        </MainLayout>
-    )
+export const config = {
+  // Match all request paths except for those starting with:
+  // - api (API routes)
+  // - _next/static (static files)
+  // - _next/image (image optimization files)
+  // - favicon.ico (favicon file)
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }

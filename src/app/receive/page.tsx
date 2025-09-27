@@ -1,164 +1,46 @@
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('authToken');
+  const { pathname } = request.nextUrl;
 
-"use client";
-
-import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { CopyButton } from "@/components/copy-button";
-import { useState, useEffect, useCallback } from "react";
-import { ShareButton } from "./share-button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { RefreshCw } from "lucide-react";
-import api from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import MainLayout from "@/app/main-layout";
-
-function ReceivePage() {
-  const { toast } = useToast();
-  const [address, setAddress] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [qrCode, setQrCode] = useState<string | null>(null);
-
-  const generateNewAddressFn = useCallback(async (isInitial = false) => {
-    setGenerating(true);
-    try {
-      const response = await api.generateNewAddress();
-      setAddress(response.address);
-      if (!isInitial) {
-         toast({
-          title: "New Address Generated",
-          description: "A new receiving address has been created for you.",
-        });
-      }
-    } catch (error: any) {
-      const errorMsg = error.message || "Could not generate a new address. Please try again.";
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMsg,
-      });
-    } finally {
-      setGenerating(false);
-    }
-  }, [toast]);
+  const authRoutes = [
+    '/login', 
+    '/register', 
+    '/create-or-restore', 
+    '/create-wallet', 
+    '/restore-wallet', 
+    '/verify-mnemonic'
+  ];
   
-  const fetchAddress = useCallback(async () => {
-    try {
-      const response = await api.getWallets();
-      if (response && Array.isArray(response) && response.length > 0 && response[0].address) {
-        setAddress(response[0].address);
-      } else {
-        await generateNewAddressFn(true); // First time generation
-      }
-    } catch (error) {
-      await generateNewAddressFn(true);
-    } finally {
-      setLoading(false);
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+  const isMainAppRoute = !isAuthRoute && pathname !== '/';
+
+
+  // If the user is authenticated
+  if (token) {
+    // If they are on an auth route, redirect to the main app page
+    if (isAuthRoute) {
+      return NextResponse.redirect(new URL('/', request.url));
     }
-  }, [generateNewAddressFn]);
+  } 
+  // If the user is not authenticated
+  else {
+    // And they are trying to access a protected route (any route in the main app)
+    if (isMainAppRoute) {
+       return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
 
-  useEffect(() => {
-    fetchAddress();
-  }, [fetchAddress]);
-
-  useEffect(() => {
-    if (!address) return;
-
-    const uri = `bitcoin:${address}`;
-
-    const generateQrCodeFn = async () => {
-        try {
-            const response = await api.generateQrCode(uri);
-            setQrCode(response.qr_code);
-        } catch (error) {
-            console.error("Failed to generate QR code from backend, using fallback.", error);
-            const fallbackQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(uri)}&format=png&bgcolor=ffffff`;
-            setQrCode(fallbackQrApiUrl);
-        }
-    };
-
-    generateQrCodeFn();
-  }, [address]);
-
-
-  return (
-    <div className="mx-auto max-w-lg">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle>Receive Bitcoin</CardTitle>
-          <CardDescription>
-            Share your address to receive BTC.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-6">
-          <div className="rounded-lg border bg-white p-4 shadow-sm">
-            {loading || !qrCode ? (
-                <Skeleton className="h-[256px] w-[256px] rounded-md" />
-            ) : (
-                <Image
-                src={qrCode}
-                alt="Wallet Address QR Code"
-                width={256}
-                height={256}
-                className="rounded-md"
-                data-ai-hint="qr code"
-              />
-            )}
-          </div>
-          
-          <div className="w-full space-y-4">
-            <div className="text-sm text-muted-foreground break-all font-code p-3 rounded-md bg-secondary border text-center">
-                {loading ? <Skeleton className="h-5 w-4/5 mx-auto" /> : address || '...'}
-            </div>
-          </div>
-         
-          <div className="flex w-full flex-col gap-3">
-             <div className="grid grid-cols-2 gap-3">
-                <CopyButton 
-                  textToCopy={address || ''} 
-                  disabled={loading || !address} 
-                  toastMessage="Address copied to clipboard"
-                  variant="outline"
-                >
-                  Copy Address
-                </CopyButton>
-                <ShareButton 
-                  shareData={{ title: "My Bitcoin Address", text: address || '' }} 
-                  disabled={loading || !address}
-                  variant="outline"
-                >
-                  Share Address
-                </ShareButton>
-             </div>
-
-             <Separator />
-             
-             <Button variant="ghost" size="sm" onClick={() => generateNewAddressFn(false)} disabled={generating || loading}>
-                <RefreshCw className={cn("mr-2 size-4", generating && "animate-spin")} />
-                {generating ? 'Generating...' : 'Generate New Address'}
-             </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return NextResponse.next();
 }
 
-
-export default function ReceiveLayout() {
-    return (
-        <MainLayout>
-            <ReceivePage />
-        </MainLayout>
-    )
+export const config = {
+  // Match all request paths except for those starting with:
+  // - api (API routes)
+  // - _next/static (static files)
+  // - _next/image (image optimization files)
+  // - favicon.ico (favicon file)
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }

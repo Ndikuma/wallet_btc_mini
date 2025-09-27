@@ -1,4 +1,5 @@
 
+
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
@@ -40,13 +41,17 @@ const createResponseInterceptor = (instance: AxiosInstance) => {
       if (response.data && response.data.success) {
         // For paginated responses, return the results array directly
         if (response.data.data && typeof response.data.data === 'object' && 'results' in response.data.data) {
-             return (response.data.data as PaginatedResponse<any>).results;
+             return response.data.data.results;
         }
         return response.data.data;
       }
       // For cases like logout that might just return { success: true }
       if (response.data && response.data.success === true && response.data.data === undefined) {
         return response;
+      }
+      // This handles cases where the response is not wrapped, e.g., login
+      if (response.data && response.data.token) {
+        return response.data;
       }
       return response;
     };
@@ -173,5 +178,3 @@ const api = {
 };
 
 export default api;
-
-    

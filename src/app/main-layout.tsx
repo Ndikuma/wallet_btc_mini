@@ -1,40 +1,46 @@
-import { HeaderTitle } from "@/components/header-title";
-import { MainNav } from "@/components/main-nav";
-import { MobileNav } from "@/components/mobile-nav";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarInset,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { UserNav } from "@/components/user-nav";
-import { Suspense } from "react";
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export default function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-      <SidebarProvider>
-        <Sidebar collapsible="icon" variant="inset">
-          <Suspense>
-            <MainNav />
-          </Suspense>
-        </Sidebar>
-        <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-md sm:px-6">
-            <SidebarTrigger className="md:hidden" />
-            <div className="flex-1">
-              <Suspense fallback={null}>
-                <HeaderTitle />
-              </Suspense>
-            </div>
-            <UserNav />
-          </header>
-          <main className="flex-1 p-4 md:p-6 lg:p-8 mb-20 md:mb-0">{children}</main>
-          <MobileNav />
-        </SidebarInset>
-      </SidebarProvider>
-  );
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('authToken');
+  const { pathname } = request.nextUrl;
+
+  const authRoutes = [
+    '/login', 
+    '/register', 
+    '/create-or-restore', 
+    '/create-wallet', 
+    '/restore-wallet', 
+    '/verify-mnemonic'
+  ];
+  
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+  const isMainAppRoute = !isAuthRoute && pathname !== '/';
+
+
+  // If the user is authenticated
+  if (token) {
+    // If they are on an auth route, redirect to the main app page
+    if (isAuthRoute) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  } 
+  // If the user is not authenticated
+  else {
+    // And they are trying to access a protected route (any route in the main app)
+    if (isMainAppRoute) {
+       return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  // Match all request paths except for those starting with:
+  // - api (API routes)
+  // - _next/static (static files)
+  // - _next/image (image optimization files)
+  // - favicon.ico (favicon file)
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }

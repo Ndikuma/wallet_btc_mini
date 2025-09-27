@@ -1,200 +1,46 @@
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('authToken');
+  const { pathname } = request.nextUrl;
 
-"use client";
-
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import api from "@/lib/api";
-import type { User } from "@/lib/types";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import MainLayout from "@/app/main-layout";
-
-const profileFormSchema = z.object({
-  first_name: z.string().max(50).optional(),
-  last_name: z.string().max(50).optional(),
-});
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
-
-function EditProfilePage() {
-  const { toast } = useToast();
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-    },
-  });
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await api.getUserProfile();
-        setUser(response);
-        form.reset({
-          first_name: response.first_name || "",
-          last_name: response.last_name || "",
-        });
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Failed to load profile",
-          description: error.message || "Could not fetch user data.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, [toast, form]);
-
-  const onSubmit = async (data: ProfileFormValues) => {
-    if (!user) return;
-    setIsSaving(true);
-    try {
-      const response = await api.updateUserProfile(user.id, data);
-      setUser(response);
-      form.reset(response);
-      toast({
-        title: "Profile Updated",
-        description: "Your profile information has been saved.",
-      });
-      router.push("/profile");
-      router.refresh();
-    } catch (error: any) {
-        const errorMsg = error.message || "An unexpected error occurred.";
-        toast({
-            variant: "destructive",
-            title: "Update Failed",
-            description: errorMsg,
-        });
-    } finally {
-        setIsSaving(false);
-    }
-  };
+  const authRoutes = [
+    '/login', 
+    '/register', 
+    '/create-or-restore', 
+    '/create-wallet', 
+    '/restore-wallet', 
+    '/verify-mnemonic'
+  ];
   
-    if (loading) {
-        return (
-            <div className="mx-auto max-w-xl space-y-6">
-                <Skeleton className="h-10 w-24" />
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-7 w-40" />
-                        <Skeleton className="h-4 w-60" />
-                    </CardHeader>
-                    <CardContent className="space-y-6 pt-6">
-                        <div className="space-y-2">
-                             <Skeleton className="h-4 w-16" />
-                             <Skeleton className="h-10 w-full" />
-                        </div>
-                         <div className="space-y-2">
-                             <Skeleton className="h-4 w-16" />
-                             <Skeleton className="h-10 w-full" />
-                        </div>
-                        <Skeleton className="h-11 w-32" />
-                    </CardContent>
-                </Card>
-            </div>
-        )
-    }
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+  const isMainAppRoute = !isAuthRoute && pathname !== '/';
 
-  if (!user) {
-    return (
-       <div className="mx-auto max-w-xl text-center">
-         <p>Could not load profile. Please try refreshing the page.</p>
-      </div>
-    );
+
+  // If the user is authenticated
+  if (token) {
+    // If they are on an auth route, redirect to the main app page
+    if (isAuthRoute) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  } 
+  // If the user is not authenticated
+  else {
+    // And they are trying to access a protected route (any route in the main app)
+    if (isMainAppRoute) {
+       return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
 
-
-  return (
-    <div className="mx-auto max-w-xl space-y-6">
-       <Button variant="ghost" asChild className="-ml-4">
-        <Link href="/profile">
-          <ArrowLeft className="mr-2 size-4" />
-          Back to Profile
-        </Link>
-      </Button>
-      <Card>
-        <CardHeader>
-            <CardTitle className="text-2xl">Edit Profile</CardTitle>
-            <CardDescription>Update your personal information.</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="first_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Your first name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="last_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Your last name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <Button type="submit" disabled={isSaving || !form.formState.isDirty}>
-                {isSaving ? "Saving..." : "Save Changes"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return NextResponse.next();
 }
 
-
-export default function EditProfileLayout() {
-    return (
-        <MainLayout>
-            <EditProfilePage />
-        </MainLayout>
-    )
+export const config = {
+  // Match all request paths except for those starting with:
+  // - api (API routes)
+  // - _next/static (static files)
+  // - _next/image (image optimization files)
+  // - favicon.ico (favicon file)
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }

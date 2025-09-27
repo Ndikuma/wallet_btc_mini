@@ -37,7 +37,7 @@ export function UserNav() {
         const response = await api.getUser();
         setUser(response.data);
       } catch (error) {
-        console.error("Not authenticated", error);
+        // This is expected if the user is not logged in, so we don't need to log an error.
       } finally {
         setLoading(false);
       }

@@ -15,6 +15,9 @@ import {
   FileImage,
   Loader2,
   ReceiptText,
+  Copy,
+  ExternalLink,
+  Bitcoin,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -38,6 +41,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { CopyButton } from "@/components/copy-button";
+import { shortenText } from "@/lib/utils";
 
 const paymentProofSchema = z.object({
     payment_proof_ref: z.string().min(4, "Please enter a valid payment reference."),
@@ -246,17 +251,54 @@ export default function OrderDetailsPage() {
                          <div className="flex justify-between"><span className="text-muted-foreground">Provider</span><span className="font-semibold">{order.provider.name}</span></div>
                          <div className="flex justify-between"><span className="text-muted-foreground">Payment Method</span><span className="font-semibold">{order.provider.payment_info.method}</span></div>
                     </div>
-
-                    {order.status === 'completed' && order.btc_txid && (
-                        <div className="space-y-2 rounded-lg border bg-green-500/10 p-4">
-                             <div className="flex justify-between"><span className="text-muted-foreground">BTC Sent</span><span className="font-semibold font-mono">{order.btc_amount} BTC</span></div>
-                            <div className="flex justify-between items-center"><span className="text-muted-foreground">Transaction ID</span><span className="font-semibold font-mono truncate">{order.btc_txid}</span></div>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
+
+            {order.status === 'completed' && order.btc_amount && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                           <Bitcoin className="size-5 text-primary" />
+                           Bitcoin Sent
+                        </CardTitle>
+                        <CardDescription>This order is complete and Bitcoin has been sent to your wallet.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-1">
+                            <Label>Amount</Label>
+                            <div className="font-semibold font-mono text-lg">{order.btc_amount} BTC</div>
+                        </div>
+                        <div className="space-y-1">
+                            <Label>Destination Address</Label>
+                            <div className="flex items-center gap-2">
+                                <p className="font-mono text-muted-foreground">{shortenText(order.btc_address, 12, 12)}</p>
+                                <CopyButton textToCopy={order.btc_address || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                            </div>
+                        </div>
+                        {order.btc_txid && (
+                           <>
+                             <div className="space-y-1">
+                                <Label>Transaction ID (TxID)</Label>
+                                <div className="flex items-center gap-2">
+                                    <p className="font-mono text-muted-foreground">{shortenText(order.btc_txid, 12, 12)}</p>
+                                    <CopyButton textToCopy={order.btc_txid || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                                </div>
+                            </div>
+                            {/* You need a valid explorer link structure */}
+                            {/* <Button variant="outline" asChild>
+                                <Link href={`https://mempool.space/tx/${order.btc_txid}`} target="_blank">
+                                    View on Block Explorer <ExternalLink className="ml-2 size-4" />
+                                </Link>
+                            </Button> */}
+                           </>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
             {order.status === 'pending' && <PaymentProofForm order={order} onSuccessfulSubmit={handleSuccessfulSubmit} />}
         </div>
     );
 }
+
+    

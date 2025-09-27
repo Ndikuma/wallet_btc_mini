@@ -130,16 +130,11 @@ const getSellProviders = (): Promise<AxiosResponse<SellProvider[]>> => axiosInst
 const calculateBuyFee = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<BuyFeeCalculation>> => {
     return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount: String(amount), currency });
 }
-const createOrder = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<Order>> => {
-    return axiosInstance.post('orders/', { 
-        provider_id: providerId, 
-        amount, 
-        amount_currency: currency,
-        direction: 'buy',
-    });
-}
 
 // Orders
+const createOrder = (payload: { provider_id: number; amount: number; amount_currency: string; direction: 'buy' | 'sell'; payout_data?: any; }): Promise<AxiosResponse<Order>> => {
+    return axiosInstance.post('orders/', payload);
+}
 const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');
 const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);
 const updateOrder = (orderId: number, data: { payment_proof?: any; note?: string | null }): Promise<AxiosResponse<Order>> => {

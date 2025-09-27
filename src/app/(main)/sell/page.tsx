@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { useRouter } from "next/navigation";
 
 
 const amountSchema = z.object({
@@ -57,6 +58,7 @@ type FormData = {
 
 export default function SellPage() {
     const { toast } = useToast();
+    const router = useRouter();
     const [balance, setBalance] = useState<Balance | null>(null);
     const [isBalanceLoading, setIsBalanceLoading] = useState(true);
 
@@ -70,6 +72,8 @@ export default function SellPage() {
     const [feeEstimation, setFeeEstimation] = useState<FeeEstimation | null>(null);
     const [isEstimatingFee, setIsEstimatingFee] = useState(false);
     const [feeError, setFeeError] = useState<string | null>(null);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
     const currentBalance = balance ? parseFloat(balance.balance) : 0;
 
@@ -149,6 +153,35 @@ export default function SellPage() {
         setFeeEstimation(null);
         setFeeError(null);
     };
+
+    const handleSell = async () => {
+        if (!formData.amount || !formData.providerId || !formData.paymentDetails) {
+            toast({ variant: 'destructive', title: 'Missing Information', description: 'Please complete all steps.' });
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const orderPayload = {
+                provider_id: Number(formData.providerId),
+                amount: formData.amount,
+                amount_currency: 'BTC',
+                direction: 'sell' as 'sell',
+                payout_data: {
+                    details: formData.paymentDetails,
+                }
+            };
+            
+            const response = await api.createOrder(orderPayload);
+            toast({ title: 'Sell Order Created', description: `Your order #${response.data.id} is being processed.` });
+            router.push(`/orders/${response.data.id}`);
+
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Sell Failed', description: error.message || 'Could not create your sell order.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
     
     const selectedProvider = useMemo(() => {
         return providers.find(p => String(p.id) === formData.providerId);
@@ -342,10 +375,10 @@ export default function SellPage() {
                         </Card>
                     </CardContent>
                     <CardFooter className="grid grid-cols-2 gap-4">
-                        <Button variant="outline" size="lg" onClick={handleBack}>Cancel</Button>
-                        <Button size="lg" disabled={isEstimatingFee || !feeEstimation}>
-                            {isEstimatingFee ? <Loader2 className="mr-2 size-4 animate-spin"/> : null}
-                            Sell Bitcoin
+                        <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Cancel</Button>
+                        <Button size="lg" disabled={isEstimatingFee || !feeEstimation || isSubmitting} onClick={handleSell}>
+                            {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin"/> : null}
+                            {isSubmitting ? "Processing..." : "Sell Bitcoin"}
                         </Button>
                     </CardFooter>
                 </Card>

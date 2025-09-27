@@ -38,7 +38,7 @@ const createResponseInterceptor = (instance: typeof axiosInstance) => {
         if (response.data && response.data.success) {
             // For paginated responses, the actual data is in `results`
             if (response.data.data && typeof response.data.data === 'object' && response.data.data !== null && 'results' in response.data.data) {
-                return { ...response, data: response.data.data.results };
+                return { ...response, data: { ...response.data.data, results: response.data.data.results }};
             }
              // For standard data responses
             if (response.data.data) {
@@ -47,7 +47,7 @@ const createResponseInterceptor = (instance: typeof axiosInstance) => {
         }
         // Handle cases where `success` is true but `data` is not present, or success is false
         if (response.data && !response.data.success) {
-           return Promise.reject(response.data.error || new Error(response.data.message || 'An unknown API error occurred'));
+           return Promise.reject(response.data);
         }
         return response;
     };
@@ -55,6 +55,23 @@ const createResponseInterceptor = (instance: typeof axiosInstance) => {
     const onError = (error: AxiosError<ApiResponse<any>>) => {
         if (error.code === 'ERR_NETWORK') {
             error.message = 'Network Error: Could not connect to the backend.';
+        } else if (error.response?.data) {
+            // Use the more specific error from the response body if available
+            const apiError = error.response.data.error;
+            const apiMessage = error.response.data.message;
+            let errorMessage = "An unknown error occurred.";
+            if (apiError && typeof apiError.details === 'object' && apiError.details !== null) {
+                // Extract first error message from details object
+                const firstErrorKey = Object.keys(apiError.details)[0];
+                if (firstErrorKey && Array.isArray(apiError.details[firstErrorKey]) && apiError.details[firstErrorKey].length > 0) {
+                    errorMessage = apiError.details[firstErrorKey][0];
+                } else {
+                    errorMessage = apiMessage || (typeof apiError === 'string' ? apiError : errorMessage);
+                }
+            } else if (apiMessage) {
+                errorMessage = apiMessage;
+            }
+            error.message = errorMessage;
         }
         return Promise.reject(error);
     };
@@ -94,9 +111,7 @@ const estimateFee = (values: { recipient: string, amount: number }) => {
 
 
 // Transactions
-const getTransactions = () => {
-    return axiosInstance.get<PaginatedResponse<Transaction>>('transaction/').then(res => res.data);
-};
+const getTransactions = () => axiosInstance.get<PaginatedResponse<Transaction>>('transaction/');
 const sendTransaction = (values: { recipient: string; amount: number }) => {
     return axiosInstance.post('transaction/send/', {
         to_address: values.recipient,

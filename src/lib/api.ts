@@ -1,7 +1,7 @@
 
 
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider } from '@/lib/types';
-import axios, { type AxiosError, type AxiosResponse } from 'axios';
+import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
 const BACKEND_URL = 'https://umuhoratech-wallet.onrender.com/';
 
@@ -34,7 +34,7 @@ axiosInstance.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
-const createResponseInterceptor = (instance: typeof axios) => {
+const createResponseInterceptor = (instance: AxiosInstance) => {
     const onResponse = (response: AxiosResponse) => {
       // The backend wraps successful responses in a `data` object.
       // We extract it here to simplify data access in the components.

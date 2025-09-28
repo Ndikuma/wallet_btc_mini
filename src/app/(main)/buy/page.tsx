@@ -83,7 +83,7 @@ export default function BuyPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Buy Bitcoin</h1>
         <p className="text-muted-foreground">
-          Choose one of our trusted providers to purchase Bitcoin.
+          Choose a provider to make a payment and receive Bitcoin in your wallet.
         </p>
       </div>
 

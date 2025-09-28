@@ -180,7 +180,7 @@ export default function DashboardPage() {
                     </div>
                 )}
                 {!loadingTransactions && !transactionsError && recentTransactions && recentTransactions.length > 0 ? (
-                  recentTransactions.slice(0, 4).map((tx) => {
+                  recentTransactions.map((tx) => {
                     const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
                     const relevantAddress = isSent ? tx.to_address : tx.from_address;
 

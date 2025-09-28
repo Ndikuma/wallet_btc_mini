@@ -28,7 +28,13 @@ const nextConfig: NextConfig = {
         hostname: 'api.qrserver.com',
         port: '',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'umuhoratech-wallet.onrender.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

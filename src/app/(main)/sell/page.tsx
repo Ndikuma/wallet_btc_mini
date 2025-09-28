@@ -201,7 +201,7 @@ export default function SellPage() {
                 provider_id: Number(formData.providerId),
                 amount: formData.amount,
                 btc_amount: finalAmountBtc,
-                amount_currency: 'BTC',
+                amount_currency: 'BIF',
                 direction: 'sell' as 'sell',
                 payout_data: formData.paymentDetails,
             };
@@ -481,13 +481,15 @@ export default function SellPage() {
                         </div>
                     </div>
                     
-                    <div className="p-4 rounded-lg border space-y-2">
+                    <div className="p-4 rounded-lg border space-y-3">
+                        <p className="font-semibold text-center">You Will Receive (Approx.)</p>
                         <div className="flex justify-between items-center text-base">
-                            <span className="font-semibold">You Will Receive (Approx.)</span>
-                            <div className="text-right">
-                                <span className="font-mono font-bold">{getFiat(amountToReceiveUsd, 'USD')}</span>
-                                <span className="font-mono font-bold text-muted-foreground"> in {selectedProvider.currency.toUpperCase()}</span>
-                            </div>
+                            <span className="text-muted-foreground">USD</span>
+                            <span className="font-mono font-bold">{getFiat(amountToReceiveUsd, 'USD')}</span>
+                        </div>
+                         <div className="flex justify-between items-center text-base">
+                            <span className="text-muted-foreground">BIF</span>
+                            <span className="font-mono font-bold">{getFiat(amountToReceiveBif, 'BIF')}</span>
                         </div>
                     </div>
 
@@ -567,5 +569,7 @@ export default function SellPage() {
         </div>
     );
 }
+
+    
 
     

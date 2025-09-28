@@ -70,6 +70,8 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 const PaymentInfoDisplay = ({ provider }: { provider: BuyProvider }) => {
+    if (!provider.payment_info) return null;
+
     const accountDetails = provider.payment_info.account;
     const instructions = provider.payment_info.instructions;
 
@@ -81,7 +83,7 @@ const PaymentInfoDisplay = ({ provider }: { provider: BuyProvider }) => {
         <Card className="bg-secondary/30">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg"><Landmark className="size-5 text-primary" />Payment Instructions</CardTitle>
-                <CardDescription>{provider.payment_info.method}</CardDescription>
+                {provider.payment_info.method && <CardDescription>{provider.payment_info.method}</CardDescription>}
             </CardHeader>
             <CardContent className="space-y-4">
                  {accountDetails && Object.keys(accountDetails).length > 0 && (
@@ -342,7 +344,7 @@ export default function OrderDetailsPage() {
                     </div>
                      <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
                          <div className="flex justify-between"><span className="text-muted-foreground">Provider</span><span className="font-semibold">{order.provider.name}</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Payment Method</span><span className="font-semibold">{order.provider.payment_info.method}</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">Payment Method</span><span className="font-semibold">{order.provider.payment_info?.method}</span></div>
                     </div>
                 </CardContent>
                  <CardFooter className="justify-end">

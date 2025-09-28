@@ -44,6 +44,16 @@ const footerNavItems = [
 export function MainNav() {
   const pathname = usePathname();
 
+  const isDashboardActive = (path: string) => {
+    if (path === '/dashboard') {
+      // The main page for the layout is the dashboard.
+      // It's active if the path is exactly '/dashboard' or if it's the root of the app view ('/')
+      // Next.js will resolve `/` inside the group to the group's page.tsx
+      return pathname === path || pathname === '/';
+    }
+    return pathname.startsWith(path);
+  }
+
   return (
     <>
       <SidebarHeader className="p-4">
@@ -61,7 +71,7 @@ export function MainNav() {
               <SidebarMenuItem key={item.path}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.path)}
+                  isActive={isDashboardActive(item.path)}
                   tooltip={item.label}
                 >
                   <Link href={item.path}>

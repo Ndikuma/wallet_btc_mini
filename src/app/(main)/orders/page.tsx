@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX } from "lucide-react";
+import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["v
   switch (status.toLowerCase()) {
     case 'completed': return 'success';
     case 'pending': return 'warning';
+    case 'awaiting_confirmation': return 'warning';
     case 'failed': return 'destructive';
     default: return 'secondary';
   }
@@ -33,6 +35,7 @@ const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completed': return <CircleCheck className="size-4 text-green-500" />;
       case 'pending': return <Clock className="size-4 text-yellow-500" />;
+      case 'awaiting_confirmation': return <Hourglass className="size-4 text-yellow-500" />;
       case 'failed': return <CircleX className="size-4 text-destructive" />;
       default: return <ShoppingCart className="size-4" />;
     }
@@ -47,7 +50,7 @@ const OrderCard = ({ order }: { order: Order }) => (
                 {getStatusIcon(order.status)}
                 <CardTitle className="text-lg capitalize">{order.direction} Order #{order.id}</CardTitle>
             </div>
-            <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status}</Badge>
+            <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status.replace('_', ' ')}</Badge>
         </div>
         <CardDescription>
           {new Date(order.created_at).toLocaleString()}

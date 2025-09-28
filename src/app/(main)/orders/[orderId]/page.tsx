@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -23,6 +24,7 @@ import {
   User as UserIcon,
   Phone,
   Mail,
+  Hourglass,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -220,6 +222,7 @@ const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["v
     switch (status.toLowerCase()) {
         case 'completed': return 'success';
         case 'pending': return 'warning';
+        case 'awaiting_confirmation': return 'warning';
         case 'failed': return 'destructive';
         default: return 'secondary';
     }
@@ -228,6 +231,7 @@ const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
         case 'completed': return <CircleCheck className="size-6 text-green-500" />;
         case 'pending': return <Clock className="size-6 text-yellow-500" />;
+        case 'awaiting_confirmation': return <Hourglass className="size-6 text-yellow-500" />;
         case 'failed': return <CircleX className="size-6 text-destructive" />;
         default: return <ReceiptText className="size-6" />;
     }
@@ -305,9 +309,7 @@ export default function OrderDetailsPage() {
 
     if (!order) return null;
 
-    const payoutDetails = (order.payout_data && typeof order.payout_data === 'object' && !Array.isArray(order.payout_data))
-        ? order.payout_data
-        : null;
+    const payoutDetails = order.payout_data
     
     return (
         <div className="mx-auto max-w-2xl space-y-6">
@@ -328,7 +330,7 @@ export default function OrderDetailsPage() {
                                 <CardDescription>on {new Date(order.created_at).toLocaleDateString('en-us', { year: 'numeric', month: 'long', day: 'numeric'})}</CardDescription>
                            </div>
                         </div>
-                        <Badge variant={getStatusVariant(order.status)} className="capitalize text-base py-1 px-3">{order.status}</Badge>
+                        <Badge variant={getStatusVariant(order.status)} className="capitalize text-base py-1 px-3">{order.status.replace('_', ' ')}</Badge>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm">
@@ -412,6 +414,18 @@ export default function OrderDetailsPage() {
             )}
 
             {order.direction === 'buy' && order.status === 'pending' && <PaymentProofForm order={order} onSuccessfulSubmit={handleSuccessfulSubmit} />}
+
+            {order.direction === 'buy' && order.status === 'awaiting_confirmation' && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Hourglass className="size-5 text-primary" />Awaiting Confirmation</CardTitle>
+                        <CardDescription>Your payment proof has been submitted and is currently being reviewed by the provider.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">You will be notified once the payment is confirmed and the Bitcoin has been sent to your wallet. This may take some time.</p>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

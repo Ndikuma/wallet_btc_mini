@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: number;
   username: string;
@@ -124,7 +125,7 @@ export interface Order {
     fee: string;
     total_amount: string;
     payment_proof: { [key: string]: any };
-    status: 'pending' | 'completed' | 'failed';
+    status: 'pending' | 'awaiting_confirmation' | 'completed' | 'failed';
     note: string | null;
     btc_address: string | null;
     btc_amount: string | null;

@@ -103,6 +103,7 @@ export interface Provider {
 export interface BuyProvider extends Provider {}
 export interface SellProvider extends Provider {
   can_sell: boolean;
+  currency: string;
 }
 
 
@@ -129,7 +130,6 @@ export interface Order {
     note: string | null;
     btc_address: string | null;
     btc_amount: string | null;
-    btc_txid: string | null;
     created_at: string;
     payout_data?: { [key: string]: string | number | null };
 }

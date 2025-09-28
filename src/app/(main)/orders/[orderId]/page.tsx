@@ -103,11 +103,11 @@ const PaymentInfoDisplay = ({ provider }: { provider: BuyProvider }) => {
                     <div className="space-y-2">
                          <h4 className="font-semibold">Instructions</h4>
                         {Array.isArray(instructions) ? (
-                            <ol className="list-decimal list-inside text-muted-foreground space-y-1">
+                            <ol className="list-decimal list-inside text-muted-foreground space-y-1 text-sm">
                                 {instructions.map((step, i) => <li key={i}>{step}</li>)}
                             </ol>
                         ) : (
-                            <p className="text-muted-foreground">{instructions}</p>
+                            <p className="text-muted-foreground text-sm">{instructions}</p>
                         )}
                     </div>
                 )}
@@ -429,3 +429,5 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
+
+    

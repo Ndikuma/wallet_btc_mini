@@ -394,18 +394,18 @@ export default function OrderDetailsPage() {
                                 <CopyButton textToCopy={order.btc_address || ''} size="icon" variant="ghost" className="h-7 w-7"/>
                             </div>
                         </div>
-                        {order.transaction_id && (
+                        {order.btc_txid && (
                            <>
                              <div className="space-y-1">
                                 <Label>Transaction ID (TxID)</Label>
                                 <div className="flex items-center gap-2">
-                                    <p className="font-mono text-muted-foreground">{shortenText(order.transaction_id, 12, 12)}</p>
-                                    <CopyButton textToCopy={order.transaction_id || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                                    <p className="font-mono text-muted-foreground">{shortenText(order.btc_txid, 12, 12)}</p>
+                                    <CopyButton textToCopy={order.btc_txid || ''} size="icon" variant="ghost" className="h-7 w-7"/>
                                 </div>
                             </div>
                             {/* You need a valid explorer link structure */}
                             {/* <Button variant="outline" asChild>
-                                <Link href={`https://mempool.space/tx/${order.transaction_id}`} target="_blank">
+                                <Link href={`https://mempool.space/tx/${order.btc_txid}`} target="_blank">
                                     View on Block Explorer <ExternalLink className="ml-2 size-4" />
                                 </Link>
                             </Button> */}

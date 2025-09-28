@@ -130,7 +130,7 @@ export interface Order {
     note: string | null;
     btc_address: string | null;
     btc_amount: string | null;
-    transaction_id: string | null;
+    btc_txid: string | null;
     created_at: string;
     updated_at: string;
     payout_data?: { [key: string]: string | number | null };

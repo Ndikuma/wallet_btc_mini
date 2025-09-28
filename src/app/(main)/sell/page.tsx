@@ -427,7 +427,7 @@ export default function SellPage() {
                 </Card>
             );
         }
-
+        
         if (!formData.amount || !selectedProvider || !feeEstimation || !formData.paymentDetails) {
             return (
                 <Card>
@@ -440,10 +440,10 @@ export default function SellPage() {
                     </CardContent>
                     <CardFooter className="grid grid-cols-2 gap-4">
                         <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Cancel</Button>
-                        <Button size="lg" disabled={true} onClick={handleSell}>
+                        <Button size="lg" disabled={true}>
                             Sell Bitcoin
                         </Button>
-                </CardFooter>
+                    </CardFooter>
                 </Card>
             );
         }
@@ -451,7 +451,12 @@ export default function SellPage() {
         const amountToSellBtc = formData.amount;
         const networkFeeBtc = parseFloat(feeEstimation.network_fee_btc);
         const finalAmountBtc = parseFloat(feeEstimation.sendable_btc);
-        const amountToReceive = feeEstimation.sendable_usd;
+        const amountToReceiveUsd = feeEstimation.sendable_usd;
+        const amountToReceiveBif = feeEstimation.sendable_bif;
+        const getFiat = (val: number, currency: string) => {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(val);
+        }
+
 
         return (
             <Card>
@@ -479,7 +484,10 @@ export default function SellPage() {
                     <div className="p-4 rounded-lg border space-y-2">
                          <div className="flex justify-between items-center text-base">
                             <span className="font-semibold">You Will Receive (Approx.)</span>
-                            <span className="font-mono font-bold">{amountToReceive.toLocaleString(undefined, { style: 'currency', currency: selectedProvider.currency || 'USD' })}</span>
+                            <div className="text-right">
+                                <span className="font-mono font-bold">{getFiat(amountToReceiveUsd, 'USD')}</span>
+                                <span className="font-mono font-bold text-muted-foreground"> in {selectedProvider.currency.toUpperCase()}</span>
+                            </div>
                         </div>
                     </div>
 

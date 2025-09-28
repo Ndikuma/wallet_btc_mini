@@ -47,7 +47,7 @@ export function LoginForm() {
       const token = response.data.token;
 
       localStorage.setItem('authToken', token);
-      // Set cookie for middleware
+      // Set cookie for client-side checks
       document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
 
       toast({

@@ -309,7 +309,6 @@ export default function SellPage() {
                                                                 <div>
                                                                     <p className="font-semibold">{provider.name}</p>
                                                                     <p className="text-sm text-muted-foreground">{provider.description}</p>
-                                                                    <div className="flex flex-wrap gap-2 mt-2">{provider.currencies.map(c => <Badge key={c} variant="secondary">{c.toUpperCase()}</Badge>)}</div>
                                                                 </div>
                                                             </div>
                                                         </Label>

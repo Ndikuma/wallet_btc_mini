@@ -428,7 +428,8 @@ export default function SellPage() {
             );
         }
         
-        if (!formData.amount || !selectedProvider || !feeEstimation || !formData.paymentDetails) {
+        // This is the main guard clause to prevent rendering with incomplete data
+        if (!formData.amount || !selectedProvider || !feeEstimation || !formData.paymentDetails || !selectedProvider.currency) {
             return (
                 <Card>
                     <CardHeader>
@@ -482,7 +483,7 @@ export default function SellPage() {
                     </div>
                     
                     <div className="p-4 rounded-lg border space-y-2">
-                         <div className="flex justify-between items-center text-base">
+                        <div className="flex justify-between items-center text-base">
                             <span className="font-semibold">You Will Receive (Approx.)</span>
                             <div className="text-right">
                                 <span className="font-mono font-bold">{getFiat(amountToReceiveUsd, 'USD')}</span>
@@ -567,5 +568,3 @@ export default function SellPage() {
         </div>
     );
 }
-
-    

@@ -133,7 +133,7 @@ const calculateBuyFee = (providerId: number, amount: number, currency: string): 
 }
 
 // Orders
-const createOrder = (payload: { provider_id: number; amount: number; btc_amount?: number, amount_currency: string; direction: 'buy' | 'sell'; payout_data?: any; }): Promise<AxiosResponse<Order>> => {
+const createOrder = (payload: { provider_id: number; amount: number; btc_amount?: number, total_amount?: string, amount_currency: string; direction: 'buy' | 'sell'; payout_data?: any; }): Promise<AxiosResponse<Order>> => {
     return axiosInstance.post('orders/', payload);
 }
 const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');

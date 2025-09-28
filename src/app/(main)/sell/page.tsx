@@ -201,9 +201,10 @@ export default function SellPage() {
                 provider_id: Number(formData.providerId),
                 amount: formData.amount,
                 btc_amount: finalAmountBtc,
-                amount_currency: 'BIF',
+                amount_currency: 'BTC',
                 direction: 'sell' as 'sell',
                 payout_data: formData.paymentDetails,
+                total_amount: String(feeEstimation.sendable_bif),
             };
             
             const response = await api.createOrder(orderPayload);
@@ -482,12 +483,12 @@ export default function SellPage() {
                     </div>
                     
                     <div className="p-4 rounded-lg border space-y-3">
-                        <p className="font-semibold text-center">You Will Receive (Approx.)</p>
-                        <div className="flex justify-between items-center text-base">
+                        <p className="font-semibold text-center mb-2">You Will Receive (Approx.)</p>
+                        <div className="flex justify-between items-baseline text-base">
                             <span className="text-muted-foreground">USD</span>
                             <span className="font-mono font-bold">{getFiat(amountToReceiveUsd, 'USD')}</span>
                         </div>
-                         <div className="flex justify-between items-center text-base">
+                         <div className="flex justify-between items-baseline text-base">
                             <span className="text-muted-foreground">BIF</span>
                             <span className="font-mono font-bold">{getFiat(amountToReceiveBif, 'BIF')}</span>
                         </div>

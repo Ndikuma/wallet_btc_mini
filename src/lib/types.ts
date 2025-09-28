@@ -131,6 +131,7 @@ export interface Order {
     btc_address: string | null;
     btc_amount: string | null;
     created_at: string;
+    updated_at: string;
     payout_data?: { [key: string]: string | number | null };
 }
 
@@ -159,3 +160,4 @@ export interface PaginatedResponse<T> {
     previous: string | null;
     results: T[];
 }
+

@@ -429,24 +429,24 @@ export default function SellPage() {
         }
         
         if (!formData.amount || !selectedProvider || !feeEstimation || !formData.paymentDetails) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Step 4: Confirm & Sell</CardTitle>
-                    <CardDescription>Review your transaction details before confirming the sale.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground text-center py-8">Enter an amount and select a provider to proceed.</p>
-                </CardContent>
-                <CardFooter className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Cancel</Button>
-                    <Button size="lg" disabled={true}>
-                        Sell Bitcoin
-                    </Button>
-                </CardFooter>
-            </Card>
-        )
-    }
+            return (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Step 4: Confirm & Sell</CardTitle>
+                        <CardDescription>Review your transaction details before confirming the sale.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground text-center py-8">Enter an amount and select a provider to proceed.</p>
+                    </CardContent>
+                    <CardFooter className="grid grid-cols-2 gap-4">
+                        <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Cancel</Button>
+                        <Button size="lg" disabled={true}>
+                            Sell Bitcoin
+                        </Button>
+                    </CardFooter>
+                </Card>
+            );
+        }
 
         const amountToSellBtc = formData.amount;
         const networkFeeBtc = parseFloat(feeEstimation.network_fee_btc);

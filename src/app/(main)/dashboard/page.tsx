@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -87,7 +86,7 @@ export default function DashboardPage() {
     setLoadingTransactions(true);
     setTransactionsError(null);
     try {
-      const transactionsRes = await api.getTransactions();
+      const transactionsRes = await api.getRecentTransactions();
       setRecentTransactions(transactionsRes.data || []);
     } catch (err: any) {
        if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
@@ -180,7 +179,7 @@ export default function DashboardPage() {
                     </div>
                 )}
                 {!loadingTransactions && !transactionsError && recentTransactions && recentTransactions.length > 0 ? (
-                  recentTransactions.slice(0, 4).map((tx) => {
+                  recentTransactions.map((tx) => {
                     const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
                     const relevantAddress = isSent ? tx.to_address : tx.from_address;
 

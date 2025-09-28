@@ -82,7 +82,7 @@ export interface FeeEstimation {
     sendable_usd: number;
     sendable_bif: number;
     network_fee_usd: number;
-    network_fee_bif: number;
+network_fee_bif: number;
 }
 
 export interface ProviderPaymentInfo {
@@ -130,6 +130,7 @@ export interface Order {
     note: string | null;
     btc_address: string | null;
     btc_amount: string | null;
+    transaction_id: string | null;
     created_at: string;
     updated_at: string;
     payout_data?: { [key: string]: string | number | null };
@@ -160,4 +161,3 @@ export interface PaginatedResponse<T> {
     previous: string | null;
     results: T[];
 }
-

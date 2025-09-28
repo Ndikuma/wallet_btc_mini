@@ -1,5 +1,4 @@
 
-
 export interface User {
   id: number;
   username: string;
@@ -85,16 +84,19 @@ export interface FeeEstimation {
     network_fee_bif: number;
 }
 
+export interface ProviderPaymentInfo {
+  method: string;
+  instructions: string | string[];
+  account?: { [key: string]: string };
+}
+
 export interface Provider {
   id: number;
   name: string;
   logo_url: string;
   description: string;
   currencies: string[];
-  payment_info: {
-    method: string;
-    instructions: string;
-  }
+  payment_info: ProviderPaymentInfo;
 }
 
 export interface BuyProvider extends Provider {}

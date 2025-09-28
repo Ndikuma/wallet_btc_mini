@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { Order } from "@/lib/types";
+import type { Order, BuyProvider } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -67,6 +67,53 @@ function fileToBase64(file: File): Promise<string> {
     });
 }
 
+const PaymentInfoDisplay = ({ provider }: { provider: BuyProvider }) => {
+    const accountDetails = provider.payment_info.account;
+    const instructions = provider.payment_info.instructions;
+
+    const formatLabel = (key: string) => {
+        return key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    };
+
+    return (
+        <Card className="bg-secondary/30">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg"><Landmark className="size-5 text-primary" />Payment Instructions</CardTitle>
+                <CardDescription>{provider.payment_info.method}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 {accountDetails && Object.keys(accountDetails).length > 0 && (
+                     <div className="space-y-3 rounded-lg border bg-background/50 p-4">
+                        <h4 className="font-semibold">Account Details</h4>
+                        {Object.entries(accountDetails).map(([key, value]) => (
+                            <div key={key} className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">{formatLabel(key)}</span>
+                                <div className="flex items-center gap-2 font-mono">
+                                    <span>{value}</span>
+                                    <CopyButton textToCopy={value} size="icon" variant="ghost" className="h-7 w-7" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                
+                {instructions && (
+                    <div className="space-y-2">
+                         <h4 className="font-semibold">Instructions</h4>
+                        {Array.isArray(instructions) ? (
+                            <ol className="list-decimal list-inside text-muted-foreground space-y-1">
+                                {instructions.map((step, i) => <li key={i}>{step}</li>)}
+                            </ol>
+                        ) : (
+                            <p className="text-muted-foreground">{instructions}</p>
+                        )}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
+
 function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSuccessfulSubmit: (updatedOrder: Order) => void }) {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,14 +165,7 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <CardContent className="space-y-6">
-                        <Card className="bg-secondary/30">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-lg"><Landmark className="size-5 text-primary" />Payment Instructions</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground">{order.provider.payment_info.instructions}</p>
-                            </CardContent>
-                        </Card>
+                        <PaymentInfoDisplay provider={order.provider} />
 
                         <FormField
                             control={form.control}

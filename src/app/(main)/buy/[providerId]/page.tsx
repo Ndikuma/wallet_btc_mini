@@ -41,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CopyButton } from "@/components/copy-button";
 
 
 const buySchema = z.object({
@@ -51,6 +52,53 @@ const buySchema = z.object({
 });
 
 type BuyFormValues = z.infer<typeof buySchema>;
+
+const PaymentInfoDisplay = ({ provider }: { provider: BuyProvider }) => {
+    const accountDetails = provider.payment_info.account;
+    const instructions = provider.payment_info.instructions;
+
+    const formatLabel = (key: string) => {
+        return key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    };
+
+    return (
+        <Card className="bg-secondary/30">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg"><Landmark className="size-5 text-primary" />Payment Instructions</CardTitle>
+                 <CardDescription>{provider.payment_info.method}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 {accountDetails && Object.keys(accountDetails).length > 0 && (
+                     <div className="space-y-3 rounded-lg border bg-background/50 p-4">
+                        <h4 className="font-semibold">Account Details</h4>
+                        {Object.entries(accountDetails).map(([key, value]) => (
+                            <div key={key} className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">{formatLabel(key)}</span>
+                                <div className="flex items-center gap-2 font-mono">
+                                    <span>{value}</span>
+                                    <CopyButton textToCopy={value} size="icon" variant="ghost" className="h-7 w-7" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                
+                {instructions && (
+                    <div className="space-y-2">
+                         <h4 className="font-semibold">Instructions</h4>
+                        {Array.isArray(instructions) ? (
+                            <ol className="list-decimal list-inside text-muted-foreground space-y-1">
+                                {instructions.map((step, i) => <li key={i}>{step}</li>)}
+                            </ol>
+                        ) : (
+                            <p className="text-muted-foreground">{instructions}</p>
+                        )}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
 
 export default function BuyWithProviderPage() {
   const params = useParams();
@@ -263,14 +311,7 @@ export default function BuyWithProviderPage() {
                         </div>
                     )}
                     
-                    <Card className="bg-secondary/30">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg"><Landmark className="size-5 text-primary" />Payment Instructions</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                           <p className="text-muted-foreground">{provider.payment_info.instructions}</p>
-                        </CardContent>
-                    </Card>
+                    <PaymentInfoDisplay provider={provider} />
 
                 </CardContent>
                 <CardFooter>

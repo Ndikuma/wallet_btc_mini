@@ -189,8 +189,8 @@ export default function BuyWithProviderPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-start gap-4">
-            {provider.logo_url ? (
-                <Image src={provider.logo_url} alt={`${provider.name} logo`} width={48} height={48} className="rounded-lg border" />
+            {provider.image ? (
+                <Image src={provider.image} alt={`${provider.name} logo`} width={48} height={48} className="rounded-lg border" />
             ) : (
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-secondary">
                     <Landmark className="size-6 text-muted-foreground" />

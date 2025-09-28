@@ -24,9 +24,9 @@ const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
   <Card className="hover:border-primary/50 transition-colors">
     <Link href={`/buy/${provider.id}`} className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-start gap-4">
-        {provider.logo_url ? (
+        {provider.image ? (
             <Image
-            src={provider.logo_url}
+            src={provider.image}
             alt={`${provider.name} logo`}
             width={48}
             height={48}

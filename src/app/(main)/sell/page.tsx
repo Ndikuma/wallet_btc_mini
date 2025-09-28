@@ -305,7 +305,7 @@ export default function SellPage() {
                                                         </FormControl>
                                                         <Label htmlFor={`provider-${provider.id}`} className="block rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
                                                             <div className="flex items-start gap-4">
-                                                                {provider.logo_url ? <Image src={provider.logo_url} alt={`${provider.name} logo`} width={40} height={40} className="rounded-lg border" /> : <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-secondary"><Landmark className="size-5 text-muted-foreground" /></div>}
+                                                                {provider.image ? <Image src={provider.image} alt={`${provider.name} logo`} width={40} height={40} className="rounded-lg border" /> : <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-secondary"><Landmark className="size-5 text-muted-foreground" /></div>}
                                                                 <div>
                                                                     <p className="font-semibold">{provider.name}</p>
                                                                     <p className="text-sm text-muted-foreground">{provider.description}</p>

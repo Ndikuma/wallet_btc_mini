@@ -94,7 +94,7 @@ export interface ProviderPaymentInfo {
 export interface Provider {
   id: number;
   name: string;
-  logo_url: string;
+  image: string;
   description: string;
   currencies: string[];
   payment_info?: ProviderPaymentInfo;

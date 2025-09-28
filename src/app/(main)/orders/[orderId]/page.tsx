@@ -344,7 +344,7 @@ export default function OrderDetailsPage() {
                     </div>
                      <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
                          <div className="flex justify-between"><span className="text-muted-foreground">Provider</span><span className="font-semibold">{order.provider.name}</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Payment Method</span><span className="font-semibold">{order.provider.payment_info?.method}</span></div>
+                         {order.provider.payment_info?.method && <div className="flex justify-between"><span className="text-muted-foreground">Payment Method</span><span className="font-semibold">{order.provider.payment_info.method}</span></div>}
                     </div>
                 </CardContent>
                  <CardFooter className="justify-end">
@@ -431,3 +431,5 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
+
+    

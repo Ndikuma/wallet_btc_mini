@@ -53,6 +53,8 @@ export function UserNav() {
         console.error("Logout failed", error);
     } finally {
         localStorage.removeItem("authToken");
+        // Clear the cookie
+        document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         router.push("/");
         router.refresh();
     }
@@ -113,5 +115,3 @@ export function UserNav() {
     </DropdownMenu>
   )
 }
-
-    

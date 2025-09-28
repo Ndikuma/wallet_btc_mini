@@ -46,7 +46,12 @@ export function RegisterForm() {
     setIsLoading(true);
     try {
       const response = await api.register(values);
-      localStorage.setItem('authToken', response.data.token);
+      const token = response.data.token;
+
+      localStorage.setItem('authToken', token);
+      // Set cookie for middleware
+      document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
+
       toast({
         title: "Account Created",
         description: "Please set up your wallet to continue.",

@@ -53,7 +53,13 @@ export function RestoreForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await api.restoreWallet(values.mnemonic);
+      const response = await api.restoreWallet(values.mnemonic);
+      const token = response.data.token;
+
+      if (token) {
+        localStorage.setItem('authToken', token);
+        document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
+      }
       
       toast({
         title: "Wallet Restored Successfully",

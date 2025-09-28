@@ -105,7 +105,7 @@ const generateMnemonic = (): Promise<AxiosResponse<{ mnemonic: string }>> => axi
 const createWallet = (mnemonic: string) => axiosInstance.post('wallet/create_wallet/', { mnemonic });
 const generateNewAddress = (): Promise<AxiosResponse<{ address: string }>> => axiosInstance.post('wallet/generate_address/');
 const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }>> => axiosInstance.post('wallet/generate_qr_code/', { data });
-const restoreWallet = (data: string) => axiosInstance.post('wallet/restore/', { data });
+const restoreWallet = (data: string): Promise<AxiosResponse<AuthResponse>> => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
 const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstimation>> => {
     return axiosInstance.post('wallet/estimate_fee/', {

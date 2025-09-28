@@ -44,7 +44,12 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       const response = await api.login(values);
-      localStorage.setItem('authToken', response.data.token);
+      const token = response.data.token;
+
+      localStorage.setItem('authToken', token);
+      // Set cookie for middleware
+      document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
+
       toast({
         title: "Login Successful",
         description: "Welcome back!",

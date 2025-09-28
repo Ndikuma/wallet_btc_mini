@@ -116,6 +116,7 @@ const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstim
 
 // Transactions
 const getTransactions = (): Promise<AxiosResponse<PaginatedResponse<Transaction>>> => axiosInstance.get('transaction/');
+const getRecentTransactions = (): Promise<AxiosResponse<Transaction[]>> => axiosInstance.get('transaction/recents/');
 const sendTransaction = (values: { recipient: string; amount: number }) => {
     return axiosInstance.post('transaction/send/', {
         to_address: values.recipient,
@@ -158,6 +159,7 @@ const api = {
     restoreWallet,
     backupWallet,
     getTransactions,
+    getRecentTransactions,
     sendTransaction,
     estimateFee,
     getBuyProviders,

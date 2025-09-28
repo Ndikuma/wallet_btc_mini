@@ -51,14 +51,9 @@ const providerSchema = z.object({
 const paymentDetailsSchema = z.object({
     full_name: z.string().min(1, "Full name is required."),
     phone_number: z.string().min(1, "Phone number is required."),
-    account_number: z.string().optional(),
+    account_number: z.string().min(1, "Account number is required."),
     email: z.string().email("Please enter a valid email.").optional(),
 })
-.refine(data => data.account_number || data.email, {
-    message: "Either Account Number or Email must be provided.",
-    path: ["account_number"],
-});
-
 
 type FormData = {
     amount?: number;
@@ -190,18 +185,13 @@ export default function SellPage() {
         }
 
         setIsSubmitting(true);
-        const payoutData = Object.entries(formData.paymentDetails)
-            .filter(([, value]) => value)
-            .map(([field, value]) => ({ field, value }));
-
-
         try {
             const orderPayload = {
                 provider_id: Number(formData.providerId),
                 amount: formData.amount,
                 amount_currency: 'BTC',
                 direction: 'sell' as 'sell',
-                payout_data: payoutData,
+                payout_data: formData.paymentDetails,
             };
             
             const response = await api.createOrder(orderPayload);
@@ -374,13 +364,12 @@ export default function SellPage() {
                                     </FormItem>
                                 )}
                             />
-                            <div className="text-sm text-muted-foreground font-medium text-center py-2">Provide at least one of the following</div>
-                             <FormField
+                            <FormField
                                 control={paymentDetailsForm.control}
                                 name="account_number"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Account Number (Optional)</FormLabel>
+                                        <FormLabel>Account Number</FormLabel>
                                         <FormControl>
                                             <Input placeholder="e.g., 987654321" {...field} value={field.value ?? ''} />
                                         </FormControl>

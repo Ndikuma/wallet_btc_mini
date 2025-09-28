@@ -239,7 +239,7 @@ const getStatusIcon = (status: string) => {
     }
 }
 
-const PayoutDetailItem = ({ icon, label, value }: { icon: React.ElementType, label: string, value?: string }) => {
+const PayoutDetailItem = ({ icon, label, value }: { icon: React.ElementType, label: string, value?: string | number | null }) => {
     if (!value) return null;
     const Icon = icon;
     return (
@@ -311,7 +311,7 @@ export default function OrderDetailsPage() {
 
     if (!order) return null;
 
-    const payoutDetails = order.payout_data
+    const payoutDetails = order.payout_data;
     
     return (
         <div className="mx-auto max-w-2xl space-y-6">
@@ -431,5 +431,3 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
-
-    

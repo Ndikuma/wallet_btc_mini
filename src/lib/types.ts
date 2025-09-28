@@ -97,7 +97,7 @@ export interface Provider {
   logo_url: string;
   description: string;
   currencies: string[];
-  payment_info: ProviderPaymentInfo;
+  payment_info?: ProviderPaymentInfo;
 }
 
 export interface BuyProvider extends Provider {}
@@ -131,7 +131,7 @@ export interface Order {
     btc_amount: string | null;
     btc_txid: string | null;
     created_at: string;
-    payout_data?: { [key: string]: string };
+    payout_data?: { [key: string]: string | number | null };
 }
 
 

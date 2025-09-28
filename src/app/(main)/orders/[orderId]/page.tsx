@@ -265,10 +265,9 @@ export default function OrderDetailsPage() {
 
     if (!order) return null;
 
-    const payoutDetails = order.payout_data?.reduce((acc, item) => {
-        acc[item.field] = item.value;
-        return acc;
-    }, {} as { [key: string]: string });
+    const payoutDetails = (order.payout_data && typeof order.payout_data === 'object' && !Array.isArray(order.payout_data))
+        ? order.payout_data
+        : null;
     
     return (
         <div className="mx-auto max-w-2xl space-y-6">
@@ -376,8 +375,3 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
-
-    
-
-    
-

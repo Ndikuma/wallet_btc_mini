@@ -1,16 +1,13 @@
 
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BitcoinIcon } from "@/components/icons";
 import { ArrowRight } from "lucide-react";
 
 
-function LandingPage() {
+export default function LandingPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-background/80 backdrop-blur-sm">
@@ -66,27 +63,4 @@ function LandingPage() {
       </main>
     </div>
   );
-}
-
-
-export default function RootPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      router.replace("/dashboard");
-    }
-  }, [router]);
-
-  // Check for token existence without causing a flash of the landing page for authenticated users.
-  if (typeof window !== "undefined" && localStorage.getItem("authToken")) {
-      return (
-        <div className="flex h-full w-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      );
-  }
-
-  return <LandingPage />;
 }

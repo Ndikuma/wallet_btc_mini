@@ -1,5 +1,4 @@
 
-
 export interface User {
   id: number;
   username: string;
@@ -30,7 +29,7 @@ export interface Wallet {
   id?: number;
   address: string;
   primary_address?: string;
-  balance: number | string; // Can be string from some endpoints
+  balance: number | string;
   balance_formatted?: string;
   network?: string;
   status?: string;
@@ -106,7 +105,6 @@ export interface SellProvider extends Provider {
   currency: string;
 }
 
-
 export interface BuyFeeCalculation {
     amount: string;
     fee: string;
@@ -118,7 +116,7 @@ export interface BuyFeeCalculation {
 export interface Order {
     id: number;
     user: string;
-    provider: BuyProvider; // Nested provider details
+    provider: BuyProvider;
     provider_id: number;
     direction: 'buy' | 'sell';
     amount_currency: string;
@@ -135,7 +133,6 @@ export interface Order {
     updated_at: string;
     payout_data?: { [key: string]: string | number | null };
 }
-
 
 export interface ApiErrorDetails {
     [key: string]: string[] | string;
@@ -161,5 +158,3 @@ export interface PaginatedResponse<T> {
     previous: string | null;
     results: T[];
 }
-
-    

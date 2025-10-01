@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,7 +25,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -35,7 +34,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { getFiat } from "@/lib/utils";
-
 
 const amountSchema = z.object({
   amount: z.coerce
@@ -59,7 +57,6 @@ type FormData = {
     providerId?: string;
     paymentDetails?: z.infer<typeof paymentDetailsSchema>;
 };
-
 
 export default function SellPage() {
     const { toast } = useToast();
@@ -111,7 +108,7 @@ export default function SellPage() {
                 setBalance(balanceRes.data);
                 setProviders(providersRes.data.filter(p => p.can_sell));
             } catch (err: any) {
-                toast({ variant: "destructive", title: "Error", description: err.message || "Could not load required data." });
+                toast({ variant: "destructive", title: "Error", description: err.message });
                 setProvidersError(err.message || "Failed to load providers.");
             } finally {
                 setIsBalanceLoading(false);
@@ -128,8 +125,7 @@ export default function SellPage() {
             const feeResponse = await api.estimateFee({ amount });
             setFeeEstimation(feeResponse.data);
         } catch (error: any) {
-            const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
-            setFeeError(errorMsg);
+            setFeeError(error.message);
             setFeeEstimation(null);
         } finally {
             setIsEstimatingFee(false);
@@ -210,7 +206,7 @@ export default function SellPage() {
             router.push(`/orders/${response.data.id}`);
 
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Sell Failed', description: error.message || 'Could not create your sell order.' });
+            toast({ variant: 'destructive', title: 'Sell Failed', description: error.message });
         } finally {
             setIsSubmitting(false);
         }
@@ -232,7 +228,10 @@ export default function SellPage() {
                 <CardContent className="space-y-6">
                      <div className="p-4 rounded-lg bg-secondary border">
                         <p className="text-sm text-muted-foreground">Your available balance</p>
-                        <p className="text-2xl font-bold font-mono">{currentBalance.toFixed(8)} BTC</p>
+                        {isBalanceLoading ? 
+                            <Skeleton className="h-8 w-48 mt-1" /> :
+                            <p className="text-2xl font-bold font-mono">{currentBalance.toFixed(8)} BTC</p>
+                        }
                     </div>
                     <FormField
                         control={amountForm.control}
@@ -522,7 +521,7 @@ export default function SellPage() {
                 <CardFooter className="grid grid-cols-2 gap-4">
                     <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Cancel</Button>
                     <Button size="lg" disabled={isEstimatingFee || !feeEstimation || isSubmitting} onClick={handleSell}>
-                        {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin"/> : null}
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                         {isSubmitting ? "Processing..." : "Sell Bitcoin"}
                     </Button>
                 </CardFooter>
@@ -555,16 +554,16 @@ export default function SellPage() {
                 <p className="text-muted-foreground">Follow the steps to sell your Bitcoin securely.</p>
             </div>
             
-             <div className="flex w-full items-center justify-between rounded-lg border bg-card p-2">
+             <div className="flex w-full items-center justify-between rounded-lg border bg-card p-2 text-xs sm:text-sm">
                 {steps.map((step, index) => (
                     <React.Fragment key={index}>
-                        <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:text-left">
+                        <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:gap-2">
                             <div className={`flex size-6 items-center justify-center rounded-full text-xs font-bold ${currentStep > index + 1 ? 'bg-primary text-primary-foreground' : currentStep === index + 1 ? 'border-2 border-primary text-primary' : 'bg-muted text-muted-foreground'}`}>
                                 {currentStep > index + 1 ? <Check className="size-4" /> : index + 1}
                             </div>
-                            <span className={`hidden text-sm sm:block ${currentStep >= index + 1 ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
+                            <span className={`hidden sm:block ${currentStep >= index + 1 ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
                         </div>
-                        {index < steps.length - 1 && <div className="flex-1 h-px bg-border" />}
+                        {index < steps.length - 1 && <div className="flex-1 h-px bg-border mx-2" />}
                     </React.Fragment>
                 ))}
             </div>
@@ -582,5 +581,3 @@ export default function SellPage() {
         </div>
     );
 }
-
-    

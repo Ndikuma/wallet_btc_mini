@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Undo2 } from "lucide-react";
+import { Undo2, Loader2 } from "lucide-react";
 
 // Function to shuffle an array
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -43,7 +43,6 @@ export default function VerifyMnemonicPage() {
   
   // State to hold the user's answers for each slot { index: word }
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   
   useEffect(() => {
     const storedMnemonic = localStorage.getItem("tempMnemonic");
@@ -66,7 +65,6 @@ export default function VerifyMnemonicPage() {
   const handleWordBankClick = (word: string) => {
     if (Object.values(answers).includes(word)) return; // Word already used
     
-    // Find the first empty challenge slot
     const nextEmptyIndex = challengeIndices.find(index => !answers[index]);
 
     if (nextEmptyIndex !== undefined) {
@@ -75,7 +73,6 @@ export default function VerifyMnemonicPage() {
   };
 
   const handleChallengeSlotClick = (index: number) => {
-    // This function will remove the word from the answer slot
     if (answers[index]) {
       const newAnswers = { ...answers };
       delete newAnswers[index];
@@ -85,7 +82,6 @@ export default function VerifyMnemonicPage() {
 
   const handleClear = () => {
     setAnswers({});
-    setSelectedWord(null);
   };
 
   const handleVerify = async () => {
@@ -100,7 +96,6 @@ export default function VerifyMnemonicPage() {
         description: "One or more words are incorrect. Please try again.",
       });
       setIsLoading(false);
-      // Clear answers on failure so user has to retry
       handleClear();
       return;
     }
@@ -108,7 +103,6 @@ export default function VerifyMnemonicPage() {
     try {
       if (!mnemonic) throw new Error("Mnemonic not found");
       
-      // Verification is successful on the client, now create the wallet on the backend
       await api.createWallet(mnemonic);
 
       toast({
@@ -119,21 +113,20 @@ export default function VerifyMnemonicPage() {
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.error?.details?.detail || error.response?.data?.message || "An error occurred during wallet creation.";
       toast({
         variant: "destructive",
         title: "Wallet Creation Failed",
-        description: errorMsg,
+        description: error.message,
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const allWordsEntered = Object.keys(answers).length === 4;
+  const allWordsEntered = Object.keys(answers).length === challengeIndices.length && challengeIndices.length > 0;
 
   if (challengeIndices.length === 0) {
-    return null; // Don't render until component is ready
+    return null; 
   }
 
   return (
@@ -146,7 +139,6 @@ export default function VerifyMnemonicPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
-          {/* Challenge Slots */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {challengeIndices.map(index => (
               <div key={index} className="space-y-2">
@@ -165,7 +157,6 @@ export default function VerifyMnemonicPage() {
             ))}
           </div>
           
-          {/* Word Bank */}
           <div className="rounded-lg border bg-background/50 p-4">
             <div className="flex flex-wrap justify-center gap-3">
               {shuffledWords.map(word => {
@@ -198,6 +189,7 @@ export default function VerifyMnemonicPage() {
         </CardContent>
         <CardFooter>
           <Button onClick={handleVerify} size="lg" className="w-full" disabled={!allWordsEntered || isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isLoading ? "Verifying..." : "Verify & Finish"}
           </Button>
         </CardFooter>

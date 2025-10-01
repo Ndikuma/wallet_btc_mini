@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -11,6 +12,7 @@ import {
   Download,
   ShoppingCart,
   Receipt,
+  Wallet,
 } from "lucide-react";
 import {
   Card,
@@ -75,7 +77,7 @@ export default function DashboardPage() {
          if (err instanceof AxiosError && err.response?.status === 403) {
             setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
         } else {
-            setError("Could not connect to the wallet service. Please try again later.")
+            setError(err.message || "Could not connect to the wallet service. Please try again later.")
         }
       }
     }
@@ -89,11 +91,7 @@ export default function DashboardPage() {
       const transactionsRes = await api.getRecentTransactions();
       setRecentTransactions(transactionsRes.data || []);
     } catch (err: any) {
-       if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
-          setTransactionsError("Network error. Could not connect to the server.");
-       } else {
-          setTransactionsError("Could not load recent transactions.");
-       }
+      setTransactionsError(err.message || "Could not load recent transactions.");
     } finally {
       setLoadingTransactions(false);
     }
@@ -154,6 +152,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle>Recent Transactions</CardTitle>
+                    <CardDescription>Your latest wallet activity</CardDescription>
                 </div>
                 <Button variant="link" size="sm" asChild className="text-primary">
                   <Link href="/transactions">
@@ -174,8 +173,10 @@ export default function DashboardPage() {
                   </div>
                 ))}
                 {transactionsError && (
-                     <div className="h-24 text-center flex items-center justify-center text-destructive">
-                        <AlertCircle className="mr-2 size-4" /> {transactionsError}
+                     <div className="h-24 text-center flex flex-col items-center justify-center text-destructive">
+                        <AlertCircle className="size-8 mb-2" />
+                        <p className="font-semibold">Error Loading Transactions</p>
+                        <p className="text-sm">{transactionsError}</p>
                     </div>
                 )}
                 {!loadingTransactions && !transactionsError && recentTransactions.length > 0 && (
@@ -195,7 +196,7 @@ export default function DashboardPage() {
                         <div className="flex-1 grid gap-1">
                            <p className="font-medium truncate">
                             {isSent ? "Sent to" : "Received from"}{' '}
-                            <span className="font-mono text-muted-foreground">{shortenText(relevantAddress)}</span>
+                            <span className="font-mono text-muted-foreground">{shortenText(relevantAddress, 6, 6)}</span>
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -203,10 +204,10 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-right">
                            <p className={cn("font-semibold font-mono", isSent ? "text-destructive" : "text-green-600")}>
-                            {tx.amount_formatted}
+                            {isSent ? '-' : '+'}{tx.amount_formatted}
                           </p>
                            <p className="text-xs text-muted-foreground font-mono">
-                             Fee: {tx.fee_formatted.replace("BTC", "")}
+                             Fee: {tx.fee_formatted.replace("BTC", "").trim()}
                           </p>
                         </div>
                       </div>
@@ -214,8 +215,10 @@ export default function DashboardPage() {
                   })
                 )}
                 {!loadingTransactions && !transactionsError && recentTransactions.length === 0 && (
-                  <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
-                    No transactions yet.
+                  <div className="h-24 text-center flex flex-col items-center justify-center text-muted-foreground">
+                    <Wallet className="size-8 mb-4" />
+                    <p className="font-semibold">No Transactions Yet</p>
+                    <p className="text-sm">Your recent transactions will appear here.</p>
                   </div>
                 )}
               </div>

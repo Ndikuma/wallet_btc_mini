@@ -30,12 +30,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { Balance, FeeEstimation } from "@/lib/types";
-import { AxiosError } from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn, getFiat } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-
 
 const formSchema = (balance: number) => z.object({
   recipient: z
@@ -77,17 +75,17 @@ export function SendForm() {
   });
 
   const watchedAmount = form.watch("amount");
+  const watchedRecipient = form.watch("recipient");
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
-  const estimateFee = useCallback(async (amount: number) => {
+  const estimateFee = useCallback(async (amount: number, recipient: string) => {
       setIsEstimatingFee(true);
       setFeeError(null);
       try {
-          const feeResponse = await api.estimateFee({ amount });
+          const feeResponse = await api.estimateFee({ amount, recipient });
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
-          const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
-          setFeeError(errorMsg);
+          setFeeError(error.message);
           setFeeEstimation(null);
       } finally {
           setIsEstimatingFee(false);
@@ -95,14 +93,16 @@ export function SendForm() {
   }, []);
 
   useEffect(() => {
-    // Only estimate fee if we have a valid amount
-    if (debouncedAmount > 0) {
-      estimateFee(debouncedAmount);
+    const isAmountValid = debouncedAmount > 0 && form.getFieldState('amount').error === undefined;
+    const isRecipientValid = watchedRecipient.length > 25 && form.getFieldState('recipient').error === undefined;
+
+    if (isAmountValid && isRecipientValid) {
+      estimateFee(debouncedAmount, watchedRecipient);
     } else {
       setFeeEstimation(null);
       setFeeError(null);
     }
-  }, [debouncedAmount, estimateFee])
+  }, [debouncedAmount, watchedRecipient, form, estimateFee])
 
 
   useEffect(() => {
@@ -111,22 +111,14 @@ export function SendForm() {
       try {
         const response = await api.getWalletBalance();
         setBalance(response.data);
-      } catch (error) {
-        if (error instanceof AxiosError && error.response?.status === 401) {
-            toast({ variant: "destructive", title: "Authentication Error", description: "Please log in to send Bitcoin." });
-            router.push("/login");
-        } else if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
-            toast({ variant: "destructive", title: "Network Error", description: "Could not connect to the backend to fetch balance." });
-        }
-        else {
-             toast({ variant: "destructive", title: "Error", description: "Could not fetch wallet data." });
-        }
+      } catch (error: any) {
+        toast({ variant: "destructive", title: "Error", description: error.message });
       } finally {
         setIsBalanceLoading(false);
       }
     }
     fetchBalance();
-  }, [router, toast]);
+  }, [toast]);
   
   useEffect(() => {
     const newBalance = balance ? parseFloat(balance.balance) : 0;
@@ -212,12 +204,10 @@ export function SendForm() {
         });
         setIsSuccessDialogOpen(true);
     } catch(error: any) {
-        const errorDetails = error.response?.data?.error?.details;
-        const errorMsg = errorDetails?.error || errorDetails?.non_field_errors?.[0] || error.response?.data?.message || "An unexpected error occurred.";
         toast({
             variant: "destructive",
             title: "Transaction Failed",
-            description: errorMsg,
+            description: error.message,
         });
     } finally {
         setIsLoading(false);
@@ -307,7 +297,7 @@ export function SendForm() {
                         <div className="space-y-2">
                            <p className="text-sm text-muted-foreground">You will send</p>
                            <p className="text-2xl font-bold font-mono">{feeEstimation.sendable_btc} BTC</p>
-                           <p className="text-sm text-muted-foreground font-mono">{getFiat(feeEstimation.sendable_usd, 'usd')} / {getFiat(feeEstimation.sendable_bif, 'bif')}</p>
+                           <p className="text-sm text-muted-foreground font-mono">{getFiat(feeEstimation.sendable_usd, 'USD')} / {getFiat(feeEstimation.sendable_bif, 'BIF')}</p>
                         </div>
                         <Separator />
                         <div className="space-y-2">
@@ -317,7 +307,7 @@ export function SendForm() {
                            </div>
                            <div className="flex justify-between text-xs">
                                <p className="text-muted-foreground"></p>
-                               <p className="font-mono text-muted-foreground">{getFiat(feeEstimation.network_fee_usd, 'usd')} / {getFiat(feeEstimation.network_fee_bif, 'bif')}</p>
+                               <p className="font-mono text-muted-foreground">{getFiat(feeEstimation.network_fee_usd, 'USD')} / {getFiat(feeEstimation.network_fee_bif, 'BIF')}</p>
                            </div>
                         </div>
                         <Separator className="border-dashed" />
@@ -333,7 +323,8 @@ export function SendForm() {
           )}
 
           <Button type="submit" className="w-full" size="lg" disabled={!form.formState.isValid || isLoading || isEstimatingFee || !feeEstimation}>
-            {isLoading ? 'Sending...' : <><ArrowUpRight className="mr-2 size-5" />Send Bitcoin</>}
+            {isLoading ? <Loader2 className="mr-2 size-5 animate-spin" /> : <ArrowUpRight className="mr-2 size-5" />}
+            {isLoading ? 'Sending...' : 'Send Bitcoin'}
           </Button>
         </form>
       </Form>
@@ -355,5 +346,3 @@ export function SendForm() {
     </>
   );
 }
-
-    

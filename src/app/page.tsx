@@ -91,17 +91,9 @@ export default function RootPage() {
     }
   }, [router]);
 
-  if (isAuthenticated === null) {
+  if (isAuthenticated === null || isAuthenticated) {
     return (
-       <div className="flex h-dvh w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
-     return (
-       <div className="flex h-dvh w-full items-center justify-center">
+       <div className="flex h-dvh w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );

@@ -17,10 +17,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
-import { useEffect } from "react";
+import { Info, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   mnemonic: z.string().min(20, { message: "Recovery phrase seems too short." })
@@ -68,12 +67,10 @@ export function RestoreForm() {
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
-      const errorDetails = error.response?.data?.error?.details;
-      const errorMsg = errorDetails?.data?.[0] || errorDetails?.mnemonic?.[0] || error.response?.data?.message || "Failed to restore wallet. Please check your recovery phrase.";
       toast({
         variant: "destructive",
         title: "Restore Failed",
-        description: errorMsg,
+        description: error.message,
       });
     } finally {
         setIsLoading(false);
@@ -114,6 +111,7 @@ export function RestoreForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? 'Restoring...' : 'Restore Wallet'}
         </Button>
       </form>

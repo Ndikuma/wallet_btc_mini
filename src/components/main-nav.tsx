@@ -23,7 +23,6 @@ import {
   SidebarMenuButton,
   SidebarSeparator,
   SidebarGroup,
-  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [
@@ -46,9 +45,6 @@ export function MainNav() {
 
   const isDashboardActive = (path: string) => {
     if (path === '/dashboard') {
-      // The main page for the layout is the dashboard.
-      // It's active if the path is exactly '/dashboard' or if it's the root of the app view ('/')
-      // Next.js will resolve `/` inside the group to the group's page.tsx
       return pathname === path || pathname === '/';
     }
     return pathname.startsWith(path);

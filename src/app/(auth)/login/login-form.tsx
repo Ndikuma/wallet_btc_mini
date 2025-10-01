@@ -17,9 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import api from '@/lib/api';
-import type { AuthResponse } from '@/lib/types';
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "Please enter your username." }),
@@ -47,7 +46,6 @@ export function LoginForm() {
       const token = response.data.token;
 
       localStorage.setItem('authToken', token);
-      // Set cookie for client-side checks
       document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
 
       toast({
@@ -64,11 +62,10 @@ export function LoginForm() {
       router.refresh(); 
 
     } catch (error: any) {
-      const errorMsg = error.response?.data?.error?.details?.non_field_errors?.[0] || error.response?.data?.message || "An unexpected error occurred.";
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: errorMsg,
+        description: error.message,
       });
     } finally {
         setIsLoading(false);
@@ -111,6 +108,7 @@ export function LoginForm() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -120,6 +118,7 @@ export function LoginForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? 'Logging in...' : 'Login'}
         </Button>
       </form>

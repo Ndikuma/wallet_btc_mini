@@ -1,11 +1,9 @@
 
-
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
 const BACKEND_URL = 'https://umuhoratech-wallet.onrender.com/';
 
-// Main instance for authenticated requests
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,
   headers: {
@@ -13,14 +11,12 @@ const axiosInstance = axios.create({
   },
 });
 
-// Public instance for requests that should NOT send a token
 const publicAxiosInstance = axios.create({
   baseURL: BACKEND_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
 
 axiosInstance.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
@@ -36,12 +32,9 @@ axiosInstance.interceptors.request.use((config) => {
 
 const createResponseInterceptor = (instance: AxiosInstance) => {
     const onResponse = (response: AxiosResponse) => {
-      // The backend wraps successful responses in a `data` object.
-      // We extract it here to simplify data access in the components.
       if (response.data && response.data.success) {
         return { ...response, data: response.data.data };
       }
-      // For cases like logout that might just return { success: true }
       if (response.data && response.data.success === true && response.data.data === undefined) {
         return response;
       }
@@ -49,34 +42,37 @@ const createResponseInterceptor = (instance: AxiosInstance) => {
     };
 
     const onError = (error: AxiosError<ApiResponse<any>>) => {
+        let errorMessage = "An unexpected error occurred. Please try again later.";
+        
         if (error.code === 'ERR_NETWORK') {
-            error.message = 'Network Error: Could not connect to the backend.';
-        } else if (error.response?.data?.error) {
-            const apiError = error.response.data.error;
-            let errorMessage = "An unexpected error occurred.";
+            errorMessage = 'Network Error: Could not connect to the server.';
+        } else if (error.response?.data) {
+            const responseData = error.response.data;
+            const apiError = responseData.error;
+            const apiMessage = responseData.message;
 
-            // Attempt to find the most specific error message
-            if (apiError.details && typeof apiError.details === 'object' && Object.keys(apiError.details).length > 0) {
-                const firstErrorKey = Object.keys(apiError.details)[0];
-                const errorValue = apiError.details[firstErrorKey];
-                if (Array.isArray(errorValue) && errorValue.length > 0) {
-                    errorMessage = errorValue[0];
-                } else if (typeof errorValue === 'string') {
-                    errorMessage = errorValue;
+            if (apiError) {
+                if (apiError.details && typeof apiError.details === 'object' && Object.keys(apiError.details).length > 0) {
+                    const firstErrorKey = Object.keys(apiError.details)[0];
+                    const errorValue = apiError.details[firstErrorKey];
+                    if (Array.isArray(errorValue) && errorValue.length > 0) {
+                        errorMessage = errorValue[0];
+                    } else if (typeof errorValue === 'string') {
+                        errorMessage = errorValue;
+                    } else if (apiError.message) {
+                        errorMessage = apiError.message;
+                    }
+                } else if (apiError.message) {
+                    errorMessage = apiError.message;
+                } else if (typeof apiError === 'string') {
+                    errorMessage = apiError;
                 }
-            } else if (apiError.message) {
-                 errorMessage = apiError.message;
-            } else if (error.response.data.message) {
-                errorMessage = error.response.data.message;
-            } else if (typeof apiError === 'string') { // Fallback for simple string errors
-                errorMessage = apiError;
+            } else if (apiMessage) {
+                errorMessage = apiMessage;
             }
-            
-            error.message = errorMessage;
-        } else if (error.response?.data?.message) {
-             error.message = error.response.data.message;
         }
-
+        
+        error.message = errorMessage;
         return Promise.reject(error);
     };
 
@@ -86,19 +82,14 @@ const createResponseInterceptor = (instance: AxiosInstance) => {
 createResponseInterceptor(axiosInstance);
 createResponseInterceptor(publicAxiosInstance);
 
-
-// Authentication - Use public instance
 const login = (credentials: any): Promise<AxiosResponse<AuthResponse>> => publicAxiosInstance.post('auth/login/', credentials);
 const register = (userInfo: any): Promise<AxiosResponse<AuthResponse>> => publicAxiosInstance.post('auth/register/', userInfo);
 const logout = () => axiosInstance.post('auth/logout/');
 
-// User Profile
 const getUserProfile = (): Promise<AxiosResponse<User>> => axiosInstance.get('user/profile/');
 const updateUserProfile = (id: number, data: { first_name?: string, last_name?: string }): Promise<AxiosResponse<User>> => axiosInstance.patch(`user/${id}/`, data);
 const getUser = (): Promise<AxiosResponse<User>> => axiosInstance.get('user/');
 
-
-// Wallet
 const getWallets = (): Promise<AxiosResponse<Wallet[]>> => axiosInstance.get('wallet/');
 const getWalletBalance = (): Promise<AxiosResponse<Balance>> => axiosInstance.get('wallet/balance/');
 const generateMnemonic = (): Promise<AxiosResponse<{ mnemonic: string }>> => axiosInstance.post('wallet/generate_mnemonic/');
@@ -107,14 +98,11 @@ const generateNewAddress = (): Promise<AxiosResponse<{ address: string }>> => ax
 const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }>> => axiosInstance.post('wallet/generate_qr_code/', { data });
 const restoreWallet = (data: string): Promise<AxiosResponse<AuthResponse>> => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
-const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstimation>> => {
-    return axiosInstance.post('wallet/estimate_fee/', {
-        amount: values.amount,
-    });
+
+const estimateFee = (values: { amount: number, recipient: string }): Promise<AxiosResponse<FeeEstimation>> => {
+    return axiosInstance.post('wallet/estimate_fee/', values);
 }
 
-
-// Transactions
 const getTransactions = (): Promise<AxiosResponse<PaginatedResponse<Transaction>>> => axiosInstance.get('transaction/');
 const getRecentTransactions = (): Promise<AxiosResponse<Transaction[]>> => axiosInstance.get('transaction/recents/');
 const sendTransaction = (values: { recipient: string; amount: number }) => {
@@ -124,15 +112,12 @@ const sendTransaction = (values: { recipient: string; amount: number }) => {
     });
 };
 
-// Buy / Sell
 const getBuyProviders = (): Promise<AxiosResponse<BuyProvider[]>> => axiosInstance.get('providers/buy/');
 const getSellProviders = (): Promise<AxiosResponse<SellProvider[]>> => axiosInstance.get('providers/sell/');
-
 const calculateBuyFee = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<BuyFeeCalculation>> => {
     return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount: String(amount), currency });
 }
 
-// Orders
 const createOrder = (payload: { provider_id: number; amount: number; btc_amount?: number, total_amount?: string, amount_currency: string; direction: 'buy' | 'sell'; payout_data?: any; }): Promise<AxiosResponse<Order>> => {
     return axiosInstance.post('orders/', payload);
 }
@@ -141,7 +126,6 @@ const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstan
 const updateOrder = (orderId: number, data: { payment_proof?: any; note?: string | null }): Promise<AxiosResponse<Order>> => {
     return axiosInstance.patch(`orders/${orderId}/`, data);
 }
-
 
 const api = {
     login,
@@ -172,5 +156,3 @@ const api = {
 };
 
 export default api;
-
-    

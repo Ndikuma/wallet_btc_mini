@@ -12,8 +12,9 @@ export const shortenText = (text: string | null | undefined, start = 8, end = 8)
   return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
 }
 
-export const getFiat = (val: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(val);
+export const getFiat = (val: number | null | undefined, currency: string) => {
+  if (val === null || val === undefined) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(0);
+  }
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(val);
 }
-
-    

@@ -107,9 +107,10 @@ const generateNewAddress = (): Promise<AxiosResponse<{ address: string }>> => ax
 const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }>> => axiosInstance.post('wallet/generate_qr_code/', { data });
 const restoreWallet = (data: string): Promise<AxiosResponse<AuthResponse>> => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
-const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstimation>> => {
+const estimateFee = (values: { amount: number, recipient: string }): Promise<AxiosResponse<FeeEstimation>> => {
     return axiosInstance.post('wallet/estimate_fee/', {
-        amount: values.amount
+        amount: values.amount,
+        address: values.recipient,
     });
 }
 

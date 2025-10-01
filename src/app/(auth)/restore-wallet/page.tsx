@@ -16,7 +16,7 @@ export default function RestoreWalletPage() {
        <Link href="/" className="mb-8 flex items-center gap-2">
         <BitcoinIcon className="size-8 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight">
-          mini wallet
+          Umuhora Tech Wallet
         </h1>
       </Link>
       <Card className="w-full max-w-md">

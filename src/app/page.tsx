@@ -26,7 +26,7 @@ function LandingPage() {
           <Link href="/" className="flex items-center gap-3">
             <BitcoinIcon className="size-8 text-primary" />
             <h2 className="text-xl font-bold tracking-tight">
-              mini wallet
+              Umuhora Tech Wallet
             </h2>
           </Link>
           <nav className="hidden items-center gap-2 md:flex">
@@ -40,12 +40,12 @@ function LandingPage() {
             </Button>
           </nav>
            <nav className="flex items-center gap-2 md:hidden">
-             <Button variant="ghost" asChild>
+             <Button variant="ghost" size="sm" asChild>
                 <Link href="/login">Login</Link>
               </Button>
-              <Button asChild>
+              <Button asChild size="sm">
                 <Link href="/register">
-                  Get Started
+                  Sign Up
                 </Link>
               </Button>
            </nav>

@@ -178,7 +178,7 @@ export default function DashboardPage() {
                         <AlertCircle className="mr-2 size-4" /> {transactionsError}
                     </div>
                 )}
-                {!loadingTransactions && !transactionsError && recentTransactions && recentTransactions.length > 0 ? (
+                {!loadingTransactions && !transactionsError && recentTransactions.length > 0 && (
                   recentTransactions.map((tx) => {
                     const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
                     const relevantAddress = isSent ? tx.to_address : tx.from_address;
@@ -212,8 +212,8 @@ export default function DashboardPage() {
                       </div>
                     );
                   })
-                ) : null}
-                {!loadingTransactions && !transactionsError && (!recentTransactions || recentTransactions.length === 0) && (
+                )}
+                {!loadingTransactions && !transactionsError && recentTransactions.length === 0 && (
                   <div className="h-24 text-center flex items-center justify-center text-muted-foreground">
                     No transactions yet.
                   </div>

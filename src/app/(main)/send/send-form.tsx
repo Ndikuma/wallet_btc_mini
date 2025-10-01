@@ -96,12 +96,13 @@ export function SendForm() {
 
   const watchedAmount = form.watch("amount");
   const debouncedAmount = useDebounce(watchedAmount, 500);
+  const watchedRecipient = form.watch("recipient");
 
-  const estimateFee = useCallback(async (amount: number) => {
+  const estimateFee = useCallback(async (amount: number, recipient: string) => {
       setIsEstimatingFee(true);
       setFeeError(null);
       try {
-          const feeResponse = await api.estimateFee({ amount });
+          const feeResponse = await api.estimateFee({ amount, recipient });
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
           const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
@@ -113,13 +114,17 @@ export function SendForm() {
   }, []);
 
   useEffect(() => {
-    if (debouncedAmount > 0) {
-      estimateFee(debouncedAmount);
+    // Only estimate fee if we have a valid amount and recipient address
+    const { recipient } = form.getValues();
+    const recipientState = form.getFieldState('recipient');
+    
+    if (debouncedAmount > 0 && recipient && !recipientState.invalid) {
+      estimateFee(debouncedAmount, recipient);
     } else {
       setFeeEstimation(null);
       setFeeError(null);
     }
-  }, [debouncedAmount, estimateFee])
+  }, [debouncedAmount, watchedRecipient, form, estimateFee])
 
 
   useEffect(() => {
@@ -312,6 +317,7 @@ export function SendForm() {
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.25)}>25%</Button>
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.5)}>50%</Button>
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.75)}>75%</Button>
+                    <Button type="button" variant="destructive" size="sm" className="flex-1" onClick={() => handleSetAmount(1)}>Max</Button>
                 </div>
                 <FormMessage />
               </FormItem>
@@ -323,29 +329,28 @@ export function SendForm() {
                 {isEstimatingFee && <div className="flex items-center justify-center text-sm text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin" /> Estimating fees...</div>}
                 {feeError && <div className="text-sm text-center text-destructive">{feeError}</div>}
                 {feeEstimation && (
-                     <div className="space-y-3">
-                        <FeeDetailRow 
-                            label="Amount to Send" 
-                            btc={feeEstimation.sendable_btc} 
-                            usd={feeEstimation.sendable_usd} 
-                            bif={feeEstimation.sendable_bif}
-                        />
-                        <div className="flex items-center gap-2">
-                             <Minus className="size-4 text-muted-foreground" />
-                             <FeeDetailRow
-                                label="Network Fee"
-                                btc={feeEstimation.network_fee_btc}
-                                usd={feeEstimation.network_fee_usd}
-                                bif={feeEstimation.network_fee_bif}
-                                isSubtle
-                            />
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                           <p className="text-sm text-muted-foreground">You will send</p>
+                           <p className="text-2xl font-bold font-mono">{feeEstimation.sendable_btc} BTC</p>
+                           <p className="text-sm text-muted-foreground font-mono">{getFiat(feeEstimation.sendable_usd, 'usd')} / {getFiat(feeEstimation.sendable_bif, 'bif')}</p>
                         </div>
-                        <Separator className="my-2 border-dashed" />
-                        <div className="flex justify-between items-center font-bold">
+                        <Separator />
+                        <div className="space-y-2">
+                           <div className="flex justify-between text-sm">
+                               <p className="text-muted-foreground">Network Fee</p>
+                               <p className="font-mono">{feeEstimation.network_fee_btc} BTC</p>
+                           </div>
+                           <div className="flex justify-between text-xs">
+                               <p className="text-muted-foreground"></p>
+                               <p className="font-mono text-muted-foreground">{getFiat(feeEstimation.network_fee_usd, 'usd')} / {getFiat(feeEstimation.network_fee_bif, 'bif')}</p>
+                           </div>
+                        </div>
+                        <Separator className="border-dashed" />
+                        <div className="flex justify-between items-center font-semibold">
                             <span className="text-base flex items-center gap-2"><Wallet className="size-5" />Total Debit</span>
                             <div className="text-right font-mono">
                                 <p className="text-base">{(parseFloat(feeEstimation.sendable_btc) + parseFloat(feeEstimation.network_fee_btc)).toFixed(8)} BTC</p>
-                                <p className="text-xs text-muted-foreground">{getFiat(feeEstimation.sendable_usd + feeEstimation.network_fee_usd, 'usd')} / {getFiat(feeEstimation.sendable_bif + feeEstimation.network_fee_bif, 'bif')}</p>
                             </div>
                         </div>
                     </div>

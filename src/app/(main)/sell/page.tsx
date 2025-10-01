@@ -250,6 +250,7 @@ export default function SellPage() {
                                 <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.25).toFixed(8)), { shouldValidate: true })}>25%</Button>
                                 <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.50).toFixed(8)), { shouldValidate: true })}>50%</Button>
                                 <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.75).toFixed(8)), { shouldValidate: true })}>75%</Button>
+                                <Button type="button" variant="destructive" size="sm" onClick={() => amountForm.setValue("amount", currentBalance, { shouldValidate: true })}>Max</Button>
                             </div>
                             <FormMessage />
                         </FormItem>
@@ -431,16 +432,16 @@ export default function SellPage() {
         
         if (!formData.amount || !selectedProvider || !feeEstimation || !formData.paymentDetails) {
             return (
-                <Card>
+                 <Card>
                     <CardHeader>
                         <CardTitle>Step 4: Confirm & Sell</CardTitle>
-                        <CardDescription>Review your transaction details before confirming the sale.</CardDescription>
+                        <CardDescription>Please complete all previous steps to see your transaction summary.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground text-center py-8">Enter an amount and select a provider to proceed.</p>
+                         <p className="text-muted-foreground text-center py-8">Waiting for transaction details...</p>
                     </CardContent>
                     <CardFooter className="grid grid-cols-2 gap-4">
-                        <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Cancel</Button>
+                         <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Back</Button>
                         <Button size="lg" disabled={true}>
                             Sell Bitcoin
                         </Button>
@@ -484,11 +485,11 @@ export default function SellPage() {
                     
                     <div className="p-4 rounded-lg border space-y-3">
                         <p className="font-semibold text-center mb-2">You Will Receive (Approx.)</p>
-                        <div className="flex justify-between items-baseline text-base">
+                        <div className="flex justify-between items-baseline text-lg">
                             <span className="text-muted-foreground">USD</span>
                             <span className="font-mono font-bold">{getFiat(amountToReceiveUsd, 'USD')}</span>
                         </div>
-                         <div className="flex justify-between items-baseline text-base">
+                         <div className="flex justify-between items-baseline text-lg">
                             <span className="text-muted-foreground">BIF</span>
                             <span className="font-mono font-bold">{getFiat(amountToReceiveBif, 'BIF')}</span>
                         </div>
@@ -545,6 +546,13 @@ export default function SellPage() {
         )
     }
 
+    const steps = [
+        { title: "Amount", isComplete: currentStep > 1 },
+        { title: "Provider", isComplete: currentStep > 2 },
+        { title: "Payout", isComplete: currentStep > 3 },
+        { title: "Confirm", isComplete: currentStep > 4 }
+    ];
+
     return (
         <div className="mx-auto max-w-2xl space-y-6">
             <div className="space-y-2">
@@ -552,9 +560,16 @@ export default function SellPage() {
                 <p className="text-muted-foreground">Follow the steps to sell your Bitcoin securely.</p>
             </div>
             
-            <div className="space-y-4">
-                <Progress value={(currentStep / 4) * 100} className="w-full h-2" />
-                <p className="text-sm text-muted-foreground text-center">Step {currentStep} of 4</p>
+             <div className="flex justify-between items-center p-2 border rounded-lg bg-secondary">
+                {steps.map((step, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${currentStep > index + 1 ? 'bg-primary text-primary-foreground' : currentStep === index + 1 ? 'border-2 border-primary text-primary' : 'bg-muted text-muted-foreground'}`}>
+                            {currentStep > index + 1 ? <Check className="w-4 h-4" /> : index + 1}
+                        </div>
+                        <span className={`${currentStep >= index + 1 ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
+                         {index < steps.length - 1 && <div className="flex-1 h-px bg-border mx-2 w-4 sm:w-8 md:w-12" />}
+                    </div>
+                ))}
             </div>
             
             {currentStep > 1 && (
@@ -570,7 +585,3 @@ export default function SellPage() {
         </div>
     );
 }
-
-    
-
-    

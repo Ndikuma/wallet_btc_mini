@@ -60,7 +60,7 @@ export function MainNav() {
         <Link href="/dashboard" className="flex items-center gap-2">
           <BitcoinIcon className="size-7" />
           <h2 className="text-lg font-semibold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
-            mini wallet
+            Umuhora Tech Wallet
           </h2>
         </Link>
       </SidebarHeader>

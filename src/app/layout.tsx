@@ -18,7 +18,7 @@ const fontCode = Source_Code_Pro({
 
 
 export const metadata: Metadata = {
-  title: 'mini wallet',
+  title: 'Umuhora Tech Wallet',
   description: 'A mini bitcoin wallet application',
 };
 

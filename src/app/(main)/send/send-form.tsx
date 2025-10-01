@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Loader2, Minus, Plus, Wallet } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/context/settings-context";
+import { Separator } from "@/components/ui/separator";
+
 
 const formSchema = (balance: number) => z.object({
   recipient: z
@@ -50,6 +52,20 @@ const formSchema = (balance: number) => z.object({
 
 export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
 
+const FeeDetailRow = ({ label, btc, usd, bif, isSubtle = false }: { label: string, btc: string, usd: number, bif: number, isSubtle?: boolean }) => {
+    const getFiat = (val: number, currency: string) => {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(val);
+    }
+    return (
+        <div className={cn("flex justify-between items-center", isSubtle && "text-muted-foreground")}>
+            <span className="text-sm">{label}</span>
+            <div className="text-right font-mono">
+                <p className="font-semibold text-sm">{btc} BTC</p>
+                <p className="text-xs text-muted-foreground">{getFiat(usd, 'usd')} / {getFiat(bif, 'bif')}</p>
+            </div>
+        </div>
+    )
+}
 
 export function SendForm() {
   const { toast } = useToast();
@@ -302,25 +318,34 @@ export function SendForm() {
             )}
           />
           
-          {(isEstimatingFee || feeEstimation || feeError) && (
+           {(isEstimatingFee || feeEstimation || feeError) && (
             <div className="space-y-4 rounded-lg border bg-secondary/30 p-4">
                 {isEstimatingFee && <div className="flex items-center justify-center text-sm text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin" /> Estimating fees...</div>}
                 {feeError && <div className="text-sm text-center text-destructive">{feeError}</div>}
                 {feeEstimation && (
-                    <div className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Network Fee</span>
-                            <div className="font-medium text-right font-code">
-                              <p>{feeEstimation.network_fee_btc} BTC</p>
-                              <p className="text-muted-foreground text-xs">{getFiat(feeEstimation.network_fee_usd, 'usd')} / {getFiat(feeEstimation.network_fee_bif, 'bif')}</p>
-                            </div>
+                     <div className="space-y-3">
+                        <FeeDetailRow 
+                            label="Amount to Send" 
+                            btc={feeEstimation.sendable_btc} 
+                            usd={feeEstimation.sendable_usd} 
+                            bif={feeEstimation.sendable_bif}
+                        />
+                        <div className="flex items-center gap-2">
+                             <Minus className="size-4 text-muted-foreground" />
+                             <FeeDetailRow
+                                label="Network Fee"
+                                btc={feeEstimation.network_fee_btc}
+                                usd={feeEstimation.network_fee_usd}
+                                bif={feeEstimation.network_fee_bif}
+                                isSubtle
+                            />
                         </div>
-                         <div className="border-t border-dashed"></div>
-                        <div className="flex justify-between items-center">
-                            <span className="font-bold">You will send</span>
-                            <div className="font-bold text-right font-code text-base">
-                              <p>{feeEstimation.sendable_btc} BTC</p>
-                              <p className="text-muted-foreground text-xs">{getFiat(feeEstimation.sendable_usd, 'usd')} / {getFiat(feeEstimation.sendable_bif, 'bif')}</p>
+                        <Separator className="my-2 border-dashed" />
+                        <div className="flex justify-between items-center font-bold">
+                            <span className="text-base flex items-center gap-2"><Wallet className="size-5" />Total Debit</span>
+                            <div className="text-right font-mono">
+                                <p className="text-base">{(parseFloat(feeEstimation.sendable_btc) + parseFloat(feeEstimation.network_fee_btc)).toFixed(8)} BTC</p>
+                                <p className="text-xs text-muted-foreground">{getFiat(feeEstimation.sendable_usd + feeEstimation.network_fee_usd, 'usd')} / {getFiat(feeEstimation.sendable_bif + feeEstimation.network_fee_bif, 'bif')}</p>
                             </div>
                         </div>
                     </div>

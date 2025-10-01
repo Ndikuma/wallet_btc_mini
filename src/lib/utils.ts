@@ -11,3 +11,9 @@ export const shortenText = (text: string | null | undefined, start = 8, end = 8)
   if (text.length <= start + end) return text;
   return `${text.substring(0, start)}...${text.substring(text.length - end)}`;
 }
+
+export const getFiat = (val: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(val);
+}
+
+    

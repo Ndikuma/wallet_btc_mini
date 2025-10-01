@@ -82,7 +82,7 @@ export interface FeeEstimation {
     sendable_usd: number;
     sendable_bif: number;
     network_fee_usd: number;
-network_fee_bif: number;
+    network_fee_bif: number;
 }
 
 export interface ProviderPaymentInfo {
@@ -161,3 +161,5 @@ export interface PaginatedResponse<T> {
     previous: string | null;
     results: T[];
 }
+
+    

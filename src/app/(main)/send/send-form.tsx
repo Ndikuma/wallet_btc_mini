@@ -3,7 +3,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { useState, useRef, useEffect, useCallback } from "react";
 import jsQR from "jsqr";
 import {
@@ -17,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Loader2, Minus, Plus, Wallet } from "lucide-react";
+import { ArrowUpRight, Bitcoin, ScanLine, CheckCircle2, Loader2, Wallet } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -34,8 +33,7 @@ import type { Balance, FeeEstimation } from "@/lib/types";
 import { AxiosError } from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
-import { cn } from "@/lib/utils";
-import { useSettings } from "@/context/settings-context";
+import { cn, getFiat } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
 
@@ -52,25 +50,9 @@ const formSchema = (balance: number) => z.object({
 
 export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
 
-const FeeDetailRow = ({ label, btc, usd, bif, isSubtle = false }: { label: string, btc: string, usd: number, bif: number, isSubtle?: boolean }) => {
-    const getFiat = (val: number, currency: string) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(val);
-    }
-    return (
-        <div className={cn("flex justify-between items-center", isSubtle && "text-muted-foreground")}>
-            <span className="text-sm">{label}</span>
-            <div className="text-right font-mono">
-                <p className="font-semibold text-sm">{btc} BTC</p>
-                <p className="text-xs text-muted-foreground">{getFiat(usd, 'usd')} / {getFiat(bif, 'bif')}</p>
-            </div>
-        </div>
-    )
-}
-
 export function SendForm() {
   const { toast } = useToast();
   const router = useRouter();
-  const { settings } = useSettings();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -96,13 +78,12 @@ export function SendForm() {
 
   const watchedAmount = form.watch("amount");
   const debouncedAmount = useDebounce(watchedAmount, 500);
-  const watchedRecipient = form.watch("recipient");
 
-  const estimateFee = useCallback(async (amount: number, recipient: string) => {
+  const estimateFee = useCallback(async (amount: number) => {
       setIsEstimatingFee(true);
       setFeeError(null);
       try {
-          const feeResponse = await api.estimateFee({ amount, recipient });
+          const feeResponse = await api.estimateFee({ amount });
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
           const errorMsg = error.response?.data?.error || "Could not estimate network fee.";
@@ -114,17 +95,14 @@ export function SendForm() {
   }, []);
 
   useEffect(() => {
-    // Only estimate fee if we have a valid amount and recipient address
-    const { recipient } = form.getValues();
-    const recipientState = form.getFieldState('recipient');
-    
-    if (debouncedAmount > 0 && recipient && !recipientState.invalid) {
-      estimateFee(debouncedAmount, recipient);
+    // Only estimate fee if we have a valid amount
+    if (debouncedAmount > 0) {
+      estimateFee(debouncedAmount);
     } else {
       setFeeEstimation(null);
       setFeeError(null);
     }
-  }, [debouncedAmount, watchedRecipient, form, estimateFee])
+  }, [debouncedAmount, estimateFee])
 
 
   useEffect(() => {
@@ -244,10 +222,6 @@ export function SendForm() {
     } finally {
         setIsLoading(false);
     }
-  }
-
-  const getFiat = (val: number, currency: string) => {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(val);
   }
 
   if (isBalanceLoading) {
@@ -381,3 +355,5 @@ export function SendForm() {
     </>
   );
 }
+
+    

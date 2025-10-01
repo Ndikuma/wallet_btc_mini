@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -9,7 +8,7 @@ import { z } from "zod";
 import api from "@/lib/api";
 import type { Balance, SellProvider, FeeEstimation } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle } from "lucide-react";
+import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,11 +31,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { useRouter } from "next/navigation";
+import { getFiat } from "@/lib/utils";
 
 
 const amountSchema = z.object({
@@ -455,9 +453,6 @@ export default function SellPage() {
         const finalAmountBtc = parseFloat(feeEstimation.sendable_btc);
         const amountToReceiveUsd = feeEstimation.sendable_usd;
         const amountToReceiveBif = feeEstimation.sendable_bif;
-        const getFiat = (val: number, currency: string) => {
-            return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(val);
-        }
 
 
         return (
@@ -484,14 +479,14 @@ export default function SellPage() {
                     </div>
                     
                     <div className="p-4 rounded-lg border space-y-3">
-                        <p className="font-semibold text-center mb-2">You Will Receive (Approx.)</p>
-                        <div className="flex justify-between items-baseline text-lg">
-                            <span className="text-muted-foreground">USD</span>
-                            <span className="font-mono font-bold">{getFiat(amountToReceiveUsd, 'USD')}</span>
+                         <p className="font-semibold text-center text-sm text-muted-foreground mb-2">You Will Receive (Approx.)</p>
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-lg text-muted-foreground">USD</span>
+                            <span className="text-2xl font-bold font-mono">{getFiat(amountToReceiveUsd, 'USD')}</span>
                         </div>
-                         <div className="flex justify-between items-baseline text-lg">
-                            <span className="text-muted-foreground">BIF</span>
-                            <span className="font-mono font-bold">{getFiat(amountToReceiveBif, 'BIF')}</span>
+                         <div className="flex justify-between items-baseline">
+                            <span className="text-lg text-muted-foreground">BIF</span>
+                            <span className="text-2xl font-bold font-mono">{getFiat(amountToReceiveBif, 'BIF')}</span>
                         </div>
                     </div>
 
@@ -560,15 +555,17 @@ export default function SellPage() {
                 <p className="text-muted-foreground">Follow the steps to sell your Bitcoin securely.</p>
             </div>
             
-             <div className="flex justify-between items-center p-2 border rounded-lg bg-secondary">
+             <div className="flex w-full items-center justify-between rounded-lg border bg-card p-2">
                 {steps.map((step, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${currentStep > index + 1 ? 'bg-primary text-primary-foreground' : currentStep === index + 1 ? 'border-2 border-primary text-primary' : 'bg-muted text-muted-foreground'}`}>
-                            {currentStep > index + 1 ? <Check className="w-4 h-4" /> : index + 1}
+                    <React.Fragment key={index}>
+                        <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:text-left">
+                            <div className={`flex size-6 items-center justify-center rounded-full text-xs font-bold ${currentStep > index + 1 ? 'bg-primary text-primary-foreground' : currentStep === index + 1 ? 'border-2 border-primary text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                {currentStep > index + 1 ? <Check className="size-4" /> : index + 1}
+                            </div>
+                            <span className={`hidden text-sm sm:block ${currentStep >= index + 1 ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
                         </div>
-                        <span className={`${currentStep >= index + 1 ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
-                         {index < steps.length - 1 && <div className="flex-1 h-px bg-border mx-2 w-4 sm:w-8 md:w-12" />}
-                    </div>
+                        {index < steps.length - 1 && <div className="flex-1 h-px bg-border" />}
+                    </React.Fragment>
                 ))}
             </div>
             
@@ -585,3 +582,5 @@ export default function SellPage() {
         </div>
     );
 }
+
+    

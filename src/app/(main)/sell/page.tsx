@@ -218,7 +218,7 @@ export default function SellPage() {
 
 
     const renderAmountStep = () => (
-         <Card>
+        <Card>
             <CardHeader>
                 <CardTitle>Step 1: Enter Amount</CardTitle>
                 <CardDescription>Specify how much Bitcoin you want to sell.</CardDescription>
@@ -447,7 +447,7 @@ export default function SellPage() {
             );
         }
 
-        const amountToSellBtc = formData.amount;
+        const amountToSellBtc = parseFloat(String(formData.amount));
         const networkFeeBtc = parseFloat(feeEstimation.network_fee_btc);
         const finalAmountBtc = parseFloat(feeEstimation.sendable_btc);
         const amountToReceiveUsd = feeEstimation.sendable_usd;
@@ -603,3 +603,7 @@ export default function SellPage() {
         </div>
     );
 }
+
+    
+
+    

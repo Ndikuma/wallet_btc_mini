@@ -49,7 +49,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'http',
-        hostname: 'edward-provincial-graham-opens.trycloudflare.com/',
+        hostname: 'edward-provincial-graham-opens.trycloudflare.com',
         port: '',
         pathname: '/**',
       },

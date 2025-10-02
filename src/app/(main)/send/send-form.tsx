@@ -53,7 +53,7 @@ export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
 export function SendForm() {
   const { toast } = useToast();
   const router = useRouter();
-  const { balance, isLoading: isBalanceLoading, error: balanceError } = useWallet();
+  const { balance, isLoading: isBalanceLoading, error: balanceError, refreshBalance } = useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -75,13 +75,14 @@ export function SendForm() {
   });
 
   const watchedAmount = form.watch("amount");
+  const watchedRecipient = form.watch("recipient");
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
-  const estimateFee = useCallback(async (amount: number) => {
+  const estimateFee = useCallback(async (amount: number, recipient: string, send_max = false) => {
       setIsEstimatingFee(true);
       setFeeError(null);
       try {
-          const feeResponse = await api.estimateFee({ amount });
+          const feeResponse = await api.estimateFee({ amount, recipient, send_max });
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
           setFeeError(error.message);
@@ -93,14 +94,15 @@ export function SendForm() {
 
   useEffect(() => {
     const isAmountValid = debouncedAmount > 0 && form.getFieldState('amount').error === undefined;
+    const isRecipientValid = watchedRecipient && form.getFieldState('recipient').error === undefined;
 
-    if (isAmountValid) {
-      estimateFee(debouncedAmount);
+    if (isAmountValid && isRecipientValid) {
+      estimateFee(debouncedAmount, watchedRecipient);
     } else {
       setFeeEstimation(null);
       setFeeError(null);
     }
-  }, [debouncedAmount, form, estimateFee]);
+  }, [debouncedAmount, watchedRecipient, form, estimateFee]);
 
   useEffect(() => {
     const newBalance = balance ? parseFloat(balance.balance) : 0;
@@ -163,6 +165,21 @@ export function SendForm() {
     };
   }, [isScanning, toast, form]);
 
+  const handleSetMax = async () => {
+    if (!watchedRecipient || form.getFieldState('recipient').error) {
+        toast({
+            variant: "destructive",
+            title: "Recipient Required",
+            description: "Please enter a valid recipient address before setting max amount.",
+        });
+        return;
+    }
+    await estimateFee(currentBalance, watchedRecipient, true);
+    if (feeEstimation) {
+        form.setValue("amount", parseFloat(feeEstimation.sendable_btc), { shouldValidate: true, shouldDirty: true });
+    }
+};
+
   const handleSetAmount = (percentage: number) => {
     const newAmount = currentBalance * percentage;
     form.setValue("amount", parseFloat(newAmount.toFixed(8)), { shouldValidate: true, shouldDirty: true });
@@ -177,12 +194,13 @@ export function SendForm() {
     try {
         const response = await api.sendTransaction({
             recipient: values.recipient,
-            amount: parseFloat(feeEstimation.sendable_btc)
+            amount: values.amount,
         });
         toast({
             title: (response.data as any).message || "Transaction Submitted",
-            description: `Sending ${feeEstimation.sendable_btc} BTC.`,
+            description: `Sending ${values.amount} BTC.`,
         });
+        refreshBalance();
         setIsSuccessDialogOpen(true);
     } catch(error: any) {
         toast({
@@ -195,10 +213,13 @@ export function SendForm() {
     }
   }
 
-  if (isBalanceLoading) {
+  if (isBalanceLoading && !balance) {
     return (
         <div className="space-y-8">
-            <Skeleton className="h-10 w-full" />
+            <div className="p-4 rounded-lg bg-secondary border">
+                <p className="text-sm text-muted-foreground">Your available balance</p>
+                <Skeleton className="h-8 w-48 mt-1" />
+            </div>
             <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
             <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
             <Skeleton className="h-11 w-full" />
@@ -213,6 +234,14 @@ export function SendForm() {
 
   return (
     <>
+      <div className="p-4 rounded-lg bg-secondary border mb-6">
+        <p className="text-sm text-muted-foreground">Your available balance</p>
+        {isBalanceLoading ? 
+            <Skeleton className="h-8 w-48 mt-1" /> :
+            <p className="text-2xl font-bold font-mono">{currentBalance.toFixed(8)} BTC</p>
+        }
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -256,10 +285,7 @@ export function SendForm() {
             name="amount"
             render={({ field }) => (
               <FormItem>
-                 <div className="flex items-center justify-between">
-                    <FormLabel>Amount to Send</FormLabel>
-                    <span className="text-xs text-muted-foreground">Balance: {currentBalance.toFixed(8)} BTC</span>
-                 </div>
+                 <FormLabel>Amount to Send</FormLabel>
                  <div className="relative">
                     <FormControl><Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ""} className="pl-8"/></FormControl>
                     <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -268,18 +294,22 @@ export function SendForm() {
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.25)}>25%</Button>
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.5)}>50%</Button>
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.75)}>75%</Button>
-                    <Button type="button" variant="destructive" size="sm" className="flex-1" onClick={() => handleSetAmount(1)}>Max</Button>
+                    <Button type="button" variant="destructive" size="sm" className="flex-1" onClick={handleSetMax}>Max</Button>
                 </div>
                 <FormMessage />
               </FormItem>
             )}
           />
           
-           {(isEstimatingFee || feeEstimation || feeError) && (
+           {(isEstimatingFee || (feeEstimation && form.formState.isValid)) && (
             <div className="space-y-4 rounded-lg border bg-secondary/30 p-4">
-                {isEstimatingFee && <div className="flex items-center justify-center text-sm text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin" /> Estimating fees...</div>}
-                {feeError && <div className="text-sm text-center text-destructive">{feeError}</div>}
-                {feeEstimation && (
+                {isEstimatingFee ? (
+                    <div className="flex items-center justify-center text-sm text-muted-foreground h-40">
+                        <Loader2 className="mr-2 size-4 animate-spin" /> Estimating fees...
+                    </div>
+                ) : feeError ? (
+                    <div className="text-sm text-center text-destructive h-40 flex items-center justify-center">{feeError}</div>
+                ) : feeEstimation && (
                     <div className="space-y-4">
                         <div className="space-y-2">
                            <p className="text-sm text-muted-foreground">You will send</p>
@@ -316,7 +346,10 @@ export function SendForm() {
         </form>
       </Form>
       <Dialog open={isSuccessDialogOpen} onOpenChange={(open) => {
-        if (!open) router.push("/dashboard");
+        if (!open) {
+          form.reset();
+          router.push("/dashboard");
+        }
         setIsSuccessDialogOpen(open);
       }}>
         <DialogContent>

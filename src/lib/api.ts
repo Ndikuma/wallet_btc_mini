@@ -99,7 +99,7 @@ const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }
 const restoreWallet = (data: string): Promise<AxiosResponse<AuthResponse>> => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
 
-const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstimation>> => {
+const estimateFee = (values: { amount: number, recipient: string, send_max: boolean }): Promise<AxiosResponse<FeeEstimation>> => {
     return axiosInstance.post('wallet/estimate_fee/', values);
 }
 

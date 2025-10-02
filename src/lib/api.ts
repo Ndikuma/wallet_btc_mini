@@ -2,7 +2,7 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
-const BACKEND_URL = 'https://featuring-shipped-pastor-amenities.trycloudflare.com/';
+const BACKEND_URL = 'https://citysearch-office-shall-consent.trycloudflare.com/';
 
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,

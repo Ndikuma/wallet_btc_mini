@@ -37,7 +37,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'sequence-featuring-pond-libs.trycloudflare.com',
+        hostname: 'featuring-shipped-pastor-amenities.trycloudflare.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'citysearch-office-shall-consent.trycloudflare.com',
         port: '',
         pathname: '/**',
       },

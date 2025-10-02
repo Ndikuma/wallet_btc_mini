@@ -343,7 +343,7 @@ export default function OrderDetailsPage() {
                            {getStatusIcon(order.status)}
                            <div>
                                 <CardTitle className="text-2xl capitalize">Itangazo ryo {order.direction === 'buy' ? 'Kugura' : 'Kugurisha'} #{order.id}</CardTitle>
-                                <CardDescription>ku {new Date(order.created_at).toLocaleDateString('en-us', { year: 'numeric', month: 'long', day: 'numeric'})}</CardDescription>
+                                <CardDescription>ku {new Date(order.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric'})}</CardDescription>
                            </div>
                         </div>
                         <Badge variant={getStatusVariant(order.status)} className="capitalize text-base py-1 px-3">{order.status.replace('_', ' ')}</Badge>
@@ -379,7 +379,7 @@ export default function OrderDetailsPage() {
                         <CardDescription>Amafaranga yawe azokurungikirwa kuri iyi konti:</CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                        <PayoutDetailItem icon={UserIcon} label="Amazina yose" value={payoutDetails.full_name} />
+                        <PayoutDetailItem icon={UserIcon} label="Amazina Yose" value={payoutDetails.full_name} />
                         <PayoutDetailItem icon={Phone} label="Nimero ya terefone" value={payoutDetails.phone_number} />
                         <PayoutDetailItem icon={Landmark} label="Nimero ya konti" value={payoutDetails.account_number} />
                         <PayoutDetailItem icon={Mail} label="Imeri" value={payoutDetails.email} />

@@ -41,7 +41,7 @@ export function ShareButton({ shareData, children, className, ...props }: ShareB
          toast({
             variant: "destructive",
             title: "Kusangira ntibikunda",
-            description: "Browser yawe ntishobora gusangira ibi bintu.",
+            description: "Navigateur yawe ntishobora gusangira ibi bintu.",
         });
     }
   };

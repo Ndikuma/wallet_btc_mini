@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
 const getTitleFromPath = (path: string) => {
-    if (path.startsWith('/dashboard')) return 'Kuri dashboard';
+    if (path.startsWith('/dashboard')) return 'Ahabanza';
     if (path.startsWith('/send')) return 'Rungika';
     if (path.startsWith('/receive')) return 'Wakira';
     if (path.startsWith('/buy')) return 'Gura Bitcoin';

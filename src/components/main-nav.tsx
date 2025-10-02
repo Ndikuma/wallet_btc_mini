@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [
-  { path: "/dashboard", icon: Home, label: "Kuri dashboard" },
+  { path: "/dashboard", icon: Home, label: "Ahabanza" },
   { path: "/send", icon: Send, label: "Rungika" },
   { path: "/receive", icon: Download, label: "Wakira" },
   { path: "/buy", icon: ShoppingCart, label: "Gura" },

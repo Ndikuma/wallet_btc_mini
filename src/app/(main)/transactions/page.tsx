@@ -108,7 +108,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
                     {isSent ? "Yarungitswe" : "Yakiriwe"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                    {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' })}
                   </p>
                 </div>
                 <div className="text-right">
@@ -131,7 +131,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
                      <Badge variant={getStatusVariant(tx.status)} className="capitalize text-sm">{tx.status}</Badge>
                   </DetailRow>
                   <DetailRow icon={CalendarClock} label="Itariki & Igihe">
-                     <p className="text-sm font-semibold">{new Date(tx.created_at).toLocaleString()}</p>
+                     <p className="text-sm font-semibold">{new Date(tx.created_at).toLocaleString('fr-FR')}</p>
                   </DetailRow>
                   <DetailRow icon={Hash} label="Indangamuntu y'igikorwa" value={tx.txid} />
                   <DetailRow icon={Landmark} label="Agashirukiramico" value={tx.fee_formatted.replace("BTC", "")} />
@@ -171,7 +171,7 @@ export default function TransactionsPage() {
       console.error("Gupakira ibikorwa biranse", err);
       let errorMsg = "Ntivyakunze gupakira kahise k'ibikorwa.";
       if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
-          errorMsg = "Ikosa rya rezo. Ntivyakunze kwihuza na seriveri.";
+          errorMsg = "Ikosa rya réseau. Ntivyakunze kwihuza na seriveri.";
       } else if (err.message) {
           errorMsg = err.message;
       }

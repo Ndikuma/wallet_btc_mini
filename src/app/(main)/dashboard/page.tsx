@@ -189,7 +189,7 @@ export default function DashboardPage() {
                             <span className="font-mono text-muted-foreground">{shortenText(relevantAddress, 6, 6)}</span>
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
                           </p>
                         </div>
                         <div className="text-right">

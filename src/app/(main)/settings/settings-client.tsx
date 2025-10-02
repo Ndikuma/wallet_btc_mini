@@ -184,7 +184,7 @@ export function SettingsClient() {
         <CardContent className="space-y-4">
            <div className="flex flex-col items-start justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
-              <Label htmlFor="2fa" className="font-semibold">Kwemeza mu ntambwe zibiri (2FA)</Label>
+              <Label htmlFor="2fa" className="font-semibold">Kwemeza mu ntabwe zibiri (2FA)</Label>
               <p className="text-sm text-muted-foreground">Ongera urwego rw'umutekano ku irembo ryawe.</p>
             </div>
             <Switch id="2fa" />

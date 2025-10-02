@@ -52,7 +52,7 @@ const OrderCard = ({ order }: { order: Order }) => (
             <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status.replace('_', ' ')}</Badge>
         </div>
         <CardDescription>
-          {new Date(order.created_at).toLocaleString()}
+          {new Date(order.created_at).toLocaleString('fr-FR')}
         </CardDescription>
       </CardHeader>
       <CardContent>

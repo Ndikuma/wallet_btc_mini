@@ -46,7 +46,7 @@ const providerSchema = z.object({
 });
 
 const paymentDetailsSchema = z.object({
-    full_name: z.string().min(1, "Amazina yose arasabwa."),
+    full_name: z.string().min(1, "Amazina Yose arasabwa."),
     phone_number: z.string().min(1, "Nimero ya terefone irasabwa."),
     account_number: z.string().min(1, "Nimero ya konti irasabwa."),
     email: z.string().email("Ndokera ushire imeri yemewe.").optional(),
@@ -467,7 +467,7 @@ export default function SellPage() {
                             <span className="font-mono font-bold text-base">{amountToSellBtc.toFixed(8)} BTC</span>
                         </div>
                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Agashirukiramico</span>
+                            <span className="text-muted-foreground">Agashirukiramico ka Réseau</span>
                             <span className="font-mono">-{networkFeeBtc.toFixed(8)} BTC</span>
                         </div>
                         <div className="border-t border-dashed" />

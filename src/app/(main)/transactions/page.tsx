@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -19,6 +19,7 @@ import {
   CircleCheck,
   CircleX,
   Clock,
+  Loader2,
 } from "lucide-react";
 import { cn, shortenText } from "@/lib/utils";
 import api from "@/lib/api";
@@ -160,31 +161,34 @@ export default function TransactionsPage() {
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchTransactions() {
-      setTransactionsError(null);
-      setLoadingTransactions(true);
-      try {
-        const transactionsRes = await api.getTransactions();
-        setTransactions(transactionsRes.data.results || transactionsRes.data || []);
-      } catch (err: any) {
-        console.error("Failed to fetch transactions", err);
-        if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
-            setTransactionsError("Network error. Could not connect to the server.");
-         } else {
-            setTransactionsError("Could not load transaction history.");
-         }
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Could not fetch transaction history."
-        })
-      } finally {
-        setLoadingTransactions(false);
+  const fetchTransactions = useCallback(async () => {
+    setTransactionsError(null);
+    setLoadingTransactions(true);
+    try {
+      const transactionsRes = await api.getTransactions();
+      setTransactions(transactionsRes.data.results || transactionsRes.data || []);
+    } catch (err: any) {
+      console.error("Failed to fetch transactions", err);
+      let errorMsg = "Could not load transaction history.";
+      if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
+          errorMsg = "Network error. Could not connect to the server.";
+      } else if (err.message) {
+          errorMsg = err.message;
       }
+      setTransactionsError(errorMsg);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMsg,
+      });
+    } finally {
+      setLoadingTransactions(false);
     }
-    fetchTransactions();
   }, [toast]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
 
   return (
@@ -204,8 +208,12 @@ export default function TransactionsPage() {
             <Card className="flex h-48 items-center justify-center">
                 <div className="text-center text-destructive">
                     <AlertCircle className="mx-auto h-8 w-8" />
-                    <p className="mt-2 font-semibold">{transactionsError}</p>
-                    <p className="text-sm text-muted-foreground">Please try again later.</p>
+                    <p className="mt-2 font-semibold">Error Loading Transactions</p>
+                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">{transactionsError}</p>
+                    <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loadingTransactions}/>
+                        Try Again
+                    </Button>
                 </div>
             </Card>
         ) : transactions.length > 0 ? (

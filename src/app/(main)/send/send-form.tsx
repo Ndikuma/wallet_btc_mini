@@ -165,7 +165,7 @@ export function SendForm() {
     };
   }, [isScanning, toast, form]);
 
-  const handleSetMax = async () => {
+  const handleSetMax = () => {
     if (currentBalance > 0) {
       form.setValue("amount", currentBalance, { shouldValidate: true, shouldDirty: true });
     }

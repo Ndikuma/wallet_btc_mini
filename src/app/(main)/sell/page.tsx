@@ -62,12 +62,11 @@ export default function SellPage() {
     const { toast } = useToast();
     const router = useRouter();
     const [balance, setBalance] = useState<Balance | null>(null);
-    const [isBalanceLoading, setIsBalanceLoading] = useState(true);
+    const [isLoadingData, setIsLoadingData] = useState(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const [providers, setProviders] = useState<SellProvider[]>([]);
-    const [loadingProviders, setLoadingProviders] = useState(true);
-    const [providersError, setProvidersError] = useState<string | null>(null);
-
+    
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState<FormData>({});
     
@@ -96,33 +95,34 @@ export default function SellPage() {
         mode: "onChange",
     });
     
-    useEffect(() => {
-        async function fetchInitialData() {
-            setIsBalanceLoading(true);
-            setLoadingProviders(true);
-            try {
-                const [balanceRes, providersRes] = await Promise.all([
-                    api.getWalletBalance(),
-                    api.getSellProviders(),
-                ]);
-                setBalance(balanceRes.data);
-                setProviders(providersRes.data.filter(p => p.can_sell));
-            } catch (err: any) {
-                toast({ variant: "destructive", title: "Error", description: err.message });
-                setProvidersError(err.message || "Failed to load providers.");
-            } finally {
-                setIsBalanceLoading(false);
-                setLoadingProviders(false);
-            }
+    const fetchInitialData = useCallback(async () => {
+        setIsLoadingData(true);
+        setDataError(null);
+        try {
+            const [balanceRes, providersRes] = await Promise.all([
+                api.getWalletBalance(),
+                api.getSellProviders(),
+            ]);
+            setBalance(balanceRes.data);
+            setProviders(providersRes.data.filter(p => p.can_sell));
+        } catch (err: any) {
+            const errorMsg = err.message || "Failed to load initial data.";
+            setDataError(errorMsg);
+            toast({ variant: "destructive", title: "Error", description: errorMsg });
+        } finally {
+            setIsLoadingData(false);
         }
-        fetchInitialData();
     }, [toast]);
+    
+    useEffect(() => {
+        fetchInitialData();
+    }, [fetchInitialData]);
     
     const estimateFeeCallback = useCallback(async (amount: number) => {
         setIsEstimatingFee(true);
         setFeeError(null);
         try {
-            const feeResponse = await api.estimateFee({ amount });
+            const feeResponse = await api.estimateFee({ amount: String(amount) });
             setFeeEstimation(feeResponse.data);
         } catch (error: any) {
             setFeeError(error.message);
@@ -228,7 +228,7 @@ export default function SellPage() {
                 <CardContent className="space-y-6">
                      <div className="p-4 rounded-lg bg-secondary border">
                         <p className="text-sm text-muted-foreground">Your available balance</p>
-                        {isBalanceLoading ? 
+                        {isLoadingData ? 
                             <Skeleton className="h-8 w-48 mt-1" /> :
                             <p className="text-2xl font-bold font-mono">{currentBalance.toFixed(8)} BTC</p>
                         }
@@ -271,8 +271,8 @@ export default function SellPage() {
              <Form {...providerForm}>
             <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                 <CardContent className="space-y-6">
-                    {providersError && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{providersError}</AlertDescription></Alert>}
-                     {!providersError && providers.length === 0 && (
+                    {dataError && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{dataError}</AlertDescription></Alert>}
+                     {!dataError && providers.length === 0 && (
                         <Alert>
                             <Info className="h-4 w-4" />
                             <AlertTitle>No Providers Available</AlertTitle>
@@ -530,7 +530,7 @@ export default function SellPage() {
     };
 
 
-    if (isBalanceLoading || loadingProviders) {
+    if (isLoadingData) {
         return (
             <div className="mx-auto max-w-2xl space-y-6">
                 <Skeleton className="h-9 w-48" />
@@ -538,6 +538,28 @@ export default function SellPage() {
                 <Card><CardContent className="p-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
             </div>
         )
+    }
+    
+    if (dataError) {
+      return (
+        <div className="mx-auto max-w-2xl space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Sell Bitcoin</h1>
+            <p className="text-muted-foreground">Follow the steps to sell your Bitcoin securely.</p>
+          </div>
+           <Card className="flex h-48 items-center justify-center">
+            <div className="text-center text-destructive">
+              <AlertCircle className="mx-auto h-8 w-8" />
+              <p className="mt-2 font-semibold">Error Loading Data</p>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">{dataError}</p>
+              <Button onClick={fetchInitialData} variant="secondary" className="mt-4">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!isLoadingData}/>
+                Try Again
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )
     }
 
     const steps = [

@@ -13,7 +13,7 @@ import { CopyButton } from "@/components/copy-button";
 import { useState, useEffect, useCallback } from "react";
 import { ShareButton } from "./share-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Loader2, AlertCircle } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -26,9 +26,12 @@ export default function ReceivePage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const generateNewAddressFn = useCallback(async (isInitial = false) => {
-    setGenerating(true);
+    if (!isInitial) setGenerating(true);
+    setLoading(true);
+    setError(null);
     try {
       const response = await api.generateNewAddress();
       setAddress(response.data.address);
@@ -40,17 +43,21 @@ export default function ReceivePage() {
       }
     } catch (error: any) {
       const errorMsg = error.message || "Could not generate a new address. Please try again.";
+      setError(errorMsg);
       toast({
         variant: "destructive",
         title: "Error",
         description: errorMsg,
       });
     } finally {
-      setGenerating(false);
+      if (!isInitial) setGenerating(false);
+      setLoading(false);
     }
   }, [toast]);
   
   const fetchAddress = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await api.getWallets();
       if (response.data && Array.isArray(response.data) && response.data.length > 0 && response.data[0].address) {
@@ -99,10 +106,20 @@ export default function ReceivePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">
-          <div className="rounded-lg border bg-white p-4 shadow-sm">
-            {loading || !qrCode ? (
+          <div className="rounded-lg border bg-white p-4 shadow-sm min-h-[288px] min-w-[288px] flex items-center justify-center">
+            {loading ? (
                 <Skeleton className="h-[256px] w-[256px] rounded-md" />
-            ) : (
+            ) : error ? (
+                 <div className="text-center text-destructive p-4">
+                    <AlertCircle className="mx-auto h-8 w-8" />
+                    <p className="mt-2 font-semibold">Error Generating Address</p>
+                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
+                    <Button onClick={fetchAddress} variant="secondary" className="mt-4">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+                        Try Again
+                    </Button>
+                </div>
+            ) : qrCode ? (
                 <Image
                 src={qrCode}
                 alt="Wallet Address QR Code"
@@ -111,6 +128,8 @@ export default function ReceivePage() {
                 className="rounded-md"
                 data-ai-hint="qr code"
               />
+            ) : (
+                <Skeleton className="h-[256px] w-[256px] rounded-md" />
             )}
           </div>
           
@@ -124,7 +143,7 @@ export default function ReceivePage() {
              <div className="grid grid-cols-2 gap-3">
                 <CopyButton 
                   textToCopy={address || ''} 
-                  disabled={loading || !address} 
+                  disabled={loading || !address || !!error} 
                   toastMessage="Address copied to clipboard"
                   variant="outline"
                 >
@@ -132,7 +151,7 @@ export default function ReceivePage() {
                 </CopyButton>
                 <ShareButton 
                   shareData={{ title: "My Bitcoin Address", text: address || '' }} 
-                  disabled={loading || !address}
+                  disabled={loading || !address || !!error}
                   variant="outline"
                 >
                   Share Address
@@ -141,7 +160,7 @@ export default function ReceivePage() {
 
              <Separator />
              
-             <Button variant="ghost" size="sm" onClick={() => generateNewAddressFn(false)} disabled={generating || loading}>
+             <Button variant="ghost" size="sm" onClick={() => generateNewAddressFn(false)} disabled={generating || loading || !!error}>
                 <RefreshCw className={cn("mr-2 size-4", generating && "animate-spin")} />
                 {generating ? 'Generating...' : 'Generate New Address'}
              </Button>

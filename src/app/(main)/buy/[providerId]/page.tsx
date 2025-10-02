@@ -10,7 +10,7 @@ import api from "@/lib/api";
 import type { BuyProvider, BuyFeeCalculation, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/use-debounce";
-import { ArrowLeft, Banknote, Landmark, Loader2, Receipt, ShoppingCart, Bitcoin } from "lucide-react";
+import { ArrowLeft, Banknote, Landmark, Loader2, Receipt, ShoppingCart, Bitcoin, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -77,8 +77,9 @@ export default function BuyWithProviderPage() {
   const watchedCurrency = form.watch("currency");
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
-  useEffect(() => {
-    async function fetchProvider() {
+  const fetchProvider = useCallback(async () => {
+      setLoading(true);
+      setError(null);
       if (isNaN(providerId)) {
         setError("Invalid provider ID.");
         setLoading(false);
@@ -100,9 +101,11 @@ export default function BuyWithProviderPage() {
       } finally {
         setLoading(false);
       }
-    }
-    fetchProvider();
   }, [providerId, form]);
+
+  useEffect(() => {
+    fetchProvider();
+  }, [fetchProvider]);
   
   const calculateFee = useCallback(async (amount: number, currency: string) => {
     if (!provider || !currency) return;
@@ -171,7 +174,17 @@ export default function BuyWithProviderPage() {
     return (
         <div className="mx-auto max-w-lg">
             <Button variant="ghost" asChild className="-ml-4"><Link href="/buy"><ArrowLeft className="mr-2 size-4" />Back to Providers</Link></Button>
-            <Alert variant="destructive" className="mt-4"><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>
+            <Card className="mt-4 flex h-48 items-center justify-center">
+                <div className="text-center text-destructive">
+                    <AlertCircle className="mx-auto h-8 w-8" />
+                    <p className="mt-2 font-semibold">Error Loading Provider</p>
+                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
+                    <Button onClick={fetchProvider} variant="secondary" className="mt-4">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+                        Try Again
+                    </Button>
+                </div>
+            </Card>
         </div>
     )
   }

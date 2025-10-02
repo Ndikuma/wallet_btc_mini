@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { Order, BuyProvider } from "@/lib/types";
@@ -25,6 +24,7 @@ import {
   Phone,
   Mail,
   Hourglass,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -263,24 +263,27 @@ export default function OrderDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+    const fetchOrder = useCallback(async () => {
+        setLoading(true);
+        setError(null);
         if (isNaN(orderId)) {
             setError("Invalid order ID.");
             setLoading(false);
             return;
         }
-        async function fetchOrder() {
-            try {
-                const response = await api.getOrder(orderId);
-                setOrder(response.data);
-            } catch (err: any) {
-                setError(err.message || "Failed to load order details.");
-            } finally {
-                setLoading(false);
-            }
+        try {
+            const response = await api.getOrder(orderId);
+            setOrder(response.data);
+        } catch (err: any) {
+            setError(err.message || "Failed to load order details.");
+        } finally {
+            setLoading(false);
         }
-        fetchOrder();
     }, [orderId]);
+
+    useEffect(() => {
+        fetchOrder();
+    }, [fetchOrder]);
 
     const handleSuccessfulSubmit = (updatedOrder: Order) => {
         setOrder(updatedOrder);
@@ -304,7 +307,17 @@ export default function OrderDetailsPage() {
         return (
             <div className="mx-auto max-w-2xl">
                 <Button variant="ghost" asChild className="-ml-4"><Link href="/orders"><ArrowLeft className="mr-2 size-4" />Back to Orders</Link></Button>
-                <Alert variant="destructive" className="mt-4"><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>
+                <Card className="mt-4 flex h-48 items-center justify-center">
+                    <div className="text-center text-destructive">
+                        <AlertCircle className="mx-auto h-8 w-8" />
+                        <p className="mt-2 font-semibold">Error Loading Order</p>
+                        <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
+                        <Button onClick={fetchOrder} variant="secondary" className="mt-4">
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+                            Try Again
+                        </Button>
+                    </div>
+                </Card>
             </div>
         )
     }

@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import type { Order } from "@/lib/types";
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass } from "lucide-react";
+import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -77,19 +76,22 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchOrders() {
-      try {
-        const response = await api.getOrders();
-        setOrders(response.data.results || response.data);
-      } catch (err: any) {
-        setError(err.message || "Failed to load orders.");
-      } finally {
-        setLoading(false);
-      }
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.getOrders();
+      setOrders(response.data.results || response.data);
+    } catch (err: any) {
+      setError(err.message || "Failed to load orders.");
+    } finally {
+      setLoading(false);
     }
-    fetchOrders();
   }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -109,11 +111,17 @@ export default function OrdersPage() {
       )}
 
       {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <Card className="flex h-48 items-center justify-center">
+          <div className="text-center text-destructive">
+            <AlertCircle className="mx-auto h-8 w-8" />
+            <p className="mt-2 font-semibold">Error Loading Orders</p>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
+            <Button onClick={fetchOrders} variant="secondary" className="mt-4">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+              Try Again
+            </Button>
+          </div>
+        </Card>
       )}
 
       {!loading && !error && (

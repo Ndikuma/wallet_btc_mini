@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldCheck } from "lucide-react";
+import { AlertCircle, ShieldCheck, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,26 +23,33 @@ export default function CreateWalletPage() {
   const { toast } = useToast();
   const [mnemonic, setMnemonic] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateMnemonic = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.generateMnemonic();
+      setMnemonic(response.data.mnemonic);
+      localStorage.setItem("tempMnemonic", response.data.mnemonic);
+    } catch (error: any) {
+      const errorMsg =
+        error.response?.data?.error?.details?.detail ||
+        "Could not generate a recovery phrase. Please try again.";
+      setError(errorMsg);
+      toast({
+        variant: "destructive",
+        title: "Wallet Creation Failed",
+        description: errorMsg,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   useEffect(() => {
-    async function generateMnemonic() {
-      try {
-        const response = await api.generateMnemonic();
-        setMnemonic(response.data.mnemonic);
-        localStorage.setItem("tempMnemonic", response.data.mnemonic);
-      } catch (error: any) {
-        const errorMsg = error.response?.data?.error?.details?.detail || "Could not generate a recovery phrase. Please try again.";
-        toast({
-          variant: "destructive",
-          title: "Wallet Creation Failed",
-          description: errorMsg,
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
     generateMnemonic();
-  }, [toast]);
+  }, [generateMnemonic]);
 
   const mnemonicWords = mnemonic?.split(" ") || Array(12).fill(null);
 
@@ -62,38 +69,55 @@ export default function CreateWalletPage() {
             <ShieldCheck className="h-4 w-4" />
             <AlertTitle>Never share this phrase!</AlertTitle>
             <AlertDescription>
-              Anyone with this phrase can steal your Bitcoin. Do not save it digitally.
+              Anyone with this phrase can steal your Bitcoin. Do not save it
+              digitally.
             </AlertDescription>
           </Alert>
           <div className="rounded-lg border bg-background p-6">
             {loading ? (
               <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3">
-                {mnemonicWords.map((_, index) => (
+                {Array.from({ length: 12 }).map((_, index) => (
                   <Skeleton key={index} className="h-6 w-24" />
                 ))}
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center text-center text-destructive">
+                <AlertCircle className="mb-2 size-8" />
+                <p className="font-semibold">Error Generating Phrase</p>
+                <p className="text-sm">{error}</p>
+                <Button
+                  onClick={generateMnemonic}
+                  variant="secondary"
+                  className="mt-4"
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Try Again
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-x-12 gap-y-4 font-code text-lg sm:grid-cols-3">
                 {mnemonicWords.map((word, index) => (
                   <div key={index} className="flex items-baseline">
-                    <span className="mr-3 text-sm text-muted-foreground">{index + 1}.</span>
+                    <span className="mr-3 text-sm text-muted-foreground">
+                      {index + 1}.
+                    </span>
                     <span>{word}</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
-           <CopyButton
-              textToCopy={mnemonic || ''}
-              disabled={loading || !mnemonic}
-              variant="outline"
-              toastMessage="Recovery phrase copied"
-            >
-              Copy Phrase
-            </CopyButton>
+          <CopyButton
+            textToCopy={mnemonic || ""}
+            disabled={loading || !mnemonic || !!error}
+            variant="outline"
+            toastMessage="Recovery phrase copied"
+          >
+            Copy Phrase
+          </CopyButton>
         </CardContent>
         <CardFooter>
-          <Button asChild className="w-full" size="lg" disabled={loading}>
+          <Button asChild className="w-full" size="lg" disabled={loading || !!error || !mnemonic}>
             <Link href="/verify-mnemonic">I've written it down</Link>
           </Button>
         </CardFooter>

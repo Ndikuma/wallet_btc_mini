@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import type { User, Wallet } from "@/lib/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowRight, User as UserIcon, BarChart2, Clock, Hash, TrendingUp, TrendingDown, Copy } from "lucide-react";
+import { ArrowRight, User as UserIcon, BarChart2, Clock, Hash, TrendingUp, TrendingDown, Copy, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { shortenText } from "@/lib/utils";
 import { CopyButton } from "@/components/copy-button";
@@ -48,9 +48,11 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+      setLoading(true);
+      setError(null);
       try {
         const [userResponse, walletResponse] = await Promise.all([
             api.getUserProfile(),
@@ -61,7 +63,8 @@ export default function ProfilePage() {
           setWallet(walletResponse.data[0]);
         }
       } catch (error: any) {
-        const errorMsg = error.response?.data?.error?.details?.detail || "Could not fetch user data. Please try again later.";
+        const errorMsg = error.message || "Could not fetch user data. Please try again later.";
+        setError(errorMsg);
         toast({
           variant: "destructive",
           title: "Failed to load profile",
@@ -70,9 +73,11 @@ export default function ProfilePage() {
       } finally {
         setLoading(false);
       }
-    };
-    fetchData();
   }, [toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
 
   const getInitials = () => {
@@ -117,12 +122,26 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
+  if (error) {
     return (
        <div className="mx-auto max-w-2xl text-center">
-         <p>Could not load profile. Please try refreshing the page.</p>
+         <Card className="flex h-48 items-center justify-center">
+            <div className="text-center text-destructive">
+              <AlertCircle className="mx-auto h-8 w-8" />
+              <p className="mt-2 font-semibold">Error Loading Profile</p>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
+              <Button onClick={fetchData} variant="secondary" className="mt-4">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+                Try Again
+              </Button>
+            </div>
+          </Card>
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (

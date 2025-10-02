@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import type { BuyProvider } from "@/lib/types";
 import {
@@ -12,10 +12,11 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, ArrowRight, Landmark } from "lucide-react";
+import { AlertCircle, ArrowRight, Landmark, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
   <Link href={`/buy/${provider.id}`} className="block h-full transition-all rounded-lg hover:shadow-lg hover:-translate-y-1">
@@ -51,19 +52,22 @@ export default function BuyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProviders() {
-      try {
-        const response = await api.getBuyProviders();
-        setProviders(response.data);
-      } catch (err: any) {
-        setError(err.message || "Failed to load buy providers. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
+  const fetchProviders = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.getBuyProviders();
+      setProviders(response.data);
+    } catch (err: any) {
+      setError(err.message || "Failed to load buy providers. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-    fetchProviders();
   }, []);
+
+  useEffect(() => {
+    fetchProviders();
+  }, [fetchProviders]);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -91,11 +95,17 @@ export default function BuyPage() {
       )}
 
       {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <Card className="flex h-48 items-center justify-center">
+          <div className="text-center text-destructive">
+            <AlertCircle className="mx-auto h-8 w-8" />
+            <p className="mt-2 font-semibold">Error Loading Providers</p>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
+            <Button onClick={fetchProviders} variant="secondary" className="mt-4">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+              Try Again
+            </Button>
+          </div>
+        </Card>
       )}
 
       {!loading && !error && (

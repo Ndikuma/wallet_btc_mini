@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   Receipt,
   Wallet,
+  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -162,6 +163,10 @@ export default function DashboardPage() {
                         <AlertCircle className="size-8 mb-2" />
                         <p className="font-semibold">Error Loading Transactions</p>
                         <p className="text-sm">{transactionsError}</p>
+                        <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loadingTransactions}/>
+                            Try Again
+                        </Button>
                     </div>
                 )}
                 {!loadingTransactions && !transactionsError && recentTransactions.length > 0 && (

@@ -76,7 +76,6 @@ export function SendForm() {
   });
 
   const watchedAmount = form.watch("amount");
-  const watchedRecipient = form.watch("recipient");
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
   const estimateFee = useCallback(async (amount: number) => {
@@ -323,7 +322,7 @@ export function SendForm() {
                         <div className="flex justify-between items-center font-semibold">
                             <span className="text-base flex items-center gap-2"><Wallet className="size-5" />Total Debit</span>
                             <div className="text-right font-mono">
-                                <p className="text-base">{feeEstimation.total_debit_btc} BTC</p>
+                                <p className="text-base">{(watchedAmount || 0).toFixed(8)} BTC</p>
                             </div>
                         </div>
                     </div>

@@ -78,7 +78,6 @@ export interface Transaction {
 export interface FeeEstimation {
     sendable_btc: string;
     network_fee_btc: string;
-    total_debit_btc: string;
     sendable_usd: number;
     sendable_bif: number;
     network_fee_usd: number;

@@ -99,17 +99,14 @@ const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }
 const restoreWallet = (data: string): Promise<AxiosResponse<AuthResponse>> => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
 
-const estimateFee = (amount: number): Promise<AxiosResponse<FeeEstimation>> => {
+const estimateFee = (amount: string): Promise<AxiosResponse<FeeEstimation>> => {
     return axiosInstance.post('wallet/estimate_fee/', { amount });
 }
 
 const getTransactions = (): Promise<AxiosResponse<PaginatedResponse<Transaction>>> => axiosInstance.get('transaction/');
 const getRecentTransactions = (): Promise<AxiosResponse<Transaction[]>> => axiosInstance.get('transaction/recents/');
-const sendTransaction = (values: { recipient: string; amount: number }) => {
-    return axiosInstance.post('transaction/send/', {
-        to_address: values.recipient,
-        amount: values.amount,
-    });
+const sendTransaction = (values: { to_address: string; amount: string }) => {
+    return axiosInstance.post('transaction/send/', values);
 };
 
 const getBuyProviders = (): Promise<AxiosResponse<BuyProvider[]>> => axiosInstance.get('providers/buy/');

@@ -83,7 +83,7 @@ export function SendForm() {
       setFeeError(null);
       setFeeEstimation(null);
       try {
-          const feeResponse = await api.estimateFee(amount);
+          const feeResponse = await api.estimateFee(String(amount));
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
           setFeeError(error.message);
@@ -182,8 +182,8 @@ export function SendForm() {
     setIsLoading(true);
     try {
         const response = await api.sendTransaction({
-            recipient: values.recipient,
-            amount: parseFloat(feeEstimation.sendable_btc),
+            to_address: values.recipient,
+            amount: feeEstimation.sendable_btc,
         });
         toast({
             title: (response.data as any).message || "Transaction Submitted",

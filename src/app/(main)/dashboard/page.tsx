@@ -121,7 +121,7 @@ export default function DashboardPage() {
             <CardDescription>Your wallet summary</CardDescription>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsBalanceVisible(!isBalanceVisible)}>
-              {isBalanceVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              {isBalanceVisible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
               <span className="sr-only">Toggle Balance Visibility</span>
           </Button>
         </CardHeader>

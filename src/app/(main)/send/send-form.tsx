@@ -2,7 +2,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { useState, useRef, useEffect, useCallback } from "react";
 import jsQR from "jsqr";
 import {
@@ -36,6 +35,7 @@ import { cn, getFiat } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useWallet } from "@/context/wallet-context";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 
 const formSchema = (balance: number) => z.object({
@@ -168,24 +168,7 @@ export function SendForm() {
 
   const handleSetMax = async () => {
     if (currentBalance > 0) {
-      setIsEstimatingFee(true);
-      setFeeError(null);
-      setFeeEstimation(null);
-      try {
-        const feeResponse = await api.estimateFee({ amount: String(currentBalance), send_max: true });
-        setFeeEstimation(feeResponse.data);
-        form.setValue("amount", currentBalance, { shouldValidate: true, shouldDirty: true });
-      } catch (error: any) {
-        setFeeError(error.message);
-        setFeeEstimation(null);
-        toast({
-          variant: "destructive",
-          title: "Max Amount Error",
-          description: "Could not estimate fee for maximum amount. Please enter an amount manually.",
-        });
-      } finally {
-        setIsEstimatingFee(false);
-      }
+      form.setValue("amount", currentBalance, { shouldValidate: true, shouldDirty: true });
     }
   };
 
@@ -340,7 +323,7 @@ export function SendForm() {
                         <div className="flex justify-between items-center font-semibold">
                             <span className="text-base flex items-center gap-2"><Wallet className="size-5" />Total Debit</span>
                             <div className="text-right font-mono">
-                                <p className="text-base">{watchedAmount || 0} BTC</p>
+                                <p className="text-base">{feeEstimation.total_debit_btc} BTC</p>
                             </div>
                         </div>
                     </div>

@@ -30,11 +30,12 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { Balance, FeeEstimation } from "@/lib/types";
+import type { FeeEstimation } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn, getFiat } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { useWallet } from "@/context/wallet-context";
 
 const formSchema = (balance: number) => z.object({
   recipient: z
@@ -52,6 +53,7 @@ export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
 export function SendForm() {
   const { toast } = useToast();
   const router = useRouter();
+  const { balance, isLoading: isBalanceLoading, error: balanceError } = useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -60,9 +62,6 @@ export function SendForm() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  const [balance, setBalance] = useState<Balance | null>(null);
-  const [isBalanceLoading, setIsBalanceLoading] = useState(true);
-
   const [feeEstimation, setFeeEstimation] = useState<FeeEstimation | null>(null);
   const [isEstimatingFee, setIsEstimatingFee] = useState(false);
   const [feeError, setFeeError] = useState<string | null>(null);
@@ -101,24 +100,8 @@ export function SendForm() {
       setFeeEstimation(null);
       setFeeError(null);
     }
-  }, [debouncedAmount, form, estimateFee])
+  }, [debouncedAmount, form, estimateFee]);
 
-
-  useEffect(() => {
-    async function fetchBalance() {
-      setIsBalanceLoading(true);
-      try {
-        const response = await api.getWalletBalance();
-        setBalance(response.data);
-      } catch (error: any) {
-        toast({ variant: "destructive", title: "Error", description: error.message });
-      } finally {
-        setIsBalanceLoading(false);
-      }
-    }
-    fetchBalance();
-  }, [toast]);
-  
   useEffect(() => {
     const newBalance = balance ? parseFloat(balance.balance) : 0;
     (form.control as any)._resolver = zodResolver(formSchema(newBalance));
@@ -126,7 +109,6 @@ export function SendForm() {
       form.trigger("amount");
     }
   }, [balance, form]);
-
 
    useEffect(() => {
     if (!isScanning) return;
@@ -216,12 +198,18 @@ export function SendForm() {
   if (isBalanceLoading) {
     return (
         <div className="space-y-8">
+            <Skeleton className="h-10 w-full" />
             <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
             <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
             <Skeleton className="h-11 w-full" />
         </div>
     )
   }
+
+  if (balanceError) {
+    return <Alert variant="destructive"><AlertTitle>Could not load balance</AlertTitle><AlertDescription>{balanceError}</AlertDescription></Alert>
+  }
+
 
   return (
     <>

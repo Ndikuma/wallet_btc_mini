@@ -28,8 +28,8 @@ import { cn, shortenText } from "@/lib/utils";
 import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import type { Transaction } from "@/lib/types";
-import { AxiosError } from "axios";
 import { BalanceDisplay } from "@/components/balance-display";
+import { useWallet } from "@/context/wallet-context";
 
 const ActionButton = ({ icon: Icon, label, href, disabled = false }: { icon: React.ElementType, label: string, href: string, disabled?: boolean }) => {
   const content = (
@@ -62,27 +62,9 @@ const ActionCard = () => (
 export default function DashboardPage() {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
-  const [isWalletReady, setIsWalletReady] = useState(false);
-
-
-  useEffect(() => {
-    async function checkWalletStatus() {
-      try {
-        await api.getWalletBalance();
-        setIsWalletReady(true);
-      } catch (err: any) {
-         if (err instanceof AxiosError && err.response?.status === 403) {
-            setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
-        } else {
-            setError(err.message || "Could not connect to the wallet service. Please try again later.")
-        }
-      }
-    }
-    checkWalletStatus();
-  }, []);
+  const { error: walletError } = useWallet();
 
   const fetchTransactions = useCallback(async () => {
     setLoadingTransactions(true);
@@ -98,13 +80,16 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (isWalletReady) {
+    // Only fetch transactions if the wallet context doesn't have an error
+    if (!walletError) {
       fetchTransactions();
+    } else {
+      setLoadingTransactions(false);
     }
-  }, [isWalletReady, fetchTransactions]);
+  }, [walletError, fetchTransactions]);
 
   
-    if (error) {
+    if (walletError) {
         const handleRefresh = () => {
              window.location.reload();
         };
@@ -115,7 +100,7 @@ export default function DashboardPage() {
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Wallet Not Ready</AlertTitle>
                     <AlertDescription>
-                        {error}
+                        {walletError}
                         <div className="mt-4">
                             <Button onClick={handleRefresh}>Refresh</Button>
                         </div>

@@ -1,40 +1,19 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import api from "@/lib/api";
-import type { Balance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { useSettings } from "@/context/settings-context";
+import { useWallet } from "@/context/wallet-context";
 
 interface BalanceDisplayProps {
   isVisible: boolean;
 }
 
 export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
-  const [balance, setBalance] = useState<Balance | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { balance, isLoading, error } = useWallet();
   const { settings } = useSettings();
 
-  useEffect(() => {
-    async function fetchBalance() {
-      setLoading(true);
-      setError(null);
-      try {
-        const balanceRes = await api.getWalletBalance();
-        setBalance(balanceRes.data);
-      } catch (err: any) {
-        console.error("Failed to fetch balance data", err);
-        setError(err.message || "Could not load balance.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchBalance();
-  }, []);
-  
   const getPrimaryBalance = () => {
     if (!balance) return "";
     switch (settings.displayUnit) {
@@ -59,7 +38,7 @@ export function BalanceDisplay({ isVisible }: BalanceDisplayProps) {
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="w-full space-y-4">
         <Skeleton className="h-10 w-48" />

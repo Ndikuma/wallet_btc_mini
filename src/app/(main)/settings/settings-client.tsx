@@ -35,7 +35,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/componentsui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CopyButton } from "@/components/copy-button";
 import { ShieldAlert, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";

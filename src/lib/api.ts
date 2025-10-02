@@ -45,7 +45,7 @@ const createResponseInterceptor = (instance: AxiosInstance) => {
         let errorMessage = "An unexpected error occurred. Please try again later.";
         
         if (error.code === 'ERR_NETWORK') {
-            errorMessage = 'Network Error: Could not connect to the server.';
+            errorMessage = 'Could not connect to the server. The service may be starting up. Please wait a moment and try again.';
         } else if (error.response?.data) {
             const responseData = error.response.data;
             const apiError = responseData.error;
@@ -99,7 +99,7 @@ const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }
 const restoreWallet = (data: string): Promise<AxiosResponse<AuthResponse>> => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
 
-const estimateFee = (values: { amount: number, recipient: string }): Promise<AxiosResponse<FeeEstimation>> => {
+const estimateFee = (values: { amount: number }): Promise<AxiosResponse<FeeEstimation>> => {
     return axiosInstance.post('wallet/estimate_fee/', values);
 }
 

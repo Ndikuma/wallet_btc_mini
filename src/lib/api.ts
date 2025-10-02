@@ -2,7 +2,7 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
-const BACKEND_URL = 'https://umuhoratech-wallet.onrender.com/';
+const BACKEND_URL = 'https://featuring-shipped-pastor-amenities.trycloudflare.com/';
 
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,
@@ -99,7 +99,7 @@ const generateQrCode = (data: string): Promise<AxiosResponse<{ qr_code: string }
 const restoreWallet = (data: string): Promise<AxiosResponse<AuthResponse>> => axiosInstance.post('wallet/restore/', { data });
 const backupWallet = (): Promise<AxiosResponse<{ wif: string }>> => axiosInstance.get('wallet/backup/');
 
-const estimateFee = (payload: { amount: string, send_max?: boolean }): Promise<AxiosResponse<FeeEstimation>> => {
+const estimateFee = (payload: { amount: string }): Promise<AxiosResponse<FeeEstimation>> => {
     return axiosInstance.post('wallet/estimate_fee/', payload);
 }
 

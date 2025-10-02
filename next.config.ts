@@ -35,6 +35,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'featuring-shipped-pastor-amenities.trycloudflare.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

@@ -143,6 +143,7 @@ export default function BuyWithProviderPage() {
             amount: data.amount,
             amount_currency: data.currency,
             direction: 'buy' as 'buy',
+            btc_amount: parseFloat(feeCalc.btc_amount)
         };
         const order = await api.createOrder(orderPayload);
         toast({ title: 'Order Created', description: `Your order #${order.data.id} has been created.` });

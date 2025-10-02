@@ -37,7 +37,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'featuring-shipped-pastor-amenities.trycloudflare.com',
+        hostname: 'sequence-featuring-pond-libs.trycloudflare.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'sequence-featuring-pond-libs.trycloudflare.com',
         port: '',
         pathname: '/**',
       },

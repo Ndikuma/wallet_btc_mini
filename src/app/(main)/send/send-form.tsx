@@ -1,7 +1,6 @@
 
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -36,6 +35,8 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { cn, getFiat } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useWallet } from "@/context/wallet-context";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 
 const formSchema = (balance: number) => z.object({
   recipient: z
@@ -75,14 +76,14 @@ export function SendForm() {
   });
 
   const watchedAmount = form.watch("amount");
-  const watchedRecipient = form.watch("recipient");
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
-  const estimateFee = useCallback(async (amount: number, recipient: string, send_max = false) => {
+  const estimateFee = useCallback(async (amount: number) => {
       setIsEstimatingFee(true);
       setFeeError(null);
+      setFeeEstimation(null);
       try {
-          const feeResponse = await api.estimateFee({ amount, recipient, send_max });
+          const feeResponse = await api.estimateFee(amount);
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
           setFeeError(error.message);
@@ -94,15 +95,14 @@ export function SendForm() {
 
   useEffect(() => {
     const isAmountValid = debouncedAmount > 0 && form.getFieldState('amount').error === undefined;
-    const isRecipientValid = watchedRecipient && form.getFieldState('recipient').error === undefined;
-
-    if (isAmountValid && isRecipientValid) {
-      estimateFee(debouncedAmount, watchedRecipient);
+    
+    if (isAmountValid) {
+      estimateFee(debouncedAmount);
     } else {
       setFeeEstimation(null);
       setFeeError(null);
     }
-  }, [debouncedAmount, watchedRecipient, form, estimateFee]);
+  }, [debouncedAmount, form, estimateFee]);
 
   useEffect(() => {
     const newBalance = balance ? parseFloat(balance.balance) : 0;
@@ -165,20 +165,9 @@ export function SendForm() {
     };
   }, [isScanning, toast, form]);
 
-  const handleSetMax = async () => {
-    if (!watchedRecipient || form.getFieldState('recipient').error) {
-        toast({
-            variant: "destructive",
-            title: "Recipient Required",
-            description: "Please enter a valid recipient address before setting max amount.",
-        });
-        return;
-    }
-    await estimateFee(currentBalance, watchedRecipient, true);
-    if (feeEstimation) {
-        form.setValue("amount", parseFloat(feeEstimation.sendable_btc), { shouldValidate: true, shouldDirty: true });
-    }
-};
+  const handleSetMax = () => {
+    form.setValue("amount", currentBalance, { shouldValidate: true, shouldDirty: true });
+  };
 
   const handleSetAmount = (percentage: number) => {
     const newAmount = currentBalance * percentage;
@@ -194,11 +183,11 @@ export function SendForm() {
     try {
         const response = await api.sendTransaction({
             recipient: values.recipient,
-            amount: values.amount,
+            amount: parseFloat(feeEstimation.sendable_btc),
         });
         toast({
             title: (response.data as any).message || "Transaction Submitted",
-            description: `Sending ${values.amount} BTC.`,
+            description: `Sending ${feeEstimation.sendable_btc} BTC.`,
         });
         refreshBalance();
         setIsSuccessDialogOpen(true);
@@ -301,7 +290,7 @@ export function SendForm() {
             )}
           />
           
-           {(isEstimatingFee || (feeEstimation && form.formState.isValid)) && (
+           {(isEstimatingFee || feeEstimation || feeError) && (
             <div className="space-y-4 rounded-lg border bg-secondary/30 p-4">
                 {isEstimatingFee ? (
                     <div className="flex items-center justify-center text-sm text-muted-foreground h-40">
@@ -309,7 +298,7 @@ export function SendForm() {
                     </div>
                 ) : feeError ? (
                     <div className="text-sm text-center text-destructive h-40 flex items-center justify-center">{feeError}</div>
-                ) : feeEstimation && (
+                ) : feeEstimation ? (
                     <div className="space-y-4">
                         <div className="space-y-2">
                            <p className="text-sm text-muted-foreground">You will send</p>
@@ -331,11 +320,11 @@ export function SendForm() {
                         <div className="flex justify-between items-center font-semibold">
                             <span className="text-base flex items-center gap-2"><Wallet className="size-5" />Total Debit</span>
                             <div className="text-right font-mono">
-                                <p className="text-base">{(parseFloat(feeEstimation.sendable_btc) + parseFloat(feeEstimation.network_fee_btc)).toFixed(8)} BTC</p>
+                                <p className="text-base">{watchedAmount.toFixed(8)} BTC</p>
                             </div>
                         </div>
                     </div>
-                )}
+                ) : null}
             </div>
           )}
 
@@ -348,6 +337,7 @@ export function SendForm() {
       <Dialog open={isSuccessDialogOpen} onOpenChange={(open) => {
         if (!open) {
           form.reset();
+          setFeeEstimation(null);
           router.push("/dashboard");
         }
         setIsSuccessDialogOpen(open);

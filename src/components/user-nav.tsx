@@ -69,7 +69,8 @@ export function UserNav() {
   if (!user) {
     return (
       <Button asChild>
-        <Link href="/login">Se connecter</Link>      </Button>
+        <Link href="/login">Se connecter</Link>
+      </Button>
     )
   }
 
@@ -77,8 +78,10 @@ export function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2 h-9">
+          <span>
             {displayName}
-           <ChevronDown className="size-4 text-muted-foreground" />
+            <ChevronDown className="size-4 text-muted-foreground inline-block ml-1" />
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>

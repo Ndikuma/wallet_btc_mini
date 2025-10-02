@@ -136,6 +136,15 @@ export interface SellOrderPayload {
     total_amount: string;
 }
 
+export interface OrderUpdatePayload {
+  payment_proof?: {
+    tx_id: string;
+    image_base64: string | null;
+  };
+  note?: string | null;
+  status?: 'awaiting_confirmation';
+}
+
 
 export interface Order {
     id: number;

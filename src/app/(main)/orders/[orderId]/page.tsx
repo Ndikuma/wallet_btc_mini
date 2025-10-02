@@ -146,6 +146,7 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
                     image_base64: image_base64,
                 },
                 note: values.note,
+                status: 'awaiting_confirmation' as const,
             };
 
             const response = await api.updateOrder(order.id, payload);
@@ -444,5 +445,3 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
-
-    

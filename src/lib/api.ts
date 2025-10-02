@@ -1,5 +1,5 @@
 
-import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload } from '@/lib/types';
+import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload, OrderUpdatePayload } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
 const BACKEND_URL = 'https://citysearch-office-shall-consent.trycloudflare.com/';
@@ -126,7 +126,7 @@ const createSellOrder = (payload: SellOrderPayload): Promise<AxiosResponse<Order
 
 const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');
 const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);
-const updateOrder = (orderId: number, data: { payment_proof?: any; note?: string | null }): Promise<AxiosResponse<Order>> => {
+const updateOrder = (orderId: number, data: OrderUpdatePayload): Promise<AxiosResponse<Order>> => {
     return axiosInstance.patch(`orders/${orderId}/`, data);
 }
 

@@ -31,7 +31,7 @@ import api from "@/lib/api";
 import type { FeeEstimation } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
-import { cn, getFiat } from "@/lib/utils";
+import { getFiat } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useWallet } from "@/context/wallet-context";
 import { z } from "zod";
@@ -83,7 +83,7 @@ export function SendForm() {
       setFeeError(null);
       setFeeEstimation(null);
       try {
-          const feeResponse = await api.estimateFee({ amount });
+          const feeResponse = await api.estimateFee({ amount: String(amount) });
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
           setFeeError(error.message);
@@ -358,5 +358,3 @@ export function SendForm() {
     </>
   );
 }
-
-    

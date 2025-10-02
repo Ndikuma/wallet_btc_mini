@@ -21,23 +21,23 @@ export default function RegisterPage() {
       </Link>
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-xl">Create an account</CardTitle>
+          <CardTitle className="text-xl">Kora konti</CardTitle>
           <CardDescription>
-            Enter your details to create your secure wallet.
+            Injiza amakuru yawe kugira ukore irembo ryawe rizivye.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <RegisterForm />
           <div className="mt-4 text-center text-sm">
-            Already have an account?{" "}
+            Wari usanganywe konti?{" "}
             <Link href="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
-              Login
+              Injira
             </Link>
           </div>
            <div className="mt-2 text-center text-sm">
-            Want to restore an existing wallet?{" "}
+            Wipfuza kugarura irembo risanzwe?{" "}
             <Link href="/restore-wallet" className="font-semibold text-primary underline-offset-4 hover:underline">
-              Restore Now
+              Garura nonaha
             </Link>
           </div>
         </CardContent>

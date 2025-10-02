@@ -64,8 +64,8 @@ export default function EditProfilePage() {
       } catch (error: any) {
         toast({
           variant: "destructive",
-          title: "Failed to load profile",
-          description: error.message || "Could not fetch user data.",
+          title: "Gupakira profili biranse",
+          description: error.message || "Ntivyakunze gushaka amakuru y'umukoresha.",
         });
       } finally {
         setLoading(false);
@@ -82,16 +82,16 @@ export default function EditProfilePage() {
       setUser(response.data);
       form.reset(response.data);
       toast({
-        title: "Profile Updated",
-        description: "Your profile information has been saved.",
+        title: "Profili yahinduwe",
+        description: "Amakuru ya profili yawe yabitswe.",
       });
       router.push("/profile");
       router.refresh();
     } catch (error: any) {
-        const errorMsg = error.message || "An unexpected error occurred.";
+        const errorMsg = error.message || "Habaye ikosa rititezwe.";
         toast({
             variant: "destructive",
-            title: "Update Failed",
+            title: "Guhindura biranse",
             description: errorMsg,
         });
     } finally {
@@ -127,7 +127,7 @@ export default function EditProfilePage() {
   if (!user) {
     return (
        <div className="mx-auto max-w-xl text-center">
-         <p>Could not load profile. Please try refreshing the page.</p>
+         <p>Ntivyakunze gupakira profili. Ndokera ugerageze guhindura urupapuro.</p>
       </div>
     );
   }
@@ -138,13 +138,13 @@ export default function EditProfilePage() {
        <Button variant="ghost" asChild className="-ml-4">
         <Link href="/profile">
           <ArrowLeft className="mr-2 size-4" />
-          Back to Profile
+          Subira kuri Profili
         </Link>
       </Button>
       <Card>
         <CardHeader>
-            <CardTitle className="text-2xl">Edit Profile</CardTitle>
-            <CardDescription>Update your personal information.</CardDescription>
+            <CardTitle className="text-2xl">Hindura Profili</CardTitle>
+            <CardDescription>Hindura amakuru yawe bwite.</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <Form {...form}>
@@ -155,9 +155,9 @@ export default function EditProfilePage() {
                   name="first_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name</FormLabel>
+                      <FormLabel>Izina ry'itanguriro</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Your first name" />
+                        <Input {...field} placeholder="Izina ryawe ry'itanguriro" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -168,9 +168,9 @@ export default function EditProfilePage() {
                   name="last_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Last Name</FormLabel>
+                      <FormLabel>Izina ry'umuryango</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Your last name" />
+                        <Input {...field} placeholder="Izina ryawe ry'umuryango" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -178,7 +178,7 @@ export default function EditProfilePage() {
                 />
               </div>
               <Button type="submit" disabled={isSaving || !form.formState.isDirty}>
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? "Kubika..." : "Bika Impinduka"}
               </Button>
             </form>
           </Form>

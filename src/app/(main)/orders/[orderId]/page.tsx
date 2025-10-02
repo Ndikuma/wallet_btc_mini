@@ -52,7 +52,7 @@ import { CopyButton } from "@/components/copy-button";
 import { shortenText } from "@/lib/utils";
 
 const paymentProofSchema = z.object({
-    payment_proof_ref: z.string().min(4, "Please enter a valid payment reference."),
+    payment_proof_ref: z.string().min(4, "Ndokera ushiremwo indangamuntu yemewe."),
     note: z.string().optional(),
     payment_proof_image: z.any().optional(),
 });
@@ -82,13 +82,13 @@ const PaymentInfoDisplay = ({ provider }: { provider: BuyProvider }) => {
     return (
         <Card className="bg-secondary/30">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg"><Landmark className="size-5 text-primary" />Payment Instructions</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-lg"><Landmark className="size-5 text-primary" />Amabwiriza yo kuriha</CardTitle>
                 {provider.payment_info.method && <CardDescription>{provider.payment_info.method}</CardDescription>}
             </CardHeader>
             <CardContent className="space-y-4">
                  {accountDetails && Object.keys(accountDetails).length > 0 && (
                      <div className="space-y-3 rounded-lg border bg-background/50 p-4">
-                        <h4 className="font-semibold">Account Details</h4>
+                        <h4 className="font-semibold">Amakuru ya konti</h4>
                         {Object.entries(accountDetails).map(([key, value]) => (
                             <div key={key} className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground">{formatLabel(key)}</span>
@@ -103,7 +103,7 @@ const PaymentInfoDisplay = ({ provider }: { provider: BuyProvider }) => {
                 
                 {instructions && (
                     <div className="space-y-2">
-                         <h4 className="font-semibold">Instructions</h4>
+                         <h4 className="font-semibold">Amabwiriza</h4>
                         {Array.isArray(instructions) ? (
                             <ol className="list-decimal list-inside text-muted-foreground space-y-1 text-sm">
                                 {instructions.map((step, i) => <li key={i}>{step}</li>)}
@@ -150,10 +150,10 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
             };
 
             const response = await api.updateOrder(order.id, payload);
-            toast({ title: "Payment Proof Submitted", description: "Your proof has been sent for confirmation." });
+            toast({ title: "Icemezo co kuriha carungitswe", description: "Icemezo cawe carungitswe kugira cemerwe." });
             onSuccessfulSubmit(response.data);
         } catch (err: any) {
-            toast({ variant: "destructive", title: "Submission Failed", description: err.message || "Could not submit your payment proof." });
+            toast({ variant: "destructive", title: "Kuyirungika biranse", description: err.message || "Ntivyakunze kurungika icemezo cawe." });
         } finally {
             setIsSubmitting(false);
         }
@@ -162,9 +162,9 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Submit Payment Proof</CardTitle>
+                <CardTitle>Rungika icemezo co kuriha</CardTitle>
                 <CardDescription>
-                    Your order is pending. Please complete the payment using the instructions below and submit proof here.
+                    Itangazo ryawe ririndiriye. Ndokera urangize kwishura ukoresheje amabwiriza ari hasi hanyuma urungike icemezo hano.
                 </CardDescription>
             </CardHeader>
             <Form {...form}>
@@ -177,7 +177,7 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
                             name="payment_proof_ref"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Payment Reference / Tx ID</FormLabel>
+                                    <FormLabel>Indangamuntu y'icemezo / Tx ID</FormLabel>
                                     <FormControl>
                                         <Input placeholder="e.g., Mobile Money transaction ID" {...field} />
                                     </FormControl>
@@ -190,16 +190,16 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
                             name="note"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Notes (Optional)</FormLabel>
+                                    <FormLabel>Akajambo (Si ngombwa)</FormLabel>
                                     <FormControl>
-                                        <Textarea placeholder="Add any extra details here..." {...field} />
+                                        <Textarea placeholder="Ongera amakuru y'inyongera hano..." {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
                          <div className="space-y-2">
-                            <Label htmlFor="payment_proof_image">Upload Screenshot (Optional)</Label>
+                            <Label htmlFor="payment_proof_image">Pakira ishusho (Si ngombwa)</Label>
                             <Input 
                                 id="payment_proof_image" 
                                 type="file" 
@@ -212,7 +212,7 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
                     <CardFooter>
                         <Button type="submit" className="w-full" disabled={isSubmitting}>
                             {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin"/> : <CircleCheck className="mr-2 size-4" />}
-                            {isSubmitting ? "Submitting..." : "Confirm Payment"}
+                            {isSubmitting ? "Kurungika..." : "Emeza Kwishura"}
                         </Button>
                     </CardFooter>
                 </form>
@@ -268,7 +268,7 @@ export default function OrderDetailsPage() {
         setLoading(true);
         setError(null);
         if (isNaN(orderId)) {
-            setError("Invalid order ID.");
+            setError("Indangamuntu y'itangazo ntiyemewe.");
             setLoading(false);
             return;
         }
@@ -276,7 +276,7 @@ export default function OrderDetailsPage() {
             const response = await api.getOrder(orderId);
             setOrder(response.data);
         } catch (err: any) {
-            setError(err.message || "Failed to load order details.");
+            setError(err.message || "Gupakira amakuru y'itangazo biranse.");
         } finally {
             setLoading(false);
         }
@@ -307,15 +307,15 @@ export default function OrderDetailsPage() {
     if (error) {
         return (
             <div className="mx-auto max-w-2xl">
-                <Button variant="ghost" asChild className="-ml-4"><Link href="/orders"><ArrowLeft className="mr-2 size-4" />Back to Orders</Link></Button>
+                <Button variant="ghost" asChild className="-ml-4"><Link href="/orders"><ArrowLeft className="mr-2 size-4" />Subira inyuma ku matangazo</Link></Button>
                 <Card className="mt-4 flex h-48 items-center justify-center">
                     <div className="text-center text-destructive">
                         <AlertCircle className="mx-auto h-8 w-8" />
-                        <p className="mt-2 font-semibold">Error Loading Order</p>
+                        <p className="mt-2 font-semibold">Ikosa mu gupakira itangazo</p>
                         <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
                         <Button onClick={fetchOrder} variant="secondary" className="mt-4">
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
-                            Try Again
+                            Subira Ugerageze
                         </Button>
                     </div>
                 </Card>
@@ -332,7 +332,7 @@ export default function OrderDetailsPage() {
              <Button variant="ghost" asChild className="-ml-4">
                 <Link href="/orders">
                 <ArrowLeft className="mr-2 size-4" />
-                Back to Orders
+                Subira inyuma ku matangazo
                 </Link>
             </Button>
             
@@ -342,8 +342,8 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3">
                            {getStatusIcon(order.status)}
                            <div>
-                                <CardTitle className="text-2xl capitalize">{order.direction} Order #{order.id}</CardTitle>
-                                <CardDescription>on {new Date(order.created_at).toLocaleDateString('en-us', { year: 'numeric', month: 'long', day: 'numeric'})}</CardDescription>
+                                <CardTitle className="text-2xl capitalize">Itangazo ryo {order.direction === 'buy' ? 'Kugura' : 'Kugurisha'} #{order.id}</CardTitle>
+                                <CardDescription>ku {new Date(order.created_at).toLocaleDateString('en-us', { year: 'numeric', month: 'long', day: 'numeric'})}</CardDescription>
                            </div>
                         </div>
                         <Badge variant={getStatusVariant(order.status)} className="capitalize text-base py-1 px-3">{order.status.replace('_', ' ')}</Badge>
@@ -351,20 +351,20 @@ export default function OrderDetailsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm">
                     <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
-                         <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>{order.amount} {order.amount_currency}</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Fee</span><span>{order.fee} {order.amount_currency}</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">Umubare</span><span>{order.amount} {order.amount_currency}</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">Agashirukiramico</span><span>{order.fee} {order.amount_currency}</span></div>
                          <Separator />
-                         <div className="flex justify-between font-bold text-base"><span >Total</span><span>{order.total_amount} {order.amount_currency}</span></div>
+                         <div className="flex justify-between font-bold text-base"><span >Igiteranyo</span><span>{order.total_amount} {order.amount_currency}</span></div>
                     </div>
                      <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
-                         <div className="flex justify-between"><span className="text-muted-foreground">Provider</span><span className="font-semibold">{order.provider.name}</span></div>
-                         {order.provider.payment_info?.method && <div className="flex justify-between"><span className="text-muted-foreground">Payment Method</span><span className="font-semibold">{order.provider.payment_info.method}</span></div>}
+                         <div className="flex justify-between"><span className="text-muted-foreground">Umutanzi</span><span className="font-semibold">{order.provider.name}</span></div>
+                         {order.provider.payment_info?.method && <div className="flex justify-between"><span className="text-muted-foreground">Uburyo bwo kwishura</span><span className="font-semibold">{order.provider.payment_info.method}</span></div>}
                     </div>
                 </CardContent>
                  <CardFooter className="justify-end">
                     <Button variant="destructive">
                         <AlertTriangle className="mr-2 size-4" />
-                        Report Order
+                        Menyesha ikosa ku itangazo
                     </Button>
                 </CardFooter>
             </Card>
@@ -374,15 +374,15 @@ export default function OrderDetailsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                            <Banknote className="size-5 text-primary" />
-                           Payout Details
+                           Amakuru yo kurihwa
                         </CardTitle>
-                        <CardDescription>Your funds will be sent to the following account:</CardDescription>
+                        <CardDescription>Amafaranga yawe azokurungikirwa kuri iyi konti:</CardDescription>
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                        <PayoutDetailItem icon={UserIcon} label="Full Name" value={payoutDetails.full_name} />
-                        <PayoutDetailItem icon={Phone} label="Phone Number" value={payoutDetails.phone_number} />
-                        <PayoutDetailItem icon={Landmark} label="Account Number" value={payoutDetails.account_number} />
-                        <PayoutDetailItem icon={Mail} label="Email" value={payoutDetails.email} />
+                        <PayoutDetailItem icon={UserIcon} label="Amazina yose" value={payoutDetails.full_name} />
+                        <PayoutDetailItem icon={Phone} label="Nimero ya terefone" value={payoutDetails.phone_number} />
+                        <PayoutDetailItem icon={Landmark} label="Nimero ya konti" value={payoutDetails.account_number} />
+                        <PayoutDetailItem icon={Mail} label="Imeri" value={payoutDetails.email} />
                     </CardContent>
                 </Card>
             )}
@@ -392,17 +392,17 @@ export default function OrderDetailsPage() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                            <Bitcoin className="size-5 text-primary" />
-                           Bitcoin Sent
+                           Bitcoin yarungitswe
                         </CardTitle>
-                        <CardDescription>This order is complete and Bitcoin has been sent to your wallet.</CardDescription>
+                        <CardDescription>Iri tangazo ryarangiye kandi Bitcoin yarungitswe mu irembo ryawe.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-1">
-                            <Label>Amount</Label>
+                            <Label>Umubare</Label>
                             <div className="font-semibold font-mono text-lg">{order.btc_amount} BTC</div>
                         </div>
                         <div className="space-y-1">
-                            <Label>Destination Address</Label>
+                            <Label>Aderese yo kwakira</Label>
                             <div className="flex items-center gap-2">
                                 <p className="font-mono text-muted-foreground">{shortenText(order.btc_address, 12, 12)}</p>
                                 <CopyButton textToCopy={order.btc_address || ''} size="icon" variant="ghost" className="h-7 w-7"/>
@@ -411,7 +411,7 @@ export default function OrderDetailsPage() {
                         {order.btc_txid && (
                            <>
                              <div className="space-y-1">
-                                <Label>Transaction ID (TxID)</Label>
+                                <Label>Indangamuntu y'igikorwa (TxID)</Label>
                                 <div className="flex items-center gap-2">
                                     <p className="font-mono text-muted-foreground">{shortenText(order.btc_txid, 12, 12)}</p>
                                     <CopyButton textToCopy={order.btc_txid || ''} size="icon" variant="ghost" className="h-7 w-7"/>
@@ -434,11 +434,11 @@ export default function OrderDetailsPage() {
             {order.direction === 'buy' && order.status === 'awaiting_confirmation' && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Hourglass className="size-5 text-primary" />Awaiting Confirmation</CardTitle>
-                        <CardDescription>Your payment proof has been submitted and is currently being reviewed by the provider.</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Hourglass className="size-5 text-primary" />Kurindira kwemezwa</CardTitle>
+                        <CardDescription>Icemezo cawe co kuriha carungitswe kandi kiriko kirasuzumwa n'umutanzi.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground">You will be notified once the payment is confirmed and the Bitcoin has been sent to your wallet. This may take some time.</p>
+                        <p className="text-muted-foreground">Uzomenyeshwa igihe kwishura kwawe kuzoba kwemejwe kandi Bitcoin ikarungikwa mu irembo ryawe. Ibi bishobora gufata umwanya.</p>
                     </CardContent>
                 </Card>
             )}

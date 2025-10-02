@@ -35,11 +35,11 @@ export default function CreateWalletPage() {
     } catch (error: any) {
       const errorMsg =
         error.response?.data?.error?.details?.detail ||
-        "Could not generate a recovery phrase. Please try again.";
+        "Ntivyakunze gukora amajambo yo kugarura. Subira ugerageze.";
       setError(errorMsg);
       toast({
         variant: "destructive",
-        title: "Wallet Creation Failed",
+        title: "Kurema Irembo Ryanse",
         description: errorMsg,
       });
     } finally {
@@ -57,20 +57,19 @@ export default function CreateWalletPage() {
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Your Recovery Phrase</CardTitle>
+          <CardTitle className="text-2xl">Amajambo Yawe yo Kugarura</CardTitle>
           <CardDescription>
-            This 12-word phrase is the only way to recover your wallet.
+            Aya majambo 12 niyo nzira yonyene yo kugarura irembo ryawe.
             <br />
-            Write them down in order and store them in a safe, offline place.
+            Yandike ku rutonde kandi uyabike ahantu hizigirwa hatari kuri internet.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <Alert variant="destructive" className="bg-destructive/10">
             <ShieldCheck className="h-4 w-4" />
-            <AlertTitle>Never share this phrase!</AlertTitle>
+            <AlertTitle>Ntugasangire aya majambo!</AlertTitle>
             <AlertDescription>
-              Anyone with this phrase can steal your Bitcoin. Do not save it
-              digitally.
+              Umuntu wese afise aya majambo ashobora kwiba Bitcoin zawe. Ntuyabike kuri internet.
             </AlertDescription>
           </Alert>
           <div className="rounded-lg border bg-background p-6">
@@ -83,7 +82,7 @@ export default function CreateWalletPage() {
             ) : error ? (
               <div className="flex flex-col items-center justify-center text-center text-destructive">
                 <AlertCircle className="mb-2 size-8" />
-                <p className="font-semibold">Error Generating Phrase</p>
+                <p className="font-semibold">Ikosa mu gukora amajambo</p>
                 <p className="text-sm">{error}</p>
                 <Button
                   onClick={generateMnemonic}
@@ -91,7 +90,7 @@ export default function CreateWalletPage() {
                   className="mt-4"
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Try Again
+                  Subira Ugerageze
                 </Button>
               </div>
             ) : (
@@ -111,14 +110,14 @@ export default function CreateWalletPage() {
             textToCopy={mnemonic || ""}
             disabled={loading || !mnemonic || !!error}
             variant="outline"
-            toastMessage="Recovery phrase copied"
+            toastMessage="Amajambo yo kugarura yakoporowe"
           >
-            Copy Phrase
+            Koporora Amajambo
           </CopyButton>
         </CardContent>
         <CardFooter>
           <Button asChild className="w-full" size="lg" disabled={loading || !!error || !mnemonic}>
-            <Link href="/verify-mnemonic">I've written it down</Link>
+            <Link href="/verify-mnemonic">Narayanditse</Link>
           </Button>
         </CardFooter>
       </Card>

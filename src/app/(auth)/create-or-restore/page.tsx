@@ -20,11 +20,11 @@ export default function CreateOrRestorePage() {
       </div>
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Set Up Your Wallet</CardTitle>
+          <CardTitle className="text-2xl">Shiramwo Irembo Ry'amafaranga</CardTitle>
           <CardDescription>
-            You're logged in, but you don't have a wallet yet.
+            Winjiye, ariko nturagira irembo ry'amafaranga.
             <br />
-            Create a new one or restore an existing wallet to get started.
+            Kora irindi rishasha canke ugarure iryo wari usanganywe kugira utangure.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -34,9 +34,9 @@ export default function CreateOrRestorePage() {
           >
             <PlusCircle className="size-12 text-primary" />
             <div className="space-y-1">
-              <h3 className="font-semibold">Create a New Wallet</h3>
+              <h3 className="font-semibold">Kurema Irembo Rishasha</h3>
               <p className="text-sm text-muted-foreground">
-                Generate a brand new, secure Bitcoin wallet.
+                Kora irembo rishasha ry'amafaranga ya Bitcoin rizivye.
               </p>
             </div>
           </Link>
@@ -47,9 +47,9 @@ export default function CreateOrRestorePage() {
           >
             <Import className="size-12 text-primary" />
             <div className="space-y-1">
-              <h3 className="font-semibold">Restore Existing Wallet</h3>
+              <h3 className="font-semibold">Kugarura Irembo Risanzwe</h3>
               <p className="text-sm text-muted-foreground">
-                Import your wallet using a 12 or 24-word recovery phrase.
+                Koresha amajambo 12 canke 24 yo kugarura irembo ryawe.
               </p>
             </div>
           </Link>

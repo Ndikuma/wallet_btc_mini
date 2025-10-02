@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -21,11 +22,10 @@ export default function SendPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                 <Bitcoin className="size-6 text-primary" />
             </div>
-            <CardTitle>Send Bitcoin</CardTitle>
+            <CardTitle>Rungika Bitcoin</CardTitle>
             </div>
             <CardDescription>
-            Enter the recipient's address and amount to send. The optimal
-            fee will be calculated for you based on UTXOs. Avoid sending your entire balance as this can cause errors with fee estimation.
+            Injiza aderese y'uwakira n'umubare wo kurungika. Agashirukiramico keza kazoharurwa hisunzwe UTXOs. Irinde kurungika amafaranga yawe yose kuko bishobora gutera amakosa mu guharura agashirukiramico.
             </CardDescription>
         </CardHeader>
         <CardContent>

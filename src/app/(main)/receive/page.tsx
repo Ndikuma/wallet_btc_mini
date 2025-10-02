@@ -37,16 +37,16 @@ export default function ReceivePage() {
       setAddress(response.data.address);
       if (!isInitial) {
          toast({
-          title: "New Address Generated",
-          description: "A new receiving address has been created for you.",
+          title: "Aderese nshasha yakozwe",
+          description: "Wakorewe aderese nshasha yo kwakiriraho.",
         });
       }
     } catch (error: any) {
-      const errorMsg = error.message || "Could not generate a new address. Please try again.";
+      const errorMsg = error.message || "Ntivyakunze gukora aderese nshasha. Subira ugerageze.";
       setError(errorMsg);
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Ikosa",
         description: errorMsg,
       });
     } finally {
@@ -86,7 +86,7 @@ export default function ReceivePage() {
             const response = await api.generateQrCode(uri);
             setQrCode(response.data.qr_code);
         } catch (error) {
-            console.error("Failed to generate QR code from backend, using fallback.", error);
+            console.error("Gukora kode ya QR kuva kuri backend biranse, hakoreshejwe iy'agateganyo.", error);
             const fallbackQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(uri)}&format=png&bgcolor=ffffff`;
             setQrCode(fallbackQrApiUrl);
         }
@@ -100,9 +100,9 @@ export default function ReceivePage() {
     <div className="mx-auto max-w-lg">
       <Card>
         <CardHeader className="text-center">
-          <CardTitle>Receive Bitcoin</CardTitle>
+          <CardTitle>Wakira Bitcoin</CardTitle>
           <CardDescription>
-            Share your address to receive BTC.
+            Sangiza aderese yawe kugira wakire BTC.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">
@@ -112,17 +112,17 @@ export default function ReceivePage() {
             ) : error ? (
                  <div className="text-center text-destructive p-4">
                     <AlertCircle className="mx-auto h-8 w-8" />
-                    <p className="mt-2 font-semibold">Error Generating Address</p>
+                    <p className="mt-2 font-semibold">Ikosa mu gukora aderese</p>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
                     <Button onClick={fetchAddress} variant="secondary" className="mt-4">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
-                        Try Again
+                        Subira Ugerageze
                     </Button>
                 </div>
             ) : qrCode ? (
                 <Image
                 src={qrCode}
-                alt="Wallet Address QR Code"
+                alt="Kode ya QR y'aderese y'irembo"
                 width={256}
                 height={256}
                 className="rounded-md"
@@ -144,17 +144,17 @@ export default function ReceivePage() {
                 <CopyButton 
                   textToCopy={address || ''} 
                   disabled={loading || !address || !!error} 
-                  toastMessage="Address copied to clipboard"
+                  toastMessage="Aderese yakoporowe mu bubiko"
                   variant="outline"
                 >
-                  Copy Address
+                  Koporora Aderese
                 </CopyButton>
                 <ShareButton 
-                  shareData={{ title: "My Bitcoin Address", text: address || '' }} 
+                  shareData={{ title: "Aderese yanje ya Bitcoin", text: address || '' }} 
                   disabled={loading || !address || !!error}
                   variant="outline"
                 >
-                  Share Address
+                  Sangiza Aderese
                 </ShareButton>
              </div>
 
@@ -162,7 +162,7 @@ export default function ReceivePage() {
              
              <Button variant="ghost" size="sm" onClick={() => generateNewAddressFn(false)} disabled={generating || loading || !!error}>
                 <RefreshCw className={cn("mr-2 size-4", generating && "animate-spin")} />
-                {generating ? 'Generating...' : 'Generate New Address'}
+                {generating ? 'Gukora...' : 'Kora Aderese Nshasha'}
              </Button>
           </div>
         </CardContent>

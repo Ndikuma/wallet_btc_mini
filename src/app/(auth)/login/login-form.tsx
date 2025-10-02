@@ -21,8 +21,8 @@ import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
-  username: z.string().min(1, { message: "Please enter your username." }),
-  password: z.string().min(1, { message: "Please enter your password." }),
+  username: z.string().min(1, { message: "Ndokera ushiremwo izina ryawe." }),
+  password: z.string().min(1, { message: "Ndokera ushiremwo ijambo ry'ibanga." }),
 });
 
 export function LoginForm() {
@@ -49,8 +49,8 @@ export function LoginForm() {
       document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
 
       toast({
-        title: "Login Successful",
-        description: "Welcome back!",
+        title: "Winjiye neza",
+        description: "Kaze, garuka!",
       });
 
       const { user } = response.data;
@@ -64,7 +64,7 @@ export function LoginForm() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Kwinjira biranse",
         description: error.message,
       });
     } finally {
@@ -80,9 +80,9 @@ export function LoginForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Izina ry'ukoresha</FormLabel>
               <FormControl>
-                <Input type="text" placeholder="yourusername" {...field} autoComplete="username" />
+                <Input type="text" placeholder="izina ryawe" {...field} autoComplete="username" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -93,7 +93,7 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Ijambo ry'ibanga</FormLabel>
               <div className="relative">
                 <FormControl>
                   <Input 
@@ -108,7 +108,7 @@ export function LoginForm() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? "Hisha ijambo ry'ibanga" : "Erekana ijambo ry'ibanga"}
                 >
                   {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                 </button>
@@ -119,7 +119,7 @@ export function LoginForm() {
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'Kwinjira...' : 'Injira'}
         </Button>
       </form>
     </Form>

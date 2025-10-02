@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -19,7 +20,7 @@ const fontCode = Source_Code_Pro({
 
 export const metadata: Metadata = {
   title: 'Umuhora Tech Wallet',
-  description: 'A mini bitcoin wallet application',
+  description: 'Isabukuru ntoya y\'irembo rya bitcoin',
 };
 
 export default function RootLayout({
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="rw" className="dark" suppressHydrationWarning>
       <body className={cn("font-body antialiased", fontBody.variable, fontCode.variable)}>
         {children}
         <Toaster />
@@ -36,5 +37,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

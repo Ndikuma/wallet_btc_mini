@@ -69,7 +69,7 @@ export function UserNav() {
   if (!user) {
     return (
       <Button asChild>
-        <Link href="/login">Login</Link>
+        <Link href="/login">Injira</Link>
       </Button>
     )
   }
@@ -96,20 +96,20 @@ export function UserNav() {
           <DropdownMenuItem asChild>
             <Link href="/profile">
               <UserIcon />
-              <span>Profile</span>
+              <span>Profili</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
              <Link href="/settings">
                 <Settings />
-                <span>Settings</span>
+                <span>Amagenamiterere</span>
               </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut />
-          <span>Log out</span>
+          <span>Sohoka</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

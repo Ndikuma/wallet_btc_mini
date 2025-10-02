@@ -41,12 +41,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const formSchema = (balance: number) => z.object({
   recipient: z
     .string()
-    .min(26, { message: "Bitcoin address is too short." })
-    .max(62, { message: "Bitcoin address is too long." }),
+    .min(26, { message: "Aderese ya Bitcoin ni ngufi cane." })
+    .max(62, { message: "Aderese ya Bitcoin ni ndende cane." }),
   amount: z.coerce
-    .number({invalid_type_error: "Please enter a valid number."})
-    .positive({ message: "Amount must be positive." })
-    .max(balance, { message: `Insufficient balance. Available: ${balance.toFixed(8)} BTC` }),
+    .number({invalid_type_error: "Ndokera ushire umubare wemewe."})
+    .positive({ message: "Umubare ugomba kuba urenze zero." })
+    .max(balance, { message: `Amafaranga adahagije. Ahari: ${balance.toFixed(8)} BTC` }),
 });
 
 export type SendFormValues = z.infer<ReturnType<typeof formSchema>>;
@@ -134,7 +134,7 @@ export function SendForm() {
           if (code) {
             const address = code.data.replace(/^bitcoin:/, "").split("?")[0];
             form.setValue("recipient", address, { shouldValidate: true });
-            toast({ title: "QR Code Scanned", description: `Recipient address set.` });
+            toast({ title: "Kode ya QR yasomwe", description: `Aderese y'uwakira yashizwemwo.` });
             setIsScanning(false);
             return; 
           }
@@ -178,7 +178,7 @@ export function SendForm() {
 
   async function onSubmit(values: SendFormValues) {
     if (!feeEstimation) {
-        toast({ variant: "destructive", title: "Cannot Send", description: "Waiting for fee estimation to complete." });
+        toast({ variant: "destructive", title: "Ntibishoboka kurungika", description: "Kurindira ko guharura agashirukiramico kurangira." });
         return;
     }
     setIsLoading(true);
@@ -188,15 +188,15 @@ export function SendForm() {
             amount: feeEstimation.sendable_btc,
         });
         toast({
-            title: (response.data as any).message || "Transaction Submitted",
-            description: `Sending ${feeEstimation.sendable_btc} BTC.`,
+            title: (response.data as any).message || "Igikorwa carungitswe",
+            description: `Kurungika ${feeEstimation.sendable_btc} BTC.`,
         });
         refreshBalance();
         setIsSuccessDialogOpen(true);
     } catch(error: any) {
         toast({
             variant: "destructive",
-            title: "Transaction Failed",
+            title: "Igikorwa canse",
             description: error.message,
         });
     } finally {
@@ -208,7 +208,7 @@ export function SendForm() {
     return (
         <div className="space-y-8">
             <div className="p-4 rounded-lg bg-secondary border">
-                <p className="text-sm text-muted-foreground">Your available balance</p>
+                <p className="text-sm text-muted-foreground">Amafaranga yawe aboneka</p>
                 <Skeleton className="h-8 w-48 mt-1" />
             </div>
             <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
@@ -219,14 +219,14 @@ export function SendForm() {
   }
 
   if (balanceError) {
-    return <Alert variant="destructive"><AlertTitle>Could not load balance</AlertTitle><AlertDescription>{balanceError}</AlertDescription></Alert>
+    return <Alert variant="destructive"><AlertTitle>Ntivyakunze gupakira amafaranga</AlertTitle><AlertDescription>{balanceError}</AlertDescription></Alert>
   }
 
 
   return (
     <>
       <div className="p-4 rounded-lg bg-secondary border mb-6">
-        <p className="text-sm text-muted-foreground">Your available balance</p>
+        <p className="text-sm text-muted-foreground">Amafaranga yawe aboneka</p>
         {isBalanceLoading ? 
             <Skeleton className="h-8 w-48 mt-1" /> :
             <p className="text-2xl font-bold font-mono">{currentBalance.toFixed(8)} BTC</p>
@@ -240,19 +240,19 @@ export function SendForm() {
             name="recipient"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Recipient Address</FormLabel>
+                <FormLabel>Aderese y'Uwakira</FormLabel>
                 <div className="relative">
                   <FormControl>
                     <Input placeholder="bc1q..." {...field} className="pr-10"/>
                   </FormControl>
                   <Dialog open={isScanning} onOpenChange={setIsScanning}>
                     <DialogTrigger asChild>
-                       <Button variant="ghost" size="icon" type="button" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"><ScanLine className="size-5" /><span className="sr-only">Scan QR</span></Button>
+                       <Button variant="ghost" size="icon" type="button" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"><ScanLine className="size-5" /><span className="sr-only">Soma QR</span></Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader className="text-center">
-                        <DialogTitle>Scan QR Code</DialogTitle>
-                        <DialogDescription>Point camera at a Bitcoin address QR code.</DialogDescription>
+                        <DialogTitle>Soma Kode ya QR</DialogTitle>
+                        <DialogDescription>Shira kamera kuri kode ya QR y'aderese ya Bitcoin.</DialogDescription>
                       </DialogHeader>
                       <div className="flex flex-col items-center gap-4">
                         <div className="relative w-full aspect-square bg-muted rounded-md overflow-hidden">
@@ -261,7 +261,7 @@ export function SendForm() {
                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none"><div className="w-2/3 h-2/3 border-4 border-primary rounded-lg" /></div>
                         </div>
                         {hasCameraPermission === false && (
-                          <Alert variant="destructive"><AlertTitle>Camera Access Required</AlertTitle><AlertDescription>Please allow camera access to use this feature.</AlertDescription></Alert>
+                          <Alert variant="destructive"><AlertTitle>Uruhusha rwa Kamera rurasabwa</AlertTitle><AlertDescription>Ndokera wemere uruhusha rwa kamera kugira ukoreshe iki gice.</AlertDescription></Alert>
                         )}
                       </div>
                     </DialogContent>
@@ -276,7 +276,7 @@ export function SendForm() {
             name="amount"
             render={({ field }) => (
               <FormItem>
-                 <FormLabel>Amount to Send</FormLabel>
+                 <FormLabel>Umubare wo Kurungika</FormLabel>
                  <div className="relative">
                     <FormControl><Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ""} className="pl-8"/></FormControl>
                     <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -285,7 +285,7 @@ export function SendForm() {
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.25)}>25%</Button>
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.5)}>50%</Button>
                     <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => handleSetAmount(0.75)}>75%</Button>
-                    <Button type="button" variant="destructive" size="sm" className="flex-1" onClick={handleSetMax}>Max</Button>
+                    <Button type="button" variant="destructive" size="sm" className="flex-1" onClick={handleSetMax}>Vyose</Button>
                 </div>
                 <FormMessage />
               </FormItem>
@@ -296,21 +296,21 @@ export function SendForm() {
             <div className="space-y-4 rounded-lg border bg-secondary/30 p-4">
                 {isEstimatingFee ? (
                     <div className="flex items-center justify-center text-sm text-muted-foreground h-40">
-                        <Loader2 className="mr-2 size-4 animate-spin" /> Estimating fees...
+                        <Loader2 className="mr-2 size-4 animate-spin" /> Guharura agashirukiramico...
                     </div>
                 ) : feeError ? (
                     <div className="text-sm text-center text-destructive h-40 flex items-center justify-center">{feeError}</div>
                 ) : feeEstimation ? (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                           <p className="text-sm text-muted-foreground">You will send</p>
+                           <p className="text-sm text-muted-foreground">Uzorungika</p>
                            <p className="text-2xl font-bold font-mono">{feeEstimation.sendable_btc} BTC</p>
                            <p className="text-sm text-muted-foreground font-mono">{getFiat(feeEstimation.sendable_usd, 'USD')} / {getFiat(feeEstimation.sendable_bif, 'BIF')}</p>
                         </div>
                         <Separator />
                         <div className="space-y-2">
                            <div className="flex justify-between text-sm">
-                               <p className="text-muted-foreground">Network Fee</p>
+                               <p className="text-muted-foreground">Agashirukiramico</p>
                                <p className="font-mono">{feeEstimation.network_fee_btc} BTC</p>
                            </div>
                            <div className="flex justify-between text-xs">
@@ -320,7 +320,7 @@ export function SendForm() {
                         </div>
                         <Separator className="border-dashed" />
                         <div className="flex justify-between items-center font-semibold">
-                            <span className="text-base flex items-center gap-2"><Wallet className="size-5" />Total Debit</span>
+                            <span className="text-base flex items-center gap-2"><Wallet className="size-5" />Igiteranyo gisohoka</span>
                             <div className="text-right font-mono">
                                 <p className="text-base">{watchedAmount || '0.00000000'} BTC</p>
                             </div>
@@ -332,7 +332,7 @@ export function SendForm() {
 
           <Button type="submit" className="w-full" size="lg" disabled={!form.formState.isValid || isLoading || isEstimatingFee || !feeEstimation}>
             {isLoading ? <Loader2 className="mr-2 size-5 animate-spin" /> : <ArrowUpRight className="mr-2 size-5" />}
-            {isLoading ? 'Sending...' : 'Send Bitcoin'}
+            {isLoading ? 'Kurungika...' : 'Rungika Bitcoin'}
           </Button>
         </form>
       </Form>
@@ -348,11 +348,11 @@ export function SendForm() {
           <DialogHeader className="items-center text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20"><CheckCircle2 className="size-10 text-green-600 dark:text-green-400" /></div>
               <div className="space-y-2 pt-4">
-                  <DialogTitle>Transaction Sent</DialogTitle>
-                  <DialogDescription className="text-muted-foreground">Your Bitcoin has been sent. It may take a few moments to confirm.</DialogDescription>
+                  <DialogTitle>Igikorwa carungitswe</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">Bitcoin yawe yarungitswe. Bishobora gufata umwanya muto kugira vyemezwe.</DialogDescription>
               </div>
           </DialogHeader>
-          <DialogClose asChild><Button className="w-full max-w-xs mx-auto">Done</Button></DialogClose>
+          <DialogClose asChild><Button className="w-full max-w-xs mx-auto">Vyose birangiye</Button></DialogClose>
         </DialogContent>
       </Dialog>
     </>

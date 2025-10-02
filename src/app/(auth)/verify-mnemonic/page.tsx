@@ -49,8 +49,8 @@ export default function VerifyMnemonicPage() {
     if (!storedMnemonic) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Mnemonic phrase not found. Please create a wallet first.",
+        title: "Ikosa",
+        description: "Amajambo yo kugarura ntabonetse. Ndokera ukore irembo ubanze.",
       });
       router.push("/create-wallet");
     } else {
@@ -92,8 +92,8 @@ export default function VerifyMnemonicPage() {
     if (!isCorrect) {
       toast({
         variant: "destructive",
-        title: "Verification Failed",
-        description: "One or more words are incorrect. Please try again.",
+        title: "Verifikasiya yanse",
+        description: "Ijambo rimwe canke menshi siyo. Ndokera ugerageze.",
       });
       setIsLoading(false);
       handleClear();
@@ -101,13 +101,13 @@ export default function VerifyMnemonicPage() {
     }
 
     try {
-      if (!mnemonic) throw new Error("Mnemonic not found");
+      if (!mnemonic) throw new Error("Amajambo yo kugarura ntabonetse");
       
       await api.createWallet(mnemonic);
 
       toast({
-        title: "Wallet Created Successfully",
-        description: "Your wallet is ready and secured.",
+        title: "Irembo ryakozwe neza",
+        description: "Irembo ryawe riri tayari kandi ririzigirwa.",
       });
       localStorage.removeItem("tempMnemonic");
       router.push("/dashboard");
@@ -115,7 +115,7 @@ export default function VerifyMnemonicPage() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Wallet Creation Failed",
+        title: "Kurema irembo biranse",
         description: error.message,
       });
     } finally {
@@ -133,16 +133,16 @@ export default function VerifyMnemonicPage() {
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
-          <CardTitle>Verify Your Phrase</CardTitle>
+          <CardTitle>Emeza amajambo yawe</CardTitle>
           <CardDescription>
-            Select the correct word from the list below for each required position to prove you have backed up your phrase.
+            Tora ijambo ribereye mu rutonde rukurikira kuri buri mwanya usabwa kugira wemeze ko wabitse amajambo yawe.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {challengeIndices.map(index => (
               <div key={index} className="space-y-2">
-                <label className="text-sm font-semibold text-muted-foreground">Word #{index + 1}</label>
+                <label className="text-sm font-semibold text-muted-foreground">Ijambo #{index + 1}</label>
                 <button
                   type="button"
                   onClick={() => handleChallengeSlotClick(index)}
@@ -182,7 +182,7 @@ export default function VerifyMnemonicPage() {
           <div className="flex justify-center">
              <Button variant="ghost" onClick={handleClear} disabled={Object.keys(answers).length === 0 || isLoading}>
                 <Undo2 className="mr-2 size-4" />
-                Clear selections
+                Siba ivyo watoye
             </Button>
           </div>
 
@@ -190,7 +190,7 @@ export default function VerifyMnemonicPage() {
         <CardFooter>
           <Button onClick={handleVerify} size="lg" className="w-full" disabled={!allWordsEntered || isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isLoading ? "Verifying..." : "Verify & Finish"}
+            {isLoading ? "Kuraba..." : "Emeza & Heza"}
           </Button>
         </CardFooter>
       </Card>

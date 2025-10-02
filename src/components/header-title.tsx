@@ -5,16 +5,16 @@ import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
 const getTitleFromPath = (path: string) => {
-    if (path.startsWith('/dashboard')) return 'Dashboard';
-    if (path.startsWith('/send')) return 'Send';
-    if (path.startsWith('/receive')) return 'Receive';
-    if (path.startsWith('/buy')) return 'Buy Bitcoin';
-    if (path.startsWith('/sell')) return 'Sell Bitcoin';
-    if (path.startsWith('/orders')) return 'My Orders';
-    if (path.startsWith('/transactions')) return 'Transactions';
-    if (path.startsWith('/profile')) return 'Profile';
-    if (path.startsWith('/settings')) return 'Settings';
-    return 'Overview';
+    if (path.startsWith('/dashboard')) return 'Kuri dashboard';
+    if (path.startsWith('/send')) return 'Rungika';
+    if (path.startsWith('/receive')) return 'Wakira';
+    if (path.startsWith('/buy')) return 'Gura Bitcoin';
+    if (path.startsWith('/sell')) return 'Gurisha Bitcoin';
+    if (path.startsWith('/orders')) return 'Amatangazo Yanje';
+    if (path.startsWith('/transactions')) return 'Ibikorwa';
+    if (path.startsWith('/profile')) return 'Profili';
+    if (path.startsWith('/settings')) return 'Amagenamiterere';
+    return 'Incamake';
 }
 
 export function HeaderTitle() {

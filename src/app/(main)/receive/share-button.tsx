@@ -26,22 +26,22 @@ export function ShareButton({ shareData, children, className, ...props }: ShareB
       try {
         await navigator.share(shareData);
         toast({
-          title: "Shared successfully",
+          title: "Vyagiye neza",
         });
       } catch (error) {
         if ((error as DOMException).name !== 'AbortError') {
              toast({
                 variant: "destructive",
-                title: "Failed to share",
-                description: "Could not share the payment details.",
+                title: "Kusangira biranse",
+                description: "Ntivyakunze gusangira amakuru yo kwishura.",
             });
         }
       }
     } else {
          toast({
             variant: "destructive",
-            title: "Sharing not supported",
-            description: "Your browser cannot share this content.",
+            title: "Kusangira ntibikunda",
+            description: "Browser yawe ntishobora gusangira ibi bintu.",
         });
     }
   };

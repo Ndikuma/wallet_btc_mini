@@ -46,9 +46,9 @@ import { CopyButton } from "@/components/copy-button";
 
 const buySchema = z.object({
   amount: z.coerce
-    .number({ invalid_type_error: "Please enter a valid amount." })
-    .min(1, { message: "Amount must be at least 1." }),
-  currency: z.string().min(1, "Please select a currency."),
+    .number({ invalid_type_error: "Ndokera ushire umubare wemewe." })
+    .min(1, { message: "Umubare ugomba kuba byibura 1." }),
+  currency: z.string().min(1, "Ndokera utore ifaranga."),
 });
 
 type BuyFormValues = z.infer<typeof buySchema>;
@@ -81,7 +81,7 @@ export default function BuyWithProviderPage() {
       setLoading(true);
       setError(null);
       if (isNaN(providerId)) {
-        setError("Invalid provider ID.");
+        setError("Indangamuntu y'umutanzi ntiyemewe.");
         setLoading(false);
         return;
       }
@@ -94,10 +94,10 @@ export default function BuyWithProviderPage() {
             form.setValue('currency', foundProvider.currencies[0]);
           }
         } else {
-          setError("Provider not found.");
+          setError("Umukoresha ntabonetse.");
         }
       } catch (err: any) {
-        setError(err.message || "Failed to load provider details.");
+        setError(err.message || "Gushaka amakuru y'umutanzi biranse.");
       } finally {
         setLoading(false);
       }
@@ -115,7 +115,7 @@ export default function BuyWithProviderPage() {
       const response = await api.calculateBuyFee(provider.id, amount, currency);
       setFeeCalc(response.data);
     } catch (err: any) {
-      setCalcError(err.message || "Could not calculate fee.");
+      setCalcError(err.message || "Ntivyakunze guharura amafaranga yo kuriha.");
       setFeeCalc(null);
     } finally {
       setIsCalculating(false);
@@ -133,7 +133,7 @@ export default function BuyWithProviderPage() {
 
   const onSubmit = async (data: BuyFormValues) => {
     if (!provider || !feeCalc) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Fee calculation is not complete.' });
+        toast({ variant: 'destructive', title: 'Ikosa', description: 'Guharura amafaranga yo kuriha ntikurarangira.' });
         return;
     }
     setIsSubmitting(true);
@@ -146,10 +146,10 @@ export default function BuyWithProviderPage() {
             btc_amount: parseFloat(feeCalc.btc_amount)
         };
         const order = await api.createBuyOrder(orderPayload);
-        toast({ title: 'Order Created', description: `Your order #${order.data.id} has been created.` });
+        toast({ title: 'Itangazo ryakozwe', description: `Itangazo ryawe #${order.data.id} ryakozwe.` });
         router.push(`/orders/${order.data.id}`);
     } catch (err: any) {
-        toast({ variant: 'destructive', title: 'Order Failed', description: err.message || 'Could not create your order.' });
+        toast({ variant: 'destructive', title: 'Itangazo Ryanse', description: err.message || 'Ntivyakunze gukora itangazo ryawe.' });
     } finally {
         setIsSubmitting(false);
     }
@@ -174,15 +174,15 @@ export default function BuyWithProviderPage() {
   if (error) {
     return (
         <div className="mx-auto max-w-lg">
-            <Button variant="ghost" asChild className="-ml-4"><Link href="/buy"><ArrowLeft className="mr-2 size-4" />Back to Providers</Link></Button>
+            <Button variant="ghost" asChild className="-ml-4"><Link href="/buy"><ArrowLeft className="mr-2 size-4" />Subira inyuma ku Batanga serivisi</Link></Button>
             <Card className="mt-4 flex h-48 items-center justify-center">
                 <div className="text-center text-destructive">
                     <AlertCircle className="mx-auto h-8 w-8" />
-                    <p className="mt-2 font-semibold">Error Loading Provider</p>
+                    <p className="mt-2 font-semibold">Ikosa mu gupakira umutanzi</p>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
                     <Button onClick={fetchProvider} variant="secondary" className="mt-4">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
-                        Try Again
+                        Subira Ugerageze
                     </Button>
                 </div>
             </Card>
@@ -197,7 +197,7 @@ export default function BuyWithProviderPage() {
       <Button variant="ghost" asChild className="-ml-4">
         <Link href="/buy">
           <ArrowLeft className="mr-2 size-4" />
-          Back to Providers
+          Subira inyuma ku Batanga serivisi
         </Link>
       </Button>
 
@@ -219,7 +219,7 @@ export default function BuyWithProviderPage() {
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="amount" className="text-base font-semibold">Amount to Buy</Label>
+                      <Label htmlFor="amount" className="text-base font-semibold">Umubare wo kugura</Label>
                       <div className="flex gap-2">
                         <FormField
                             control={form.control}
@@ -241,7 +241,7 @@ export default function BuyWithProviderPage() {
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
                                             <SelectTrigger className="h-12 w-32">
-                                                <SelectValue placeholder="Currency" />
+                                                <SelectValue placeholder="Ifaranga" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -258,19 +258,19 @@ export default function BuyWithProviderPage() {
 
                     {(isCalculating || feeCalc || calcError) && (
                         <div className="space-y-3 rounded-lg border bg-secondary/30 p-4">
-                            {isCalculating && <div className="flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="mr-2 size-4 animate-spin" />Calculating...</div>}
+                            {isCalculating && <div className="flex items-center justify-center text-muted-foreground text-sm"><Loader2 className="mr-2 size-4 animate-spin" />Guharura...</div>}
                             {calcError && <div className="text-center text-sm text-destructive">{calcError}</div>}
                             {feeCalc && (
                                 <div className="space-y-4">
                                      <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span>{feeCalc.amount} {feeCalc.currency}</span></div>
-                                        <div className="flex justify-between"><span className="text-muted-foreground">Fee</span><span>{feeCalc.fee} {feeCalc.currency}</span></div>
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Umubare</span><span>{feeCalc.amount} {feeCalc.currency}</span></div>
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Agashirukiramico</span><span>{feeCalc.fee} {feeCalc.currency}</span></div>
                                         <Separator />
-                                        <div className="flex justify-between font-bold text-base"><span >Total to Pay</span><span>{feeCalc.total_amount} {feeCalc.currency}</span></div>
+                                        <div className="flex justify-between font-bold text-base"><span >Igiteranyo co kuriha</span><span>{feeCalc.total_amount} {feeCalc.currency}</span></div>
                                     </div>
                                     <Separator className="border-dashed" />
                                     <div className="flex items-center justify-between text-base">
-                                        <span className="font-semibold flex items-center gap-2"><Bitcoin className="size-5 text-primary" /> You will receive</span>
+                                        <span className="font-semibold flex items-center gap-2"><Bitcoin className="size-5 text-primary" /> Uzoronka</span>
                                         <span className="font-bold font-mono">{feeCalc.btc_amount} BTC</span>
                                     </div>
                                 </div>
@@ -282,7 +282,7 @@ export default function BuyWithProviderPage() {
                 <CardFooter>
                     <Button type="submit" size="lg" className="w-full" disabled={!feeCalc || isCalculating || isSubmitting}>
                         {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : <ShoppingCart className="mr-2 size-5" />}
-                        {isSubmitting ? "Creating Order..." : "Create Buy Order"}
+                        {isSubmitting ? "Gukora itangazo..." : "Kora Itangazo ryo kugura"}
                     </Button>
                 </CardFooter>
             </form>

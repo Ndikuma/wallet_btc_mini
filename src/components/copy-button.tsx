@@ -18,7 +18,7 @@ export function CopyButton({ textToCopy, toastMessage, children, className, onCo
   const handleCopy = () => {
     navigator.clipboard.writeText(textToCopy);
     toast({
-      title: toastMessage || "Copied to clipboard",
+      title: toastMessage || "Vyakoporowe mu bubiko",
     });
     if (onCopy) {
       onCopy();
@@ -29,7 +29,7 @@ export function CopyButton({ textToCopy, toastMessage, children, className, onCo
     return (
        <Button onClick={handleCopy} className={className} {...props}>
          <Copy className="size-4" />
-         <span className="sr-only">Copy</span>
+         <span className="sr-only">Koporora</span>
       </Button>
     )
   }

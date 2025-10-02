@@ -22,9 +22,9 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 const formSchema = z.object({
-  username: z.string().min(3, { message: "Username must be at least 3 characters." }),
-  email: z.string().email({ message: "Please enter a valid email." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  username: z.string().min(3, { message: "Izina ry'ukoresha rigomba kuba rifise n'imiburiburi inyuguti 3." }),
+  email: z.string().email({ message: "Ndokera ushiremwo imeri yemewe." }),
+  password: z.string().min(8, { message: "Ijambo ry'ibanga rigomba kuba rifise n'imiburiburi inyuguti 8." }),
 });
 
 export function RegisterForm() {
@@ -53,17 +53,17 @@ export function RegisterForm() {
       document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
 
       toast({
-        title: "Account Created",
-        description: "Please set up your wallet to continue.",
+        title: "Konti yakozwe",
+        description: "Ndokera ushireho irembo ryawe kugira ubandanye.",
       });
       router.push("/create-or-restore");
       router.refresh();
     } catch (error: any) {
        const errorDetails = error.response?.data?.error?.details;
-       const errorMsg = errorDetails?.email?.[0] || errorDetails?.password?.[0] || errorDetails?.username?.[0] || error.response?.data?.message || "An unexpected error occurred.";
+       const errorMsg = errorDetails?.email?.[0] || errorDetails?.password?.[0] || errorDetails?.username?.[0] || error.response?.data?.message || "Habaye ikosa rititezwe.";
       toast({
         variant: "destructive",
-        title: "Registration Failed",
+        title: "Kwandika biranse",
         description: errorMsg,
       });
     } finally {
@@ -79,9 +79,9 @@ export function RegisterForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Izina ry'ukoresha</FormLabel>
               <FormControl>
-                <Input type="text" placeholder="yourusername" {...field} />
+                <Input type="text" placeholder="izina ryawe" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -92,7 +92,7 @@ export function RegisterForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Imeri</FormLabel>
               <FormControl>
                 <Input type="email" placeholder="m@example.com" {...field} />
               </FormControl>
@@ -105,7 +105,7 @@ export function RegisterForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Ijambo ry'ibanga</FormLabel>
                <div className="relative">
                 <FormControl>
                   <Input 
@@ -128,7 +128,7 @@ export function RegisterForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-           {isLoading ? 'Creating Account...' : 'Create Account'}
+           {isLoading ? 'Kurema Konti...' : 'Kora Konti'}
         </Button>
       </form>
     </Form>

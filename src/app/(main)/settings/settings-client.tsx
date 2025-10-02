@@ -50,7 +50,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 const restoreFormSchema = z.object({
-  data: z.string().min(20, { message: "Recovery data seems too short." })
+  data: z.string().min(20, { message: "Amakuru yo kugarura asa n'aho ari magufi cane." })
     .refine(value => {
         const trimmed = value.trim();
         const wordCount = trimmed.split(/\s+/).length;
@@ -59,7 +59,7 @@ const restoreFormSchema = z.object({
         const isExtendedKey = /^(xpub|ypub|zpub|tpub|upub|vpub)/.test(trimmed);
         
         return isMnemonic || isWif || isExtendedKey;
-    }, "Please enter a valid 12/24-word phrase or a WIF/extended private key."),
+    }, "Ndokera winjize amajambo 12/24 yemewe canke urufunguzo rwihariye rwa WIF/rwagutse."),
 });
 
 export function SettingsClient() {
@@ -86,7 +86,7 @@ export function SettingsClient() {
     } catch(error: any) {
         toast({
             variant: "destructive",
-            title: "Backup Failed",
+            title: "Kubika biranse",
             description: error.message,
         });
         setIsBackupDialogOpen(false);
@@ -105,8 +105,8 @@ export function SettingsClient() {
     try {
       await api.restoreWallet(values.data);
       toast({
-        title: "Wallet Restore Initialized",
-        description: "Your wallet is being restored. The app will reload.",
+        title: "Kugarura irembo vyatangujwe",
+        description: "Irembo ryawe ririko riragarurwa. Isabukuru izosubira yuguruke.",
       });
       setTimeout(() => {
         window.location.reload();
@@ -114,7 +114,7 @@ export function SettingsClient() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Restore Failed",
+        title: "Kugarura biranse",
         description: error.message,
       });
     } finally {
@@ -127,17 +127,17 @@ export function SettingsClient() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Display Preferences</CardTitle>
+          <CardTitle>Ivyo Ukunda Kwerekana</CardTitle>
           <CardDescription>
-            Choose how values are displayed across the app.
+            Hitamwo ingene ibiharuro vyerekanwa mu isabukuru yose.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
-              <Label htmlFor="currency">Fiat Currency</Label>
+              <Label htmlFor="currency">Ifaranga</Label>
               <p className="text-sm text-muted-foreground">
-                Set your preferred currency for display.
+                Shiramwo ifaranga ukunda kwerekana.
               </p>
             </div>
             <Select
@@ -145,7 +145,7 @@ export function SettingsClient() {
               onValueChange={(value) => setCurrency(value as "usd" | "eur" | "jpy" | "bif")}
             >
               <SelectTrigger id="currency" className="w-full sm:w-48">
-                <SelectValue placeholder="Select currency" />
+                <SelectValue placeholder="Hitamwo ifaranga" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="usd">USD</SelectItem>
@@ -156,8 +156,8 @@ export function SettingsClient() {
             </Select>
           </div>
           <div>
-            <Label className="font-medium">Primary Display Unit</Label>
-            <p className="text-sm text-muted-foreground pt-1">Select the main unit for displaying your balance.</p>
+            <Label className="font-medium">Igice Nkuru co Kwerekana</Label>
+            <p className="text-sm text-muted-foreground pt-1">Hitamwo igice nkuru co kwerekana amafaranga yawe.</p>
             <RadioGroup
               value={settings.displayUnit}
               onValueChange={(value) => setDisplayUnit(value as "btc" | "sats" | "usd" | "bif")}
@@ -178,41 +178,41 @@ export function SettingsClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Security & Data</CardTitle>
-          <CardDescription>Manage wallet security and data.</CardDescription>
+          <CardTitle>Umutekano & Amakuru</CardTitle>
+          <CardDescription>Genamika umutekano n'amakuru y'irembo.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
            <div className="flex flex-col items-start justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
-              <Label htmlFor="2fa" className="font-semibold">Two-Factor Authentication (2FA)</Label>
-              <p className="text-sm text-muted-foreground">Add an extra layer of security to your wallet.</p>
+              <Label htmlFor="2fa" className="font-semibold">Kwemeza mu ntambwe zibiri (2FA)</Label>
+              <p className="text-sm text-muted-foreground">Ongera urwego rw'umutekano ku irembo ryawe.</p>
             </div>
             <Switch id="2fa" />
           </div>
           <div className="flex flex-col items-start justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
-              <p className="font-semibold">Backup Wallet</p>
-              <p className="text-sm text-muted-foreground">Reveal your WIF private key. Store it securely offline.</p>
+              <p className="font-semibold">Bika Irembo</p>
+              <p className="text-sm text-muted-foreground">Erekana urufunguzo rwawe rwihariye rwa WIF. Bibike ahantu hizigirwa hatari kuri internet.</p>
             </div>
             <Button onClick={handleBackup} className="w-full sm:w-auto" disabled={isBackupLoading}>
               {isBackupLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Backup Now
+              Bika Nonaha
             </Button>
           </div>
           <div className="flex flex-col items-start justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
-              <p className="font-semibold">Restore Wallet</p>
-              <p className="text-sm text-muted-foreground">Restore from a recovery phrase or WIF private key.</p>
+              <p className="font-semibold">Garura Irembo</p>
+              <p className="text-sm text-muted-foreground">Garura kuva ku majambo yo kugarura canke urufunguzo rwihariye rwa WIF.</p>
             </div>
             <AlertDialog open={isRestoreDialogOpen} onOpenChange={setIsRestoreDialogOpen}>
                 <AlertDialogTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-auto">Restore</Button>
+                    <Button variant="outline" className="w-full sm:w-auto">Garura</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Restore Your Wallet</AlertDialogTitle>
+                        <AlertDialogTitle>Garura Irembo Ryawe</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Enter your 12/24-word recovery phrase or WIF private key. This will replace the current wallet on this account.
+                            Injiza amajambo yawe 12/24 yo kugarura canke urufunguzo rwihariye rwa WIF. Ibi bizosubirira irembo risanzwe kuri iyi konti.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <Form {...restoreForm}>
@@ -222,10 +222,10 @@ export function SettingsClient() {
                                 name="data"
                                 render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Recovery Data</FormLabel>
+                                      <FormLabel>Amakuru yo Kugarura</FormLabel>
                                       <FormControl>
                                         <Textarea
-                                          placeholder="Enter your recovery phrase or WIF key..."
+                                          placeholder="Injiza amajambo yawe yo kugarura canke urufunguzo rwa WIF..."
                                           className="resize-none"
                                           rows={4}
                                           {...field}
@@ -236,10 +236,10 @@ export function SettingsClient() {
                                 )}
                             />
                             <AlertDialogFooter className="pt-2">
-                                <Button type="button" variant="ghost" onClick={() => setIsRestoreDialogOpen(false)} disabled={isRestoring}>Cancel</Button>
+                                <Button type="button" variant="ghost" onClick={() => setIsRestoreDialogOpen(false)} disabled={isRestoring}>Hagarika</Button>
                                 <Button type="submit" disabled={isRestoring}>
                                     {isRestoring && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {isRestoring ? "Restoring..." : "Restore Wallet"}
+                                    {isRestoring ? "Kugarura..." : "Garura Irembo"}
                                 </Button>
                             </AlertDialogFooter>
                         </form>
@@ -253,18 +253,18 @@ export function SettingsClient() {
       <AlertDialog open={isBackupDialogOpen} onOpenChange={setIsBackupDialogOpen}>
           <AlertDialogContent>
               <AlertDialogHeader>
-                  <AlertDialogTitle>Your Wallet Private Key (WIF)</AlertDialogTitle>
+                  <AlertDialogTitle>Urufunguzo Rwawe Rwihariye rw'Irembo (WIF)</AlertDialogTitle>
                   <AlertDialogDescription>
-                      This is your private key. It provides full access to your funds.
-                      Keep it secret and store it in a safe, offline location.
+                      Uru ni urufunguzo rwawe rwihariye. Rutanga uburenganzira bwose ku mafranga yawe.
+                      Bigumane ibanga kandi ubibike ahantu hizigirwa hatari kuri internet.
                   </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="space-y-4">
                 <Alert variant="destructive">
                     <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle>Security Warning</AlertTitle>
+                    <AlertTitle>Icetezo c'Umutekano</AlertTitle>
                     <AlertDescription>
-                        Never share this key with anyone. Anyone with this key can steal your funds.
+                        Ntugasangire uru rufunguzo n'umuntu n'umwe. Umuntu wese afise uru rufunguzo ashobora kwiba amafaranga yawe.
                     </AlertDescription>
                 </Alert>
 
@@ -277,15 +277,15 @@ export function SettingsClient() {
                 </div>
               </div>
               <AlertDialogFooter className="pt-4 sm:gap-2 gap-4 flex-col sm:flex-row">
-                  <Button variant="outline" onClick={closeBackupDialog} className="mt-0 w-full sm:w-auto">Close</Button>
+                  <Button variant="outline" onClick={closeBackupDialog} className="mt-0 w-full sm:w-auto">Ugara</Button>
                   <CopyButton
                     textToCopy={wif || ''}
                     disabled={isBackupLoading || !wif}
-                    toastMessage="Private key copied"
+                    toastMessage="Urufunguzo rwihariye rwakoporowe"
                     onCopy={closeBackupDialog}
                     className="w-full sm:w-auto"
                    >
-                    Copy Key & Close
+                    Koporora Urufunguzo & Ugara
                    </CopyButton>
               </AlertDialogFooter>
           </AlertDialogContent>

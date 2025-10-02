@@ -63,11 +63,11 @@ export default function ProfilePage() {
           setWallet(walletResponse.data[0]);
         }
       } catch (error: any) {
-        const errorMsg = error.message || "Could not fetch user data. Please try again later.";
+        const errorMsg = error.message || "Ntivyakunze gupakira amakuru y'umukoresha. Ndokera ugerageze mu kanya.";
         setError(errorMsg);
         toast({
           variant: "destructive",
-          title: "Failed to load profile",
+          title: "Gupakira profili biranse",
           description: errorMsg,
         });
       } finally {
@@ -128,11 +128,11 @@ export default function ProfilePage() {
          <Card className="flex h-48 items-center justify-center">
             <div className="text-center text-destructive">
               <AlertCircle className="mx-auto h-8 w-8" />
-              <p className="mt-2 font-semibold">Error Loading Profile</p>
+              <p className="mt-2 font-semibold">Ikosa mu gupakira profili</p>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
               <Button onClick={fetchData} variant="secondary" className="mt-4">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
-                Try Again
+                Subira Ugerageze
               </Button>
             </div>
           </Card>
@@ -147,9 +147,9 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">My Profile</h1>
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Profili Yanje</h1>
         <p className="text-muted-foreground">
-          View your account details and wallet statistics.
+          Raba amakuru ya konti yawe n'ibiharuro vy'irembo ryawe.
         </p>
       </div>
       <Card>
@@ -171,7 +171,7 @@ export default function ProfilePage() {
         <CardContent>
           <Button asChild>
             <Link href="/profile/edit">
-              Edit Profile
+              Hindura Profili
               <ArrowRight className="ml-2 size-4" />
             </Link>
           </Button>
@@ -179,21 +179,21 @@ export default function ProfilePage() {
       </Card>
       
       <div className="space-y-2">
-        <h2 className="text-xl font-bold tracking-tight md:text-2xl">Wallet Statistics</h2>
+        <h2 className="text-xl font-bold tracking-tight md:text-2xl">Ibiharuro vy'Irembo</h2>
         <p className="text-muted-foreground">
-          An overview of your wallet's activity.
+          Incamake y'ibikorwa by'irembo ryawe.
         </p>
       </div>
 
        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <StatCard icon={BarChart2} title="Current Balance" value={wallet?.balance_formatted} isLoading={loading} />
-          <StatCard icon={Hash} title="Total Transactions" value={walletStats?.total_transactions} isLoading={loading} />
-          <StatCard icon={Clock} title="Wallet Age (Days)" value={walletStats?.wallet_age_days} isLoading={loading} />
-          <StatCard icon={TrendingDown} title="Total Sent" value={walletStats?.total_sent} isLoading={loading} />
-          <StatCard icon={TrendingUp} title="Total Received" value={walletStats?.total_received} isLoading={loading} />
+          <StatCard icon={BarChart2} title="Amafaranga afise" value={wallet?.balance_formatted} isLoading={loading} />
+          <StatCard icon={Hash} title="Igiteranyo c'ibikorwa" value={walletStats?.total_transactions} isLoading={loading} />
+          <StatCard icon={Clock} title="Imyaka y'irembo (imisi)" value={walletStats?.wallet_age_days} isLoading={loading} />
+          <StatCard icon={TrendingDown} title="Igiteranyo carungitswe" value={walletStats?.total_sent} isLoading={loading} />
+          <StatCard icon={TrendingUp} title="Igiteranyo cakiriwe" value={walletStats?.total_received} isLoading={loading} />
           <Card className="flex flex-col justify-between p-4">
             <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Primary Address</p>
+                <p className="text-sm text-muted-foreground">Aderese nkuru</p>
                 <UserIcon className="size-5 text-muted-foreground" />
             </div>
             {loading ? (
@@ -203,7 +203,7 @@ export default function ProfilePage() {
                     <p className="text-sm font-code font-semibold break-all">{shortenText(wallet?.primary_address, 10, 10)}</p>
                     <CopyButton
                         textToCopy={wallet?.primary_address || ''}
-                        toastMessage="Address copied"
+                        toastMessage="Aderese yakoporowe"
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"

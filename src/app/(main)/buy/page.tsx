@@ -59,7 +59,7 @@ export default function BuyPage() {
       const response = await api.getBuyProviders();
       setProviders(response.data);
     } catch (err: any) {
-      setError(err.message || "Failed to load buy providers. Please try again later.");
+      setError(err.message || "Gupakira abatanzi bo kugura biranse. Subira ugerageze mu kanya.");
     } finally {
       setLoading(false);
     }
@@ -72,9 +72,9 @@ export default function BuyPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Buy Bitcoin</h1>
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Gura Bitcoin</h1>
         <p className="text-muted-foreground">
-          Choose a provider to make a payment and receive Bitcoin in your wallet.
+          Hitamwo umutanzi kugira wishure kandi wakire Bitcoin mu irembo ryawe.
         </p>
       </div>
 
@@ -98,11 +98,11 @@ export default function BuyPage() {
         <Card className="flex h-48 items-center justify-center">
           <div className="text-center text-destructive">
             <AlertCircle className="mx-auto h-8 w-8" />
-            <p className="mt-2 font-semibold">Error Loading Providers</p>
+            <p className="mt-2 font-semibold">Ikosa mu gupakira abatanzi</p>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
             <Button onClick={fetchProviders} variant="secondary" className="mt-4">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
-              Try Again
+              Subira Ugerageze
             </Button>
           </div>
         </Card>
@@ -116,7 +116,7 @@ export default function BuyPage() {
             ))
           ) : (
             <Card className="col-span-full flex h-48 items-center justify-center">
-              <p className="text-muted-foreground">No buy providers are available at this time.</p>
+              <p className="text-muted-foreground">Nta mutanzi wo kugura aboneka kuri ubu.</p>
             </Card>
           )}
         </div>

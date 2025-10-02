@@ -31,21 +31,21 @@ function LandingPage() {
           </Link>
           <nav className="hidden items-center gap-2 md:flex">
             <Button variant="ghost" asChild>
-              <Link href="/login">Login</Link>
+              <Link href="/login">Injira</Link>
             </Button>
             <Button asChild>
               <Link href="/register">
-                Get Started <ArrowRight className="ml-2 size-4" />
+                Tangura <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
           </nav>
            <nav className="flex items-center gap-2 md:hidden">
              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">Login</Link>
+                <Link href="/login">Injira</Link>
               </Button>
               <Button asChild size="sm">
                 <Link href="/register">
-                  Sign Up
+                  Iyandikishe
                 </Link>
               </Button>
            </nav>
@@ -56,17 +56,17 @@ function LandingPage() {
             <div className="absolute inset-0 -z-10 h-full w-full bg-background animated-gradient"></div>
             <div className="max-w-4xl px-4">
               <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-                Your Keys, Your Bitcoin.
+                Udufunguzo twawe, Bitcoin yawe.
               </h1>
               <p className="mt-6 max-w-2xl mx-auto text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                Take full control of your Bitcoin with a simple, secure, open-source wallet built for everyone. Send, receive, and manage your assets with confidence.
+                Gira igenzura ryuzuye kuri Bitcoin yawe n'irembo ryoroshe, rizivye, ryuguruye ryakorewe bose. Rungika, wakire, kandi ugenzure amatungo yawe n'icizere.
               </p>
               <div className="mt-8 flex w-full flex-col justify-center gap-4 sm:flex-row md:justify-center">
                   <Button asChild size="lg" className="w-full sm:w-auto">
-                    <Link href="/register">Create New Wallet</Link>
+                    <Link href="/register">Kora Irembo Rishasha</Link>
                   </Button>
                   <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-                    <Link href="/restore-wallet">Restore Wallet</Link>
+                    <Link href="/restore-wallet">Garura Irembo</Link>
                   </Button>
                 </div>
             </div>

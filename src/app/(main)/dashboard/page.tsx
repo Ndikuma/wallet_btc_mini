@@ -52,10 +52,10 @@ const ActionButton = ({ icon: Icon, label, href, disabled = false }: { icon: Rea
 
 const ActionCard = () => (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <ActionButton icon={Send} label="Send" href="/send" />
-        <ActionButton icon={Download} label="Receive" href="/receive" />
-        <ActionButton icon={ShoppingCart} label="Buy" href="/buy" />
-        <ActionButton icon={Receipt} label="Sell" href="/sell" />
+        <ActionButton icon={Send} label="Rungika" href="/send" />
+        <ActionButton icon={Download} label="Wakira" href="/receive" />
+        <ActionButton icon={ShoppingCart} label="Gura" href="/buy" />
+        <ActionButton icon={Receipt} label="Gurisha" href="/sell" />
     </div>
 )
 
@@ -74,7 +74,7 @@ export default function DashboardPage() {
       const transactionsRes = await api.getRecentTransactions();
       setRecentTransactions(transactionsRes.data || []);
     } catch (err: any) {
-      setTransactionsError(err.message || "Could not load recent transactions.");
+      setTransactionsError(err.message || "Ntivyakunze gupakira ibikorwa vya vuba.");
     } finally {
       setLoadingTransactions(false);
     }
@@ -99,11 +99,11 @@ export default function DashboardPage() {
             <div className="flex items-center justify-center h-full">
                 <Alert variant="destructive" className="max-w-lg">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Wallet Not Ready</AlertTitle>
+                    <AlertTitle>Irembo ntiriri tayari</AlertTitle>
                     <AlertDescription>
                         {walletError}
                         <div className="mt-4">
-                            <Button onClick={handleRefresh}>Refresh</Button>
+                            <Button onClick={handleRefresh}>Subira</Button>
                         </div>
                     </AlertDescription>
                 </Alert>
@@ -117,12 +117,12 @@ export default function DashboardPage() {
        <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
-            <CardTitle className="text-lg">Current Balance</CardTitle>
-            <CardDescription>Your wallet summary</CardDescription>
+            <CardTitle className="text-lg">Amafaranga afise</CardTitle>
+            <CardDescription>Incamake y'irembo ryawe</CardDescription>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsBalanceVisible(!isBalanceVisible)}>
               {isBalanceVisible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-              <span className="sr-only">Toggle Balance Visibility</span>
+              <span className="sr-only">Erekana/Hisha Amafaranga</span>
           </Button>
         </CardHeader>
         <CardContent className="p-6">
@@ -137,12 +137,12 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                    <CardTitle>Recent Transactions</CardTitle>
-                    <CardDescription>Your latest wallet activity</CardDescription>
+                    <CardTitle>Ibikorwa vya vuba</CardTitle>
+                    <CardDescription>Ibikorwa vyawe vya nyuma mu irembo</CardDescription>
                 </div>
                 <Button variant="link" size="sm" asChild className="text-primary">
                   <Link href="/transactions">
-                    See All
+                    Raba Vyose
                   </Link>
                 </Button>
             </CardHeader>
@@ -161,11 +161,11 @@ export default function DashboardPage() {
                 {transactionsError && (
                      <div className="h-24 text-center flex flex-col items-center justify-center text-destructive">
                         <AlertCircle className="size-8 mb-2" />
-                        <p className="font-semibold">Error Loading Transactions</p>
+                        <p className="font-semibold">Ikosa mu gupakira ibikorwa</p>
                         <p className="text-sm">{transactionsError}</p>
                         <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loadingTransactions}/>
-                            Try Again
+                            Subira Ugerageze
                         </Button>
                     </div>
                 )}
@@ -185,7 +185,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex-1 grid gap-1">
                            <p className="font-medium truncate">
-                            {isSent ? "Sent to" : "Received from"}{' '}
+                            {isSent ? "Yarungitswe kuri" : "Yakiriwe kuva"}{' '}
                             <span className="font-mono text-muted-foreground">{shortenText(relevantAddress, 6, 6)}</span>
                           </p>
                           <p className="text-sm text-muted-foreground">
@@ -197,7 +197,7 @@ export default function DashboardPage() {
                             {isSent ? '-' : '+'}{tx.amount_formatted}
                           </p>
                            <p className="text-xs text-muted-foreground font-mono">
-                             Fee: {tx.fee_formatted.replace("BTC", "").trim()}
+                             Agash.: {tx.fee_formatted.replace("BTC", "").trim()}
                           </p>
                         </div>
                       </div>
@@ -207,8 +207,8 @@ export default function DashboardPage() {
                 {!loadingTransactions && !transactionsError && recentTransactions.length === 0 && (
                   <div className="h-24 text-center flex flex-col items-center justify-center text-muted-foreground">
                     <Wallet className="size-8 mb-4" />
-                    <p className="font-semibold">No Transactions Yet</p>
-                    <p className="text-sm">Your recent transactions will appear here.</p>
+                    <p className="font-semibold">Nta bikorwa biraboneka</p>
+                    <p className="text-sm">Ibikorwa vyawe vya vuba bizoca biboneka hano.</p>
                   </div>
                 )}
               </div>

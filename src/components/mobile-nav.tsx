@@ -13,11 +13,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { path: "/dashboard", icon: Home, label: "Home" },
-  { path: "/orders", icon: Receipt, label: "Orders" },
-  { path: "/send", icon: ScanLine, label: "Scan" }, // Special item for the center button
-  { path: "/transactions", icon: History, label: "History" },
-  { path: "/profile", icon: User, label: "Profile" },
+  { path: "/dashboard", icon: Home, label: "Ahabanza" },
+  { path: "/orders", icon: Receipt, label: "Amatangazo" },
+  { path: "/send", icon: ScanLine, label: "Soma" }, // Special item for the center button
+  { path: "/transactions", icon: History, label: "Kahise" },
+  { path: "/profile", icon: User, label: "Profili" },
 ];
 
 export function MobileNav() {
@@ -29,7 +29,7 @@ export function MobileNav() {
         {menuItems.map((item) => {
           const isActive = pathname.startsWith(item.path);
 
-          if (item.label === "Scan") {
+          if (item.label === "Soma") {
             return (
               <div key={item.path} className="relative flex justify-center items-center col-start-3">
                  <Link href={item.path} className="absolute bottom-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105">

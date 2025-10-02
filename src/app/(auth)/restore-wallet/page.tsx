@@ -21,17 +21,17 @@ export default function RestoreWalletPage() {
       </Link>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Restore Wallet</CardTitle>
+          <CardTitle>Garura Irembo</CardTitle>
           <CardDescription>
-            Enter your 12 or 24-word recovery phrase to restore your wallet.
+            Injiza amajambo 12 canke 24 yo kugarura irembo ryawe.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <RestoreForm />
            <div className="mt-4 text-center text-sm">
-            Don&apos;t have a wallet?{" "}
+            Nta rembo ufise?{" "}
             <Link href="/register" className="font-semibold text-primary underline-offset-4 hover:underline">
-              Create a new one
+              Kora irindi rishasha
             </Link>
           </div>
         </CardContent>

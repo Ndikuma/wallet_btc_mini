@@ -21,17 +21,17 @@ export default function LoginPage() {
       </Link>
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl">Kaze Garuka</CardTitle>
           <CardDescription>
-            Enter your username and password to access your wallet.
+            Injiza izina ryawe n'ijambo ry'ibanga kugira winjire mu irembo ryawe.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
+            Nta konti ufise?{" "}
             <Link href="/register" className="font-semibold text-primary underline-offset-4 hover:underline">
-              Sign up
+              Iyandikishe
             </Link>
           </div>
         </CardContent>

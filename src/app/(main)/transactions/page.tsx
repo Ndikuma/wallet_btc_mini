@@ -43,7 +43,7 @@ const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.Element
   const onCopy = () => {
     if (value) {
       navigator.clipboard.writeText(value);
-      toast({ title: `${label} Copied` });
+      toast({ title: `${label} vyakoporowe` });
     }
   }
 
@@ -105,7 +105,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
                 </div>
                 <div className="flex-1 grid gap-1 text-left">
                   <p className="font-medium truncate">
-                    {isSent ? "Sent" : "Received"}
+                    {isSent ? "Yarungitswe" : "Yakiriwe"}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
@@ -116,7 +116,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
                     {tx.amount_formatted}
                   </p>
                   <p className="text-xs text-muted-foreground font-mono">
-                    Fee: {tx.fee_formatted.replace("BTC", "")}
+                    Agash.: {tx.fee_formatted.replace("BTC", "")}
                   </p>
                 </div>
                 <div className="pl-2">
@@ -127,21 +127,21 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
             <AccordionContent className="border-t pt-4 px-4 pb-4">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
-                  <DetailRow icon={getStatusIcon(tx.status)} label="Status">
+                  <DetailRow icon={getStatusIcon(tx.status)} label="Uko bigenze">
                      <Badge variant={getStatusVariant(tx.status)} className="capitalize text-sm">{tx.status}</Badge>
                   </DetailRow>
-                  <DetailRow icon={CalendarClock} label="Date & Time">
+                  <DetailRow icon={CalendarClock} label="Itariki & Igihe">
                      <p className="text-sm font-semibold">{new Date(tx.created_at).toLocaleString()}</p>
                   </DetailRow>
-                  <DetailRow icon={Hash} label="Transaction ID" value={tx.txid} />
-                  <DetailRow icon={Landmark} label="Fee" value={tx.fee_formatted.replace("BTC", "")} />
-                  <DetailRow icon={ArrowUpRight} label="From Address" value={tx.from_address} />
-                  <DetailRow icon={ArrowDownLeft} label="To Address" value={tx.to_address} />
+                  <DetailRow icon={Hash} label="Indangamuntu y'igikorwa" value={tx.txid} />
+                  <DetailRow icon={Landmark} label="Agashirukiramico" value={tx.fee_formatted.replace("BTC", "")} />
+                  <DetailRow icon={ArrowUpRight} label="Aderese y'uwarungitse" value={tx.from_address} />
+                  <DetailRow icon={ArrowDownLeft} label="Aderese y'uwakiriye" value={tx.to_address} />
                 </div>
                 {tx.explorer_url && (
                   <Button asChild variant="outline" className="w-full">
                     <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
-                      View on Block Explorer <ExternalLink className="ml-2 size-4" />
+                      Raba kuri Block Explorer <ExternalLink className="ml-2 size-4" />
                     </Link>
                   </Button>
                 )}
@@ -168,17 +168,17 @@ export default function TransactionsPage() {
       const transactionsRes = await api.getTransactions();
       setTransactions(transactionsRes.data.results || transactionsRes.data || []);
     } catch (err: any) {
-      console.error("Failed to fetch transactions", err);
-      let errorMsg = "Could not load transaction history.";
+      console.error("Gupakira ibikorwa biranse", err);
+      let errorMsg = "Ntivyakunze gupakira kahise k'ibikorwa.";
       if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
-          errorMsg = "Network error. Could not connect to the server.";
+          errorMsg = "Ikosa rya rezo. Ntivyakunze kwihuza na seriveri.";
       } else if (err.message) {
           errorMsg = err.message;
       }
       setTransactionsError(errorMsg);
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Ikosa",
         description: errorMsg,
       });
     } finally {
@@ -194,9 +194,9 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Transaction History</h1>
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Kahise k'Ibikorwa</h1>
         <p className="text-muted-foreground">
-          View all your wallet transactions.
+          Raba ibikorwa vyose vyo mu irembo ryawe.
         </p>
       </div>
       <div className="space-y-4">
@@ -208,11 +208,11 @@ export default function TransactionsPage() {
             <Card className="flex h-48 items-center justify-center">
                 <div className="text-center text-destructive">
                     <AlertCircle className="mx-auto h-8 w-8" />
-                    <p className="mt-2 font-semibold">Error Loading Transactions</p>
+                    <p className="mt-2 font-semibold">Ikosa mu gupakira ibikorwa</p>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">{transactionsError}</p>
                     <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loadingTransactions}/>
-                        Try Again
+                        Subira Ugerageze
                     </Button>
                 </div>
             </Card>
@@ -222,7 +222,7 @@ export default function TransactionsPage() {
           ))
         ) : (
           <Card className="flex h-48 items-center justify-center">
-            <p className="text-muted-foreground">No transactions found.</p>
+            <p className="text-muted-foreground">Nta bikorwa biraboneka.</p>
           </Card>
         )}
       </div>

@@ -47,7 +47,7 @@ const OrderCard = ({ order }: { order: Order }) => (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 {getStatusIcon(order.status)}
-                <CardTitle className="text-lg capitalize">Itangazo ryo {order.direction === 'buy' ? 'Kugura' : 'Kugurisha'} #{order.id}</CardTitle>
+                <CardTitle className="text-lg capitalize">Commande d'{order.direction === 'buy' ? 'Achat' : 'Vente'} #{order.id}</CardTitle>
             </div>
             <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status.replace('_', ' ')}</Badge>
         </div>
@@ -58,11 +58,11 @@ const OrderCard = ({ order }: { order: Order }) => (
       <CardContent>
         <div className="flex justify-between items-center">
             <div>
-                <p className="text-sm text-muted-foreground">Umutanzi</p>
+                <p className="text-sm text-muted-foreground">Fournisseur</p>
                 <p className="font-semibold">{order.provider.name}</p>
             </div>
             <div className="text-right">
-                <p className="text-sm text-muted-foreground">Igiteranyo</p>
+                <p className="text-sm text-muted-foreground">Total</p>
                 <p className="font-semibold">{order.total_amount} {order.amount_currency}</p>
             </div>
         </div>
@@ -83,7 +83,7 @@ export default function OrdersPage() {
       const response = await api.getOrders();
       setOrders(response.data.results || response.data);
     } catch (err: any) {
-      setError(err.message || "Gupakira amatangazo biranse.");
+      setError(err.message || "Échec du chargement des commandes.");
     } finally {
       setLoading(false);
     }
@@ -96,9 +96,9 @@ export default function OrdersPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Amatangazo Yanje</h1>
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Mes Commandes</h1>
         <p className="text-muted-foreground">
-          Raba kahise n'ingene amatangazo yawe yo kugura no kugurisha ahagaze.
+          Affichez l'historique et le statut de vos commandes d'achat et de vente.
         </p>
       </div>
 
@@ -114,11 +114,11 @@ export default function OrdersPage() {
         <Card className="flex h-48 items-center justify-center">
           <div className="text-center text-destructive">
             <AlertCircle className="mx-auto h-8 w-8" />
-            <p className="mt-2 font-semibold">Ikosa mu gupakira amatangazo</p>
+            <p className="mt-2 font-semibold">Erreur de chargement des commandes</p>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
             <Button onClick={fetchOrders} variant="secondary" className="mt-4">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-              Subira Ugerageze
+              Réessayer
             </Button>
           </div>
         </Card>
@@ -132,9 +132,9 @@ export default function OrdersPage() {
                 <Card className="flex h-48 items-center justify-center">
                 <div className="text-center">
                     <ShoppingCart className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <p className="mt-4 text-muted-foreground">Ntamatangazo uragira.</p>
+                    <p className="mt-4 text-muted-foreground">Vous n'avez aucune commande.</p>
                     <Button asChild className="mt-4">
-                        <Link href="/buy">Gura Bitcoin</Link>
+                        <Link href="/buy">Acheter des Bitcoins</Link>
                     </Button>
                 </div>
                 </Card>

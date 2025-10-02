@@ -26,18 +26,18 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [
-  { path: "/dashboard", icon: Home, label: "Ahabanza" },
-  { path: "/send", icon: Send, label: "Rungika" },
-  { path: "/receive", icon: Download, label: "Wakira" },
-  { path: "/buy", icon: ShoppingCart, label: "Gura" },
-  { path: "/sell", icon: Receipt, label: "Gurisha" },
-  { path: "/transactions", icon: History, label: "Ibikorwa" },
-  { path: "/orders", icon: ShoppingCart, label: "Amatangazo" },
+  { path: "/dashboard", icon: Home, label: "Tableau de bord" },
+  { path: "/send", icon: Send, label: "Envoyer" },
+  { path: "/receive", icon: Download, label: "Recevoir" },
+  { path: "/buy", icon: ShoppingCart, label: "Acheter" },
+  { path: "/sell", icon: Receipt, label: "Vendre" },
+  { path: "/transactions", icon: History, label: "Transactions" },
+  { path: "/orders", icon: ShoppingCart, label: "Commandes" },
 ];
 
 const footerNavItems = [
-    { path: "/profile", icon: User, label: "Profili" },
-    { path: "/settings", icon: Settings, label: "Amagenamiterere" },
+    { path: "/profile", icon: User, label: "Profil" },
+    { path: "/settings", icon: Settings, label: "Paramètres" },
 ]
 
 export function MainNav() {

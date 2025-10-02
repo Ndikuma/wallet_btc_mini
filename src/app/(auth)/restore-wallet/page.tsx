@@ -21,17 +21,17 @@ export default function RestoreWalletPage() {
       </Link>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Garura Irembo</CardTitle>
+          <CardTitle>Restaurer le portefeuille</CardTitle>
           <CardDescription>
-            Injiza amajambo 12 canke 24 yo kugarura irembo ryawe.
+            Entrez votre phrase de récupération de 12 or 24 mots.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <RestoreForm />
            <div className="mt-4 text-center text-sm">
-            Nta rembo ufise?{" "}
+            Vous n'avez pas de portefeuille ?{" "}
             <Link href="/register" className="font-semibold text-primary underline-offset-4 hover:underline">
-              Kora irindi rishasha
+              Créer un nouveau
             </Link>
           </div>
         </CardContent>

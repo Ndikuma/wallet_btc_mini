@@ -1,60 +1,59 @@
+
 # Umuhora Tech Wallet
 
-Murakaza neza ku **Umuhora Tech Wallet**, isabukuru y'irembo rya Bitcoin ryuguruye kandi ritizigirwa n'uwundi muntu (non-custodial). Uyu mugambi wakozwe kugira utange uburyo bworoshe kandi butekanye bwo gucunga Bitcoin, aho umukoresha ari we aba afise udufunguzo twiwe.
+Bienvenue sur **Umuhora Tech Wallet**, un portefeuille Bitcoin open-source et non-custodial. Ce projet a été conçu pour offrir un moyen simple et sécurisé de gérer vos Bitcoins, où l'utilisateur a le contrôle total de ses clés.
 
-Isabukuru yose yanditswe mu Kirundi, bigatuma iba iy'akarorero mu karere.
+## Fonctionnalités
 
-## Ibishoboka Gukorwa (Features)
+*   **Portefeuille non-custodial**: Vous seul contrôlez vos fonds.
+*   **Création et Restauration**: Créez un nouveau portefeuille avec une phrase de récupération de 12 mots, ou restaurez un portefeuille existant.
+*   **Envoyer et Recevoir**: Envoyez et recevez facilement des Bitcoins via une adresse ou un QR code.
+*   **Acheter et Vendre**: Achetez ou vendez des Bitcoins en utilisant des fournisseurs de services intégrés.
+*   **Historique des transactions**: Consultez toutes les transactions de votre portefeuille avec leurs détails.
+*   **Sécurité**: Sauvegardez votre clé privée (WIF) ou restaurez votre portefeuille à partir d'une sauvegarde.
+*   **Paramètres personnalisés**: Changez la devise d'affichage (USD, BIF, etc.) et l'unité monétaire (BTC, sats).
 
-*   **Irembo ritizigirwa n'uwundi**: Wewe wenyene ni we ugenzura amafaranga yawe.
-*   **Gukora no Kugarura Irembo**: Kora irembo rishasha mu kuronka amajambo 12 yo kuryugarura, canke ugarure iryo wari usanganywe.
-*   **Kurungika no Kwakira**: Rungika kandi wakire Bitcoin ku buryo bworoshe ukoresheje aderese canke ugusoma QR code.
-*   **Kugura no Kugurisha**: Gura canke ugurishe Bitcoin ukoresheje abatanzi ba serivisi bahujwe n'isabukuru.
-*   **Kahise k'Ibikorwa**: Raba ibikorwa vyawe vyose vy'irembo hamwe n'amakuru yavyo arambuye.
-*   **Umutekano**: Bika urufunguzo rwawe rwihariye (WIF) canke ugarure irembo kuva kuri backup.
-*   **Amagenamiterere Yihariye**: Hindura ifaranga rikoreshwa (USD, BIF, n'ayandi) hamwe n'ingene amafaranga aboneka (BTC, sats).
-
-## Ikoranabuhanga Ryakoreshejwe
+## Technologies utilisées
 
 *   **Framework**: [Next.js](https://nextjs.org/) (App Router)
-*   **Ururimi**: [TypeScript](https://www.typescriptlang.org/)
+*   **Langage**: [TypeScript](https://www.typescriptlang.org/)
 *   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-*   **UI Components**: [ShadCN UI](https://ui.shadcn.com/)
-*   **Form Management**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
-*   **Backend API**: Isabukuru ikoresha seriveri ya backend kugira icunge amakuru y'abakoresha, amarembo, n'ibikorwa.
+*   **Composants UI**: [ShadCN UI](https://ui.shadcn.com/)
+*   **Gestion de formulaires**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+*   **API Backend**: Le portefeuille utilise un serveur backend pour gérer les informations des utilisateurs, les portefeuilles et les transactions.
 
-## Uko Wotangura
+## Pour commencer
 
-Kugira utanguze uyu mugambi kuri mashine yawe, kurikiza izi ntambwe:
+Pour lancer ce projet sur votre machine, suivez ces étapes :
 
-1.  **Koporora (Clone) umugambi**:
+1.  **Clonez le projet**:
     ```bash
     git clone https://github.com/your-repo-url.git
     cd umuhora-tech-wallet
     ```
 
-2.  **Shiramwo ivyifashishijwe (Install dependencies)**:
-    Isabukuru ikoresha `npm` mu gucunga ivyifashishijwe.
+2.  **Installez les dépendances**:
+    L'application utilise `npm` pour la gestion des dépendances.
     ```bash
     npm install
     ```
 
-3.  **Tunguza Seriveri (Run the development server)**:
+3.  **Lancez le serveur de développement**:
     ```bash
     npm run dev
     ```
-    Ubu ushobora gusanga isabukuru kuri `http://localhost:9002`.
+    Vous pouvez maintenant accéder à l'application sur `http://localhost:9002`.
 
-4.  **Kubaka (Build for production)**:
-    Igihe ushaka kubaka isabukuru kugira uyishire ahabona, koresha:
+4.  **Build pour la production**:
+    Lorsque vous êtes prêt à déployer, utilisez :
     ```bash
     npm run build
     ```
 
-## Umutekano
+## Sécurité
 
-> **INGIRAKAMARO**: Uyu ni umugambi w'irembo ritizigirwa n'uwundi. Ibi bisigura ko wewe wenyene ufise udufunguzo twawe kandi ni wewe ujejwe umutekano w'amafaranga yawe. Ntugasangire amajambo yawe yo kugarura (mnemonic phrase) canke urufunguzo rwawe rwihariye (WIF) n'umuntu n'umwe.
+> **IMPORTANT**: Ceci est un projet de portefeuille non-custodial. Cela signifie que vous seul détenez vos clés et êtes responsable de la sécurité de vos fonds. Ne partagez jamais votre phrase de récupération (mnemonic phrase) ou votre clé privée (WIF) avec qui que ce soit.
 
-## Kugira Uruhara (Contributing)
+## Contribuer
 
-Uyu ni umugambi ugururiwe bose. Wipfuza kugira uruhara? Murakaza neza! Ushobora gufasha mu gukosora amakosa, mu kongera ibishasha, canke mu kunonosora inyandiko.
+Ce projet est open-source. Vous souhaitez contribuer ? Vous êtes le bienvenu ! Vous pouvez aider en corrigeant des bugs, en ajoutant de nouvelles fonctionnalités ou en améliorant la documentation.

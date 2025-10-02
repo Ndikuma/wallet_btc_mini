@@ -37,19 +37,19 @@ import { getFiat } from "@/lib/utils";
 
 const amountSchema = z.object({
   amount: z.coerce
-    .number({ invalid_type_error: "Ndokera ushire umubare wemewe." })
-    .positive({ message: "Umubare ugomba kuba urenze zero." }),
+    .number({ invalid_type_error: "Veuillez entrer un nombre valide." })
+    .positive({ message: "Le montant doit être supérieur à zéro." }),
 });
 
 const providerSchema = z.object({
-    providerId: z.string({ required_error: "Ndokera utore umutanzi." }),
+    providerId: z.string({ required_error: "Veuillez sélectionner un fournisseur." }),
 });
 
 const paymentDetailsSchema = z.object({
-    full_name: z.string().min(1, "Amazina Yose arasabwa."),
-    phone_number: z.string().min(1, "Nimero ya terefone irasabwa."),
-    account_number: z.string().min(1, "Nimero ya konti irasabwa."),
-    email: z.string().email("Ndokera ushire imeri yemewe.").optional(),
+    full_name: z.string().min(1, "Le nom complet est requis."),
+    phone_number: z.string().min(1, "Le numéro de téléphone est requis."),
+    account_number: z.string().min(1, "Le numéro de compte est requis."),
+    email: z.string().email("Veuillez entrer une adresse e-mail valide.").optional(),
 })
 
 type FormData = {
@@ -80,7 +80,7 @@ export default function SellPage() {
 
     const amountForm = useForm<{ amount: number }>({
         resolver: zodResolver(amountSchema.extend({
-            amount: z.coerce.number().positive().max(currentBalance, `Amafaranga adahagije. Ahari: ${currentBalance.toFixed(8)} BTC`)
+            amount: z.coerce.number().positive().max(currentBalance, `Solde insuffisant. Disponible : ${currentBalance.toFixed(8)} BTC`)
         })),
         mode: "onChange",
     });
@@ -106,9 +106,9 @@ export default function SellPage() {
             setBalance(balanceRes.data);
             setProviders(providersRes.data.filter(p => p.can_sell));
         } catch (err: any) {
-            const errorMsg = err.message || "Gupakira amakuru y'itanguriro biranse.";
+            const errorMsg = err.message || "Échec du chargement des données initiales.";
             setDataError(errorMsg);
-            toast({ variant: "destructive", title: "Ikosa", description: errorMsg });
+            toast({ variant: "destructive", title: "Erreur", description: errorMsg });
         } finally {
             setIsLoadingData(false);
         }
@@ -135,7 +135,7 @@ export default function SellPage() {
     useEffect(() => {
         const newBalance = balance ? parseFloat(balance.balance) : 0;
         const schema = amountSchema.extend({
-            amount: z.coerce.number().positive().max(newBalance, `Amafaranga adahagije. Ahari: ${newBalance.toFixed(8)} BTC`)
+            amount: z.coerce.number().positive().max(newBalance, `Solde insuffisant. Disponible : ${newBalance.toFixed(8)} BTC`)
         });
         (amountForm.control as any)._resolver = zodResolver(schema);
         if (amountForm.formState.isDirty) {
@@ -183,7 +183,7 @@ export default function SellPage() {
 
     const handleSell = async () => {
         if (!formData.amount || !formData.providerId || !formData.paymentDetails || !feeEstimation) {
-            toast({ variant: 'destructive', title: 'Amakuru abura', description: 'Ndokera wuzuze intambwe zose.' });
+            toast({ variant: 'destructive', title: 'Données manquantes', description: 'Veuillez compléter toutes les étapes.' });
             return;
         }
 
@@ -202,11 +202,11 @@ export default function SellPage() {
             };
             
             const response = await api.createSellOrder(orderPayload);
-            toast({ title: 'Itangazo ryo kugurisha ryakozwe', description: `Itangazo ryawe #${response.data.id} ririko rirakorwa.` });
+            toast({ title: 'Commande de vente créée', description: `Votre commande #${response.data.id} est en cours de traitement.` });
             router.push(`/orders/${response.data.id}`);
 
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Kugurisha biranse', description: error.message });
+            toast({ variant: 'destructive', title: 'Échec de la vente', description: error.message });
         } finally {
             setIsSubmitting(false);
         }
@@ -220,14 +220,14 @@ export default function SellPage() {
     const renderAmountStep = () => (
          <Card>
             <CardHeader>
-                <CardTitle>Intambwe ya 1: Injiza Umubare</CardTitle>
-                <CardDescription>Menyesha umubare wa Bitcoin ushaka kugurisha.</CardDescription>
+                <CardTitle>Étape 1: Entrez le Montant</CardTitle>
+                <CardDescription>Spécifiez la quantité de Bitcoin que vous souhaitez vendre.</CardDescription>
             </CardHeader>
             <Form {...amountForm}>
             <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                 <CardContent className="space-y-6">
                      <div className="p-4 rounded-lg bg-secondary border">
-                        <p className="text-sm text-muted-foreground">Amafaranga yawe aboneka</p>
+                        <p className="text-sm text-muted-foreground">Votre solde disponible</p>
                         {isLoadingData ? 
                             <Skeleton className="h-8 w-48 mt-1" /> :
                             <p className="text-2xl font-bold font-mono">{currentBalance.toFixed(8)} BTC</p>
@@ -238,7 +238,7 @@ export default function SellPage() {
                         name="amount"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Umubare muri BTC</FormLabel>
+                            <FormLabel>Montant en BTC</FormLabel>
                             <div className="relative">
                                 <FormControl><Input type="number" step="0.00000001" placeholder="0.00" {...field} value={field.value ?? ''} className="pl-8 text-lg h-12"/></FormControl>
                                 <Bitcoin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -247,7 +247,7 @@ export default function SellPage() {
                                 <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.25).toFixed(8)), { shouldValidate: true })}>25%</Button>
                                 <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.50).toFixed(8)), { shouldValidate: true })}>50%</Button>
                                 <Button type="button" variant="outline" size="sm" onClick={() => amountForm.setValue("amount", parseFloat((currentBalance * 0.75).toFixed(8)), { shouldValidate: true })}>75%</Button>
-                                <Button type="button" variant="destructive" size="sm" onClick={() => amountForm.setValue("amount", currentBalance, { shouldValidate: true })}>Vyose</Button>
+                                <Button type="button" variant="destructive" size="sm" onClick={() => amountForm.setValue("amount", currentBalance, { shouldValidate: true })}>Max</Button>
                             </div>
                             <FormMessage />
                         </FormItem>
@@ -255,7 +255,7 @@ export default function SellPage() {
                     />
                 </CardContent>
                 <CardFooter>
-                    <Button type="submit" className="w-full" size="lg">Ibikurikira</Button>
+                    <Button type="submit" className="w-full" size="lg">Suivant</Button>
                 </CardFooter>
             </form>
             </Form>
@@ -265,18 +265,18 @@ export default function SellPage() {
      const renderProviderStep = () => (
          <Card>
             <CardHeader>
-                <CardTitle>Intambwe ya 2: Hitamwo Umutanzi</CardTitle>
-                <CardDescription>Hitamwo umutanzi azokora igikorwa cawe co kugurisha.</CardDescription>
+                <CardTitle>Étape 2: Choisissez un Fournisseur</CardTitle>
+                <CardDescription>Sélectionnez un fournisseur pour traiter votre transaction de vente.</CardDescription>
             </CardHeader>
              <Form {...providerForm}>
             <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                 <CardContent className="space-y-6">
-                    {dataError && <Alert variant="destructive"><AlertTitle>Ikosa</AlertTitle><AlertDescription>{dataError}</AlertDescription></Alert>}
+                    {dataError && <Alert variant="destructive"><AlertTitle>Erreur</AlertTitle><AlertDescription>{dataError}</AlertDescription></Alert>}
                      {!dataError && providers.length === 0 && (
                         <Alert>
                             <Info className="h-4 w-4" />
-                            <AlertTitle>Nta Mutanzi aboneka</AlertTitle>
-                            <AlertDescription>Kuri ubu nta mutanzi aboneka wo gukora amatangazo yo kugurisha. Subira ugerageze mu kanya.</AlertDescription>
+                            <AlertTitle>Aucun Fournisseur Disponible</AlertTitle>
+                            <AlertDescription>Actuellement, aucun fournisseur n'est disponible pour traiter les ordres de vente. Veuillez réessayer plus tard.</AlertDescription>
                         </Alert>
                     )}
                     <FormField
@@ -284,7 +284,7 @@ export default function SellPage() {
                         name="providerId"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Abatanzi baboneka</FormLabel>
+                                <FormLabel>Fournisseurs disponibles</FormLabel>
                                 <FormControl>
                                     <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2">
                                         {providers.map(provider => (
@@ -311,7 +311,7 @@ export default function SellPage() {
                     />
                 </CardContent>
                 <CardFooter>
-                    <Button type="submit" className="w-full" size="lg" disabled={providers.length === 0}>Ibikurikira</Button>
+                    <Button type="submit" className="w-full" size="lg" disabled={providers.length === 0}>Suivant</Button>
                 </CardFooter>
             </form>
             </Form>
@@ -321,8 +321,8 @@ export default function SellPage() {
     const renderPaymentDetailsStep = () => (
          <Card>
             <CardHeader>
-                <CardTitle>Intambwe ya 3: Injiza Amakuru yo Kurihwa</CardTitle>
-                <CardDescription>Tanga amakuru ya konti yawe kugira wakire amafaranga. Aha niho amafaranga yawe azokurungikirwa, rero ndokera urabe neza ko ataco kibesha.</CardDescription>
+                <CardTitle>Étape 3: Entrez les Détails de Paiement</CardTitle>
+                <CardDescription>Fournissez vos informations de compte pour recevoir les fonds. C'est là que votre argent sera envoyé, alors assurez-vous de l'exactitude.</CardDescription>
             </CardHeader>
              <Form {...paymentDetailsForm}>
             <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
@@ -332,9 +332,9 @@ export default function SellPage() {
                         name="full_name"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Amazina Yose</FormLabel>
+                                <FormLabel>Nom Complet</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="e.g., Alice Ndayizeye" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="ex: Alice Dubois" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -345,9 +345,9 @@ export default function SellPage() {
                         name="phone_number"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Nimero ya Terefone</FormLabel>
+                                <FormLabel>Numéro de téléphone</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="e.g., +25779988777" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="ex: +25779988777" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -358,9 +358,9 @@ export default function SellPage() {
                         name="account_number"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Nimero ya Konti</FormLabel>
+                                <FormLabel>Numéro de Compte</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="e.g., 987654321" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="ex: 987654321" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -371,9 +371,9 @@ export default function SellPage() {
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Imeri (Si ngombwa)</FormLabel>
+                                <FormLabel>E-mail (Optionnel)</FormLabel>
                                 <FormControl>
-                                    <Input type="email" placeholder="e.g., alice@example.com" {...field} value={field.value ?? ''} />
+                                    <Input type="email" placeholder="ex: alice@example.com" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -381,7 +381,7 @@ export default function SellPage() {
                     />
                 </CardContent>
                 <CardFooter>
-                    <Button type="submit" className="w-full" size="lg">Ibikurikira</Button>
+                    <Button type="submit" className="w-full" size="lg">Suivant</Button>
                 </CardFooter>
             </form>
             </Form>
@@ -393,12 +393,12 @@ export default function SellPage() {
             return (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Intambwe ya 4: Emeza & Gurisha</CardTitle>
-                        <CardDescription>Subiramwo amakuru y'igikorwa cawe imbere yo kwemeza igurishwa.</CardDescription>
+                        <CardTitle>Étape 4: Confirmer & Vendre</CardTitle>
+                        <CardDescription>Passez en revue les détails de votre transaction avant de confirmer la vente.</CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-center h-48">
                         <Loader2 className="mr-2 size-6 animate-spin" />
-                        <p>Guharura agashirukiramico...</p>
+                        <p>Estimation des frais...</p>
                     </CardContent>
                 </Card>
             );
@@ -408,19 +408,19 @@ export default function SellPage() {
             return (
                  <Card>
                     <CardHeader>
-                        <CardTitle>Intambwe ya 4: Emeza & Gurisha</CardTitle>
-                        <CardDescription>Subiramwo amakuru y'igikorwa cawe imbere yo kwemeza igurishwa.</CardDescription>
+                        <CardTitle>Étape 4: Confirmer & Vendre</CardTitle>
+                        <CardDescription>Passez en revue les détails de votre transaction avant de confirmer la vente.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Guharura Agashirukiramico Biranse</AlertTitle>
+                            <AlertTitle>Échec de l'estimation des frais</AlertTitle>
                             <AlertDescription>{feeError}</AlertDescription>
                         </Alert>
                     </CardContent>
                      <CardFooter>
                          <Button variant="outline" size="lg" onClick={handleBack} className="w-full">
-                            Subira inyuma
+                            Retour
                         </Button>
                     </CardFooter>
                 </Card>
@@ -431,16 +431,16 @@ export default function SellPage() {
             return (
                  <Card>
                     <CardHeader>
-                        <CardTitle>Intambwe ya 4: Emeza & Gurisha</CardTitle>
-                        <CardDescription>Ndokera wuzuze intambwe zose zabanjirije kugira ubone incamake y'igikorwa cawe.</CardDescription>
+                        <CardTitle>Étape 4: Confirmer & Vendre</CardTitle>
+                        <CardDescription>Veuillez compléter toutes les étapes précédentes pour voir le résumé de votre transaction.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <p className="text-muted-foreground text-center py-8">Kurindira amakuru y'igikorwa...</p>
+                         <p className="text-muted-foreground text-center py-8">En attente des détails de la transaction...</p>
                     </CardContent>
                     <CardFooter className="grid grid-cols-2 gap-4">
-                         <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Subira inyuma</Button>
+                         <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Retour</Button>
                         <Button size="lg" disabled={true}>
-                            Gurisha Bitcoin
+                            Vendre des Bitcoins
                         </Button>
                     </CardFooter>
                 </Card>
@@ -457,28 +457,28 @@ export default function SellPage() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Intambwe ya 4: Emeza & Gurisha</CardTitle>
-                    <CardDescription>Subiramwo amakuru y'igikorwa cawe imbere yo kwemeza igurishwa.</CardDescription>
+                    <CardTitle>Étape 4: Confirmer & Vendre</CardTitle>
+                    <CardDescription>Passez en revue les détails de votre transaction avant de confirmer la vente.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="p-4 rounded-lg bg-secondary border space-y-3 text-sm">
                         <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Kugurisha</span>
+                            <span className="text-muted-foreground">À vendre</span>
                             <span className="font-mono font-bold text-base">{amountToSellBtc.toFixed(8)} BTC</span>
                         </div>
                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Agashirukiramico ka Réseau</span>
+                            <span className="text-muted-foreground">Frais de réseau</span>
                             <span className="font-mono">-{networkFeeBtc.toFixed(8)} BTC</span>
                         </div>
                         <div className="border-t border-dashed" />
                         <div className="flex justify-between items-center font-semibold">
-                            <span className="text-foreground">Umubare wo kugurisha (BTC)</span>
+                            <span className="text-foreground">Montant de la vente (BTC)</span>
                             <span className="font-mono text-base">{finalAmountBtc.toFixed(8)} BTC</span>
                         </div>
                     </div>
                     
                     <div className="p-4 rounded-lg border space-y-3">
-                         <p className="font-semibold text-center text-sm text-muted-foreground mb-2">Uzokwakira (Nka)</p>
+                         <p className="font-semibold text-center text-sm text-muted-foreground mb-2">Vous recevrez (Environ)</p>
                         <div className="flex justify-between items-baseline">
                             <span className="text-lg text-muted-foreground">USD</span>
                             <span className="text-2xl font-bold font-mono">{getFiat(amountToReceiveUsd, 'USD')}</span>
@@ -491,8 +491,8 @@ export default function SellPage() {
 
                      <Card className="bg-secondary/30">
                         <CardHeader className="pb-4">
-                            <CardTitle className="text-base">Amakuru yo Kurihwa</CardTitle>
-                            <CardDescription>Amafaranga azokurungikirwa biciye kuri {selectedProvider?.name} kuri ibi bikurikira:</CardDescription>
+                            <CardTitle className="text-base">Détails de Paiement</CardTitle>
+                            <CardDescription>Les fonds seront envoyés via {selectedProvider?.name} aux détails suivants:</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">
                             <div className="flex items-center gap-3">
@@ -519,10 +519,10 @@ export default function SellPage() {
                     </Card>
                  </CardContent>
                 <CardFooter className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Hagarika</Button>
+                    <Button variant="outline" size="lg" onClick={handleBack} disabled={isSubmitting}>Annuler</Button>
                     <Button size="lg" disabled={isEstimatingFee || !feeEstimation || isSubmitting} onClick={handleSell}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        {isSubmitting ? "Kugurisha..." : "Gurisha Bitcoin"}
+                        {isSubmitting ? "Vente en cours..." : "Vendre des Bitcoins"}
                     </Button>
                 </CardFooter>
             </Card>
@@ -544,17 +544,17 @@ export default function SellPage() {
       return (
         <div className="mx-auto max-w-2xl space-y-6">
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Gurisha Bitcoin</h1>
-            <p className="text-muted-foreground">Kurikira intambwe kugira ugurishe Bitcoin yawe mu mutekano.</p>
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Vendre des Bitcoins</h1>
+            <p className="text-muted-foreground">Suivez les étapes pour vendre vos Bitcoins en toute sécurité.</p>
           </div>
            <Card className="flex h-48 items-center justify-center">
             <div className="text-center text-destructive">
               <AlertCircle className="mx-auto h-8 w-8" />
-              <p className="mt-2 font-semibold">Ikosa mu gupakira Amakuru</p>
+              <p className="mt-2 font-semibold">Erreur de chargement des données</p>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">{dataError}</p>
               <Button onClick={fetchInitialData} variant="secondary" className="mt-4">
                 {isLoadingData && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                Subira Ugerageze
+                Réessayer
               </Button>
             </div>
           </Card>
@@ -563,17 +563,17 @@ export default function SellPage() {
     }
 
     const steps = [
-        { title: "Umubare", isComplete: currentStep > 1 },
-        { title: "Umutanzi", isComplete: currentStep > 2 },
-        { title: "Kurihwa", isComplete: currentStep > 3 },
-        { title: "Emeza", isComplete: currentStep > 4 }
+        { title: "Montant", isComplete: currentStep > 1 },
+        { title: "Fournisseur", isComplete: currentStep > 2 },
+        { title: "Paiement", isComplete: currentStep > 3 },
+        { title: "Confirmer", isComplete: currentStep > 4 }
     ];
 
     return (
         <div className="mx-auto max-w-2xl space-y-6">
             <div className="space-y-2">
-                <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Gurisha Bitcoin</h1>
-                <p className="text-muted-foreground">Kurikira intambwe kugira ugurishe Bitcoin yawe mu mutekano.</p>
+                <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Vendre des Bitcoins</h1>
+                <p className="text-muted-foreground">Suivez les étapes pour vendre vos Bitcoins en toute sécurité.</p>
             </div>
             
              <div className="flex w-full items-center justify-between rounded-lg border bg-card p-2 text-xs sm:text-sm">
@@ -592,7 +592,7 @@ export default function SellPage() {
             
             {currentStep > 1 && (
                 <Button variant="ghost" onClick={handleBack} className="-mb-2">
-                    <ArrowLeft className="mr-2 size-4" /> Subira inyuma
+                    <ArrowLeft className="mr-2 size-4" /> Retour
                 </Button>
             )}
 

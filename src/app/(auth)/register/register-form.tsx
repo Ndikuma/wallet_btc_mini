@@ -22,9 +22,9 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 const formSchema = z.object({
-  username: z.string().min(3, { message: "Izina ry'ukoresha rigomba kuba rifise n'imiburiburi inyuguti 3." }),
-  email: z.string().email({ message: "Ndokera ushiremwo imeri yemewe." }),
-  password: z.string().min(8, { message: "Ijambo ry'ibanga rigomba kuba rifise n'imiburiburi inyuguti 8." }),
+  username: z.string().min(3, { message: "Le nom d'utilisateur doit contenir au moins 3 caractères." }),
+  email: z.string().email({ message: "Veuillez entrer une adresse e-mail valide." }),
+  password: z.string().min(8, { message: "Le mot de passe doit contenir au moins 8 caractères." }),
 });
 
 export function RegisterForm() {
@@ -53,17 +53,17 @@ export function RegisterForm() {
       document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
 
       toast({
-        title: "Konti yakozwe",
-        description: "Ndokera ushireho irembo ryawe kugira ubandanye.",
+        title: "Compte créé",
+        description: "Veuillez configurer votre portefeuille pour continuer.",
       });
       router.push("/create-or-restore");
       router.refresh();
     } catch (error: any) {
        const errorDetails = error.response?.data?.error?.details;
-       const errorMsg = errorDetails?.email?.[0] || errorDetails?.password?.[0] || errorDetails?.username?.[0] || error.response?.data?.message || "Habaye ikosa rititezwe.";
+       const errorMsg = errorDetails?.email?.[0] || errorDetails?.password?.[0] || errorDetails?.username?.[0] || error.response?.data?.message || "Une erreur inattendue est survenue.";
       toast({
         variant: "destructive",
-        title: "Kwandika biranse",
+        title: "Échec de l'inscription",
         description: errorMsg,
       });
     } finally {
@@ -79,9 +79,9 @@ export function RegisterForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Izina ry'ukoresha</FormLabel>
+              <FormLabel>Nom d'utilisateur</FormLabel>
               <FormControl>
-                <Input type="text" placeholder="izina ryawe" {...field} />
+                <Input type="text" placeholder="votre nom d'utilisateur" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -92,7 +92,7 @@ export function RegisterForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Imeri</FormLabel>
+              <FormLabel>E-mail</FormLabel>
               <FormControl>
                 <Input type="email" placeholder="m@example.com" {...field} />
               </FormControl>
@@ -105,7 +105,7 @@ export function RegisterForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Ijambo ry'ibanga</FormLabel>
+              <FormLabel>Mot de passe</FormLabel>
                <div className="relative">
                 <FormControl>
                   <Input 
@@ -120,7 +120,7 @@ export function RegisterForm() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
                 >
-                  {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
               <FormMessage />
@@ -128,7 +128,7 @@ export function RegisterForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-           {isLoading ? 'Kurema Konti...' : 'Kora Konti'}
+           {isLoading ? 'Création du compte...' : 'Créer un compte'}
         </Button>
       </form>
     </Form>

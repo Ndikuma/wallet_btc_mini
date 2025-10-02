@@ -21,8 +21,8 @@ import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
-  username: z.string().min(1, { message: "Ndokera ushiremwo izina ryawe." }),
-  password: z.string().min(1, { message: "Ndokera ushiremwo ijambo ry'ibanga." }),
+  username: z.string().min(1, { message: "Veuillez entrer votre nom d'utilisateur." }),
+  password: z.string().min(1, { message: "Veuillez entrer votre mot de passe." }),
 });
 
 export function LoginForm() {
@@ -49,8 +49,8 @@ export function LoginForm() {
       document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
 
       toast({
-        title: "Winjiye neza",
-        description: "Kaze, garuka!",
+        title: "Connexion réussie",
+        description: "Bienvenue !",
       });
 
       const { user } = response.data;
@@ -64,7 +64,7 @@ export function LoginForm() {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Kwinjira biranse",
+        title: "Échec de la connexion",
         description: error.message,
       });
     } finally {
@@ -80,9 +80,9 @@ export function LoginForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Izina ry'ukoresha</FormLabel>
+              <FormLabel>Nom d'utilisateur</FormLabel>
               <FormControl>
-                <Input type="text" placeholder="izina ryawe" {...field} autoComplete="username" />
+                <Input type="text" placeholder="votre nom d'utilisateur" {...field} autoComplete="username" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -93,7 +93,7 @@ export function LoginForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Ijambo ry'ibanga</FormLabel>
+              <FormLabel>Mot de passe</FormLabel>
               <div className="relative">
                 <FormControl>
                   <Input 
@@ -108,9 +108,9 @@ export function LoginForm() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
-                  aria-label={showPassword ? "Hisha ijambo ry'ibanga" : "Erekana ijambo ry'ibanga"}
+                  aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                 >
-                  {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
               <FormMessage />
@@ -119,7 +119,7 @@ export function LoginForm() {
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoading ? 'Kwinjira...' : 'Injira'}
+          {isLoading ? 'Connexion...' : 'Se connecter'}
         </Button>
       </form>
     </Form>

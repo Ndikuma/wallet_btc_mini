@@ -22,11 +22,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
-  mnemonic: z.string().min(20, { message: "Amajambo yo kugarura asa n'aho ari magufi cane." })
+  mnemonic: z.string().min(20, { message: "La phrase de récupération semble trop courte." })
     .refine(value => {
         const wordCount = value.trim().split(/\s+/).length;
         return wordCount === 12 || wordCount === 24;
-    }, "Amajambo agomba kuba 12 canke 24."),
+    }, "La phrase doit contenir 12 ou 24 mots."),
 });
 
 export function RestoreForm() {
@@ -61,15 +61,15 @@ export function RestoreForm() {
       }
       
       toast({
-        title: "Irembo ryagarutse neza",
-        description: "Irembo ryawe riri tayari. Kaze garuka!",
+        title: "Portefeuille restauré avec succès",
+        description: "Votre portefeuille est prêt. Bienvenue !",
       });
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Kugarura biranse",
+        title: "Échec de la restauration",
         description: error.message,
       });
     } finally {
@@ -81,9 +81,9 @@ export function RestoreForm() {
       return (
           <Alert>
               <Info className="h-4 w-4" />
-              <AlertTitle>Nturinjira</AlertTitle>
+              <AlertTitle>Non connecté</AlertTitle>
               <AlertDescription>
-                  Ugomba kwinjira canke gukora konti imbere yo kugarura irembo.
+                  Vous devez vous connecter ou créer un compte avant de restaurer un portefeuille.
               </AlertDescription>
           </Alert>
       )
@@ -97,10 +97,10 @@ export function RestoreForm() {
           name="mnemonic"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Amajambo yo kugarura</FormLabel>
+              <FormLabel>Phrase de récupération</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Injiza amajambo 12 canke 24 atandukanijwe n'umwanya..."
+                  placeholder="Entrez les 12 ou 24 mots séparés par des espaces..."
                   className="resize-none"
                   rows={4}
                   {...field}
@@ -112,7 +112,7 @@ export function RestoreForm() {
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoading ? 'Kugarura...' : 'Garura Irembo'}
+          {isLoading ? 'Restauration...' : 'Restaurer le portefeuille'}
         </Button>
       </form>
     </Form>

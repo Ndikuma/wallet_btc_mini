@@ -20,7 +20,7 @@ const fontCode = Source_Code_Pro({
 
 export const metadata: Metadata = {
   title: 'Umuhora Tech Wallet',
-  description: 'Isabukuru ntoya y\'irembo rya bitcoin',
+  description: 'Un portefeuille Bitcoin simple et non-custodial',
 };
 
 export default function RootLayout({

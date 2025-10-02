@@ -43,7 +43,7 @@ const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.Element
   const onCopy = () => {
     if (value) {
       navigator.clipboard.writeText(value);
-      toast({ title: `${label} vyakoporowe` });
+      toast({ title: `${label} copié` });
     }
   }
 
@@ -105,7 +105,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
                 </div>
                 <div className="flex-1 grid gap-1 text-left">
                   <p className="font-medium truncate">
-                    {isSent ? "Yarungitswe" : "Yakiriwe"}
+                    {isSent ? "Envoyé" : "Reçu"}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' })}
@@ -116,7 +116,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
                     {tx.amount_formatted}
                   </p>
                   <p className="text-xs text-muted-foreground font-mono">
-                    Agash.: {tx.fee_formatted.replace("BTC", "")}
+                    Frais: {tx.fee_formatted.replace("BTC", "")}
                   </p>
                 </div>
                 <div className="pl-2">
@@ -127,21 +127,21 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
             <AccordionContent className="border-t pt-4 px-4 pb-4">
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
-                  <DetailRow icon={getStatusIcon(tx.status)} label="Uko bigenze">
+                  <DetailRow icon={getStatusIcon(tx.status)} label="Statut">
                      <Badge variant={getStatusVariant(tx.status)} className="capitalize text-sm">{tx.status}</Badge>
                   </DetailRow>
-                  <DetailRow icon={CalendarClock} label="Itariki & Igihe">
+                  <DetailRow icon={CalendarClock} label="Date & Heure">
                      <p className="text-sm font-semibold">{new Date(tx.created_at).toLocaleString('fr-FR')}</p>
                   </DetailRow>
-                  <DetailRow icon={Hash} label="Indangamuntu y'igikorwa" value={tx.txid} />
-                  <DetailRow icon={Landmark} label="Agashirukiramico" value={tx.fee_formatted.replace("BTC", "")} />
-                  <DetailRow icon={ArrowUpRight} label="Aderese y'uwarungitse" value={tx.from_address} />
-                  <DetailRow icon={ArrowDownLeft} label="Aderese y'uwakiriye" value={tx.to_address} />
+                  <DetailRow icon={Hash} label="ID de Transaction" value={tx.txid} />
+                  <DetailRow icon={Landmark} label="Frais de réseau" value={tx.fee_formatted.replace("BTC", "")} />
+                  <DetailRow icon={ArrowUpRight} label="Adresse de l'expéditeur" value={tx.from_address} />
+                  <DetailRow icon={ArrowDownLeft} label="Adresse du destinataire" value={tx.to_address} />
                 </div>
                 {tx.explorer_url && (
                   <Button asChild variant="outline" className="w-full">
                     <Link href={tx.explorer_url} target="_blank" rel="noopener noreferrer">
-                      Raba kuri Block Explorer <ExternalLink className="ml-2 size-4" />
+                      Voir sur l'explorateur de blocs <ExternalLink className="ml-2 size-4" />
                     </Link>
                   </Button>
                 )}
@@ -168,17 +168,17 @@ export default function TransactionsPage() {
       const transactionsRes = await api.getTransactions();
       setTransactions(transactionsRes.data.results || transactionsRes.data || []);
     } catch (err: any) {
-      console.error("Gupakira ibikorwa biranse", err);
-      let errorMsg = "Ntivyakunze gupakira kahise k'ibikorwa.";
+      console.error("Échec du chargement des transactions", err);
+      let errorMsg = "Impossible de charger l'historique des transactions.";
       if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
-          errorMsg = "Ikosa rya réseau. Ntivyakunze kwihuza na seriveri.";
+          errorMsg = "Erreur réseau. Impossible de se connecter au serveur.";
       } else if (err.message) {
           errorMsg = err.message;
       }
       setTransactionsError(errorMsg);
       toast({
         variant: "destructive",
-        title: "Ikosa",
+        title: "Erreur",
         description: errorMsg,
       });
     } finally {
@@ -194,9 +194,9 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Kahise k'Ibikorwa</h1>
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Historique des Transactions</h1>
         <p className="text-muted-foreground">
-          Raba ibikorwa vyose vyo mu irembo ryawe.
+          Consultez toutes les transactions de votre portefeuille.
         </p>
       </div>
       <div className="space-y-4">
@@ -208,11 +208,11 @@ export default function TransactionsPage() {
             <Card className="flex h-48 items-center justify-center">
                 <div className="text-center text-destructive">
                     <AlertCircle className="mx-auto h-8 w-8" />
-                    <p className="mt-2 font-semibold">Ikosa mu gupakira ibikorwa</p>
+                    <p className="mt-2 font-semibold">Erreur de chargement des transactions</p>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">{transactionsError}</p>
                     <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
                         {loadingTransactions && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Subira Ugerageze
+                        Réessayer
                     </Button>
                 </div>
             </Card>
@@ -222,7 +222,7 @@ export default function TransactionsPage() {
           ))
         ) : (
           <Card className="flex h-48 items-center justify-center">
-            <p className="text-muted-foreground">Nta bikorwa biraboneka.</p>
+            <p className="text-muted-foreground">Aucune transaction disponible.</p>
           </Card>
         )}
       </div>

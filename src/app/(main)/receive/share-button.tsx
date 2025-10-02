@@ -26,22 +26,22 @@ export function ShareButton({ shareData, children, className, ...props }: ShareB
       try {
         await navigator.share(shareData);
         toast({
-          title: "Vyagiye neza",
+          title: "Partagé avec succès",
         });
       } catch (error) {
         if ((error as DOMException).name !== 'AbortError') {
              toast({
                 variant: "destructive",
-                title: "Kusangira biranse",
-                description: "Ntivyakunze gusangira amakuru yo kwishura.",
+                title: "Échec du partage",
+                description: "Impossible de partager les informations de paiement.",
             });
         }
       }
     } else {
          toast({
             variant: "destructive",
-            title: "Kusangira ntibikunda",
-            description: "Navigateur yawe ntishobora gusangira ibi bintu.",
+            title: "Partage non pris en charge",
+            description: "Votre navigateur ne prend pas en charge cette fonctionnalité de partage.",
         });
     }
   };

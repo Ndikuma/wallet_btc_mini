@@ -20,11 +20,11 @@ export default function CreateOrRestorePage() {
       </div>
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Shiramwo Irembo Ry'amafaranga</CardTitle>
+          <CardTitle className="text-2xl">Configurer votre portefeuille</CardTitle>
           <CardDescription>
-            Winjiye, ariko nturagira irembo ry'amafaranga.
+            Vous êtes connecté, mais vous n'avez pas encore de portefeuille.
             <br />
-            Kora irindi rishasha canke ugarure iryo wari usanganywe kugira utangure.
+            Créez-en un nouveau ou restaurez un portefeuille existant pour commencer.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -34,9 +34,9 @@ export default function CreateOrRestorePage() {
           >
             <PlusCircle className="size-12 text-primary" />
             <div className="space-y-1">
-              <h3 className="font-semibold">Kurema Irembo Rishasha</h3>
+              <h3 className="font-semibold">Créer un nouveau portefeuille</h3>
               <p className="text-sm text-muted-foreground">
-                Kora irembo rishasha ry'amafaranga ya Bitcoin rizivye.
+                Générez un nouveau portefeuille Bitcoin sécurisé.
               </p>
             </div>
           </Link>
@@ -47,9 +47,9 @@ export default function CreateOrRestorePage() {
           >
             <Import className="size-12 text-primary" />
             <div className="space-y-1">
-              <h3 className="font-semibold">Kugarura Irembo Risanzwe</h3>
+              <h3 className="font-semibold">Restaurer un portefeuille</h3>
               <p className="text-sm text-muted-foreground">
-                Koresha amajambo 12 canke 24 yo kugarura irembo ryawe.
+                Utilisez votre phrase de récupération de 12 ou 24 mots.
               </p>
             </div>
           </Link>

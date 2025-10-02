@@ -22,10 +22,10 @@ export default function SendPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                 <Bitcoin className="size-6 text-primary" />
             </div>
-            <CardTitle>Rungika Bitcoin</CardTitle>
+            <CardTitle>Envoyer des Bitcoins</CardTitle>
             </div>
             <CardDescription>
-            Injiza aderese y'uwakira n'umubare wo kurungika. Agashirukiramico keza kazoharurwa hisunzwe UTXOs. Irinde kurungika amafaranga yawe yose kuko bishobora gutera amakosa mu guharura agashirukiramico.
+            Entrez l'adresse du destinataire et le montant à envoyer. Les frais optimaux seront calculés en fonction des UTXOs. Évitez d'envoyer la totalité de votre solde car cela peut entraîner des erreurs de calcul des frais.
             </CardDescription>
         </CardHeader>
         <CardContent>

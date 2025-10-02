@@ -31,23 +31,23 @@ function LandingPage() {
           </Link>
           <nav className="hidden items-center gap-2 md:flex">
             <Button variant="ghost" asChild>
-              <Link href="/login">Injira</Link>
+              <Link href="/login">Se connecter</Link>
             </Button>
             <Button asChild>
               <Link href="/register">
-                Tangura <ArrowRight className="ml-2 size-4" />
+                Commencer <ArrowRight className="ml-2 size-4" />
               </Link>
             </Button>
           </nav>
            <nav className="flex items-center gap-2 md:hidden">
              <Button variant="ghost" size="sm" asChild>
-                <Link href="/login">Injira</Link>
+                <Link href="/login">Se connecter</Link>
               </Button>
               <Button asChild size="sm">
                 <Link href="/register">
-                  Iyandikishe
+                  S'inscrire
                 </Link>
-              </Button>
+              </Button>           
            </nav>
         </div>
       </header>
@@ -56,17 +56,17 @@ function LandingPage() {
             <div className="absolute inset-0 -z-10 h-full w-full bg-background animated-gradient"></div>
             <div className="max-w-4xl px-4">
               <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-                Udufunguzo twawe, Bitcoin yawe.
+                Vos clés, vos Bitcoins.
               </h1>
               <p className="mt-6 max-w-2xl mx-auto text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                Gira igenzura ryuzuye kuri Bitcoin yawe n'irembo ryoroshe, rizivye, ryuguruye ryakorewe bose. Rungika, wakire, kandi ugenzure amatungo yawe n'icizere.
+                Prenez le contrôle total de vos Bitcoins avec un portefeuille simple, sécurisé et open-source. Envoyez, recevez et gérez vos actifs en toute confiance.
               </p>
               <div className="mt-8 flex w-full flex-col justify-center gap-4 sm:flex-row md:justify-center">
                   <Button asChild size="lg" className="w-full sm:w-auto">
-                    <Link href="/register">Kora Irembo Rishasha</Link>
+                    <Link href="/register">Créer un Nouveau Portefeuille</Link>
                   </Button>
                   <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-                    <Link href="/restore-wallet">Garura Irembo</Link>
+                    <Link href="/restore-wallet">Restaurer un Portefeuille</Link>
                   </Button>
                 </div>
             </div>

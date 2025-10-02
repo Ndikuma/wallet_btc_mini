@@ -59,7 +59,7 @@ export default function BuyPage() {
       const response = await api.getBuyProviders();
       setProviders(response.data);
     } catch (err: any) {
-      setError(err.message || "Gupakira abatanzi bo kugura biranse. Subira ugerageze mu kanya.");
+      setError(err.message || "Échec du chargement des fournisseurs d'achat. Veuillez réessayer plus tard.");
     } finally {
       setLoading(false);
     }
@@ -72,9 +72,9 @@ export default function BuyPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Gura Bitcoin</h1>
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Acheter des Bitcoins</h1>
         <p className="text-muted-foreground">
-          Hitamwo umutanzi kugira wishure kandi wakire Bitcoin mu irembo ryawe.
+          Choisissez un fournisseur pour payer et recevoir des Bitcoins dans votre portefeuille.
         </p>
       </div>
 
@@ -98,11 +98,11 @@ export default function BuyPage() {
         <Card className="flex h-48 items-center justify-center">
           <div className="text-center text-destructive">
             <AlertCircle className="mx-auto h-8 w-8" />
-            <p className="mt-2 font-semibold">Ikosa mu gupakira abatanzi</p>
+            <p className="mt-2 font-semibold">Erreur de chargement des fournisseurs</p>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
             <Button onClick={fetchProviders} variant="secondary" className="mt-4">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-              Subira Ugerageze
+              Réessayer
             </Button>
           </div>
         </Card>
@@ -116,7 +116,7 @@ export default function BuyPage() {
             ))
           ) : (
             <Card className="col-span-full flex h-48 items-center justify-center">
-              <p className="text-muted-foreground">Nta mutanzi wo kugura aboneka kuri ubu.</p>
+              <p className="text-muted-foreground">Aucun fournisseur d'achat n'est disponible pour le moment.</p>
             </Card>
           )}
         </div>

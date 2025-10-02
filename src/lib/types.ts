@@ -121,6 +121,7 @@ export interface PayoutData {
 }
 
 export interface BuyOrderPayload {
+    direction: 'buy';
     provider_id: number;
     amount: number;
     amount_currency: string;
@@ -128,6 +129,7 @@ export interface BuyOrderPayload {
 }
 
 export interface SellOrderPayload {
+    direction: 'sell';
     provider_id: number;
     amount: number;
     btc_amount: number;

@@ -139,6 +139,7 @@ export default function BuyWithProviderPage() {
     setIsSubmitting(true);
     try {
         const orderPayload: BuyOrderPayload = {
+            direction: 'buy',
             provider_id: provider.id,
             amount: data.amount,
             amount_currency: data.currency,

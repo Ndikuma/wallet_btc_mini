@@ -43,13 +43,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'citysearch-office-shall-consent.trycloudflare.com',
+        hostname: 'edward-provincial-graham-opens.trycloudflare.com',
         port: '',
         pathname: '/**',
       },
       {
         protocol: 'http',
-        hostname: 'sequence-featuring-pond-libs.trycloudflare.com',
+        hostname: 'edward-provincial-graham-opens.trycloudflare.com/',
         port: '',
         pathname: '/**',
       },

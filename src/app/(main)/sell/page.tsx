@@ -192,6 +192,7 @@ export default function SellPage() {
             const finalAmountBtc = parseFloat(feeEstimation.sendable_btc);
 
             const orderPayload: SellOrderPayload = {
+                direction: 'sell',
                 provider_id: Number(formData.providerId),
                 amount: formData.amount,
                 btc_amount: finalAmountBtc,

@@ -118,10 +118,10 @@ const calculateBuyFee = (providerId: number, amount: number, currency: string): 
 }
 
 const createBuyOrder = (payload: BuyOrderPayload): Promise<AxiosResponse<Order>> => {
-    return axiosInstance.post('orders/', { ...payload, direction: 'buy' });
+    return axiosInstance.post('orders/', payload);
 }
 const createSellOrder = (payload: SellOrderPayload): Promise<AxiosResponse<Order>> => {
-    return axiosInstance.post('orders/', { ...payload, direction: 'sell' });
+    return axiosInstance.post('orders/', payload);
 }
 
 const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');

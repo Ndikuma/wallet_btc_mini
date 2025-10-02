@@ -34,8 +34,8 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { cn, getFiat } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useWallet } from "@/context/wallet-context";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 
 const formSchema = (balance: number) => z.object({
@@ -83,7 +83,7 @@ export function SendForm() {
       setFeeError(null);
       setFeeEstimation(null);
       try {
-          const feeResponse = await api.estimateFee({ amount: String(amount) });
+          const feeResponse = await api.estimateFee({ amount });
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
           setFeeError(error.message);
@@ -322,7 +322,7 @@ export function SendForm() {
                         <div className="flex justify-between items-center font-semibold">
                             <span className="text-base flex items-center gap-2"><Wallet className="size-5" />Total Debit</span>
                             <div className="text-right font-mono">
-                                <p className="text-base">{(watchedAmount || 0).toFixed(8)} BTC</p>
+                                <p className="text-base">{watchedAmount || '0.00000000'} BTC</p>
                             </div>
                         </div>
                     </div>
@@ -358,3 +358,5 @@ export function SendForm() {
     </>
   );
 }
+
+    

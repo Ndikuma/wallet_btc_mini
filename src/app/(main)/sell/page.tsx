@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/lib/api";
-import type { Balance, SellProvider, FeeEstimation } from "@/lib/types";
+import type { Balance, SellProvider, FeeEstimation, SellOrderPayload, PayoutData } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check } from "lucide-react";
 import Image from "next/image";
@@ -55,7 +55,7 @@ const paymentDetailsSchema = z.object({
 type FormData = {
     amount?: number;
     providerId?: string;
-    paymentDetails?: z.infer<typeof paymentDetailsSchema>;
+    paymentDetails?: PayoutData;
 };
 
 export default function SellPage() {
@@ -191,17 +191,16 @@ export default function SellPage() {
         try {
             const finalAmountBtc = parseFloat(feeEstimation.sendable_btc);
 
-            const orderPayload = {
+            const orderPayload: SellOrderPayload = {
                 provider_id: Number(formData.providerId),
                 amount: formData.amount,
                 btc_amount: finalAmountBtc,
                 amount_currency: 'BTC',
-                direction: 'sell' as 'sell',
                 payout_data: formData.paymentDetails,
                 total_amount: String(feeEstimation.sendable_bif),
             };
             
-            const response = await api.createOrder(orderPayload);
+            const response = await api.createSellOrder(orderPayload);
             toast({ title: 'Sell Order Created', description: `Your order #${response.data.id} is being processed.` });
             router.push(`/orders/${response.data.id}`);
 

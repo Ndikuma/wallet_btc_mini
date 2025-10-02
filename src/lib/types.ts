@@ -113,6 +113,30 @@ export interface BuyFeeCalculation {
     btc_amount: string;
 }
 
+export interface PayoutData {
+    full_name: string;
+    phone_number: string;
+    account_number: string;
+    email?: string;
+}
+
+export interface BuyOrderPayload {
+    provider_id: number;
+    amount: number;
+    amount_currency: string;
+    btc_amount: number;
+}
+
+export interface SellOrderPayload {
+    provider_id: number;
+    amount: number;
+    btc_amount: number;
+    amount_currency: string;
+    payout_data: PayoutData;
+    total_amount: string;
+}
+
+
 export interface Order {
     id: number;
     user: string;
@@ -131,7 +155,7 @@ export interface Order {
     btc_txid: string | null;
     created_at: string;
     updated_at: string;
-    payout_data?: { [key: string]: string | number | null };
+    payout_data?: PayoutData;
 }
 
 export interface ApiErrorDetails {

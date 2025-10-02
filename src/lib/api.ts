@@ -1,8 +1,8 @@
 
-import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider } from '@/lib/types';
+import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
-const BACKEND_URL = 'https://sequence-featuring-pond-libs.trycloudflare.com/';
+const BACKEND_URL = 'https://featuring-shipped-pastor-amenities.trycloudflare.com/';
 
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,
@@ -52,7 +52,9 @@ const createResponseInterceptor = (instance: AxiosInstance) => {
             const apiMessage = responseData.message;
 
             if (apiError) {
-                if (apiError.details && typeof apiError.details === 'object' && Object.keys(apiError.details).length > 0) {
+                 if (apiError.message?.includes("Invalid token")) {
+                    errorMessage = apiError.message;
+                 } else if (apiError.details && typeof apiError.details === 'object' && Object.keys(apiError.details).length > 0) {
                     const firstErrorKey = Object.keys(apiError.details)[0];
                     const errorValue = apiError.details[firstErrorKey];
                     if (Array.isArray(errorValue) && errorValue.length > 0) {
@@ -115,9 +117,13 @@ const calculateBuyFee = (providerId: number, amount: number, currency: string): 
     return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount: String(amount), currency });
 }
 
-const createOrder = (payload: { provider_id: number; amount: number; btc_amount?: number, total_amount?: string, amount_currency: string; direction: 'buy' | 'sell'; payout_data?: any; }): Promise<AxiosResponse<Order>> => {
-    return axiosInstance.post('orders/', payload);
+const createBuyOrder = (payload: BuyOrderPayload): Promise<AxiosResponse<Order>> => {
+    return axiosInstance.post('orders/', { ...payload, direction: 'buy' });
 }
+const createSellOrder = (payload: SellOrderPayload): Promise<AxiosResponse<Order>> => {
+    return axiosInstance.post('orders/', { ...payload, direction: 'sell' });
+}
+
 const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');
 const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);
 const updateOrder = (orderId: number, data: { payment_proof?: any; note?: string | null }): Promise<AxiosResponse<Order>> => {
@@ -146,7 +152,8 @@ const api = {
     getBuyProviders,
     getSellProviders,
     calculateBuyFee,
-    createOrder,
+    createBuyOrder,
+    createSellOrder,
     getOrders,
     getOrder,
     updateOrder,

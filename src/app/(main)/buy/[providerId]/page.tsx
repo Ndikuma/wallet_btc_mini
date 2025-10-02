@@ -7,7 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/lib/api";
-import type { BuyProvider, BuyFeeCalculation, Order } from "@/lib/types";
+import type { BuyProvider, BuyFeeCalculation, Order, BuyOrderPayload } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/use-debounce";
 import { ArrowLeft, Banknote, Landmark, Loader2, Receipt, ShoppingCart, Bitcoin, AlertCircle } from "lucide-react";
@@ -138,14 +138,13 @@ export default function BuyWithProviderPage() {
     }
     setIsSubmitting(true);
     try {
-        const orderPayload = {
+        const orderPayload: BuyOrderPayload = {
             provider_id: provider.id,
             amount: data.amount,
             amount_currency: data.currency,
-            direction: 'buy' as 'buy',
             btc_amount: parseFloat(feeCalc.btc_amount)
         };
-        const order = await api.createOrder(orderPayload);
+        const order = await api.createBuyOrder(orderPayload);
         toast({ title: 'Order Created', description: `Your order #${order.data.id} has been created.` });
         router.push(`/orders/${order.data.id}`);
     } catch (err: any) {

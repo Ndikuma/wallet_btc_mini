@@ -211,7 +211,7 @@ export default function TransactionsPage() {
                     <p className="mt-2 font-semibold">Ikosa mu gupakira ibikorwa</p>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">{transactionsError}</p>
                     <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loadingTransactions}/>
+                        {loadingTransactions && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                         Subira Ugerageze
                     </Button>
                 </div>

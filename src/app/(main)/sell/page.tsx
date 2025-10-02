@@ -553,7 +553,7 @@ export default function SellPage() {
               <p className="mt-2 font-semibold">Ikosa mu gupakira Amakuru</p>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">{dataError}</p>
               <Button onClick={fetchInitialData} variant="secondary" className="mt-4">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!isLoadingData}/>
+                {isLoadingData && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                 Subira Ugerageze
               </Button>
             </div>

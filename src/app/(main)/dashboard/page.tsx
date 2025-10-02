@@ -64,7 +64,7 @@ export default function DashboardPage() {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
-  const [isBalanceVisible, setIsBalanceVisible] = useState(false);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const { error: walletError } = useWallet();
 
   const fetchTransactions = useCallback(async () => {
@@ -164,7 +164,7 @@ export default function DashboardPage() {
                         <p className="font-semibold">Ikosa mu gupakira ibikorwa</p>
                         <p className="text-sm">{transactionsError}</p>
                         <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loadingTransactions}/>
+                            {loadingTransactions && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                             Subira Ugerageze
                         </Button>
                     </div>

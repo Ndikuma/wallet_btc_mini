@@ -115,7 +115,7 @@ export default function ReceivePage() {
                     <p className="mt-2 font-semibold">Ikosa mu gukora aderese</p>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
                     <Button onClick={fetchAddress} variant="secondary" className="mt-4">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" hidden={!loading}/>
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                         Subira Ugerageze
                     </Button>
                 </div>

@@ -3,6 +3,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { useState, useRef, useEffect, useCallback } from "react";
 import jsQR from "jsqr";
 import {
@@ -75,14 +76,13 @@ export function SendForm() {
   });
 
   const watchedAmount = form.watch("amount");
-  const watchedRecipient = form.watch("recipient");
   const debouncedAmount = useDebounce(watchedAmount, 500);
 
-  const estimateFee = useCallback(async (amount: number, recipient: string) => {
+  const estimateFee = useCallback(async (amount: number) => {
       setIsEstimatingFee(true);
       setFeeError(null);
       try {
-          const feeResponse = await api.estimateFee({ amount, recipient });
+          const feeResponse = await api.estimateFee({ amount });
           setFeeEstimation(feeResponse.data);
       } catch (error: any) {
           setFeeError(error.message);
@@ -94,15 +94,14 @@ export function SendForm() {
 
   useEffect(() => {
     const isAmountValid = debouncedAmount > 0 && form.getFieldState('amount').error === undefined;
-    const isRecipientValid = watchedRecipient.length > 25 && form.getFieldState('recipient').error === undefined;
 
-    if (isAmountValid && isRecipientValid) {
-      estimateFee(debouncedAmount, watchedRecipient);
+    if (isAmountValid) {
+      estimateFee(debouncedAmount);
     } else {
       setFeeEstimation(null);
       setFeeError(null);
     }
-  }, [debouncedAmount, watchedRecipient, form, estimateFee])
+  }, [debouncedAmount, form, estimateFee])
 
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -57,21 +58,24 @@ export default function LightningPage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-4">
-        <Button size="lg" className="h-14 rounded-xl bg-green-600 text-lg text-white hover:bg-green-700">
-          Générer une facture
+        <Button asChild size="lg" className="h-14 rounded-xl bg-green-600 text-lg text-white hover:bg-green-700">
+          <Link href="/lightning/invoice">Générer une facture</Link>
         </Button>
-        <Button size="lg" className="h-14 rounded-xl bg-blue-600 text-lg text-white hover:bg-blue-700">
-          Envoyer un paiement
+        <Button asChild size="lg" className="h-14 rounded-xl bg-blue-600 text-lg text-white hover:bg-blue-700">
+          <Link href="/lightning/send">Envoyer un paiement</Link>
         </Button>
       </div>
 
       {/* Scan QR Button - Positioned at the bottom right */}
       <Button
         size="icon"
+        asChild
         className="fixed bottom-24 right-6 h-16 w-16 rounded-full bg-primary text-primary-foreground shadow-lg md:bottom-8"
       >
-        <Camera className="size-8" />
-        <span className="sr-only">Scanner un QR code</span>
+        <Link href="/lightning/send">
+          <Camera className="size-8" />
+          <span className="sr-only">Scanner un QR code</span>
+        </Link>
       </Button>
 
       {/* Transaction History */}

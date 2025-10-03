@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -11,7 +10,8 @@ import {
   Settings,
   User,
   ShoppingCart,
-  Receipt
+  Receipt,
+  Zap,
 } from "lucide-react";
 import { BitcoinIcon } from "@/components/icons";
 import {
@@ -27,6 +27,7 @@ import {
 
 const mainNavItems = [
   { path: "/dashboard", icon: Home, label: "Tableau de bord" },
+  { path: "/lightning", icon: Zap, label: "Lightning" },
   { path: "/send", icon: Send, label: "Envoyer" },
   { path: "/receive", icon: Download, label: "Recevoir" },
   { path: "/buy", icon: ShoppingCart, label: "Acheter" },

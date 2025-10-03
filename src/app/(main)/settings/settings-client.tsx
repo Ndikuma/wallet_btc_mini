@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -37,7 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CopyButton } from "@/components/copy-button";
-import { ShieldAlert, Loader2 } from "lucide-react";
+import { ShieldAlert, Loader2, Moon, Sun, Laptop } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Form,
@@ -64,7 +63,7 @@ const restoreFormSchema = z.object({
 
 export function SettingsClient() {
   const { toast } = useToast();
-  const { settings, setCurrency, setDisplayUnit } = useSettings();
+  const { settings, setCurrency, setDisplayUnit, setTheme } = useSettings();
   const [wif, setWif] = useState<string | null>(null);
   const [isBackupLoading, setIsBackupLoading] = useState(false);
   const [isBackupDialogOpen, setIsBackupDialogOpen] = useState(false);
@@ -129,10 +128,37 @@ export function SettingsClient() {
         <CardHeader>
           <CardTitle>Préférences d'Affichage</CardTitle>
           <CardDescription>
-            Choisissez comment les valeurs sont affichées dans l'application.
+            Choisissez comment les valeurs et l'apparence sont affichées dans l'application.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
+           <div>
+            <Label className="font-medium">Thème d'affichage</Label>
+            <p className="text-sm text-muted-foreground pt-1">Personnalisez l'apparence de l'application.</p>
+            <RadioGroup
+              value={settings.theme}
+              onValueChange={(value) => setTheme(value as "light" | "dark" | "system")}
+              className="mt-3 grid grid-cols-3 gap-4"
+            >
+              <RadioGroupItem value="light" id="light" className="sr-only peer" />
+              <Label htmlFor="light" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+                <Sun className="mb-2 size-5" />
+                Clair
+              </Label>
+
+              <RadioGroupItem value="dark" id="dark" className="sr-only peer" />
+              <Label htmlFor="dark" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+                <Moon className="mb-2 size-5" />
+                Sombre
+              </Label>
+              
+              <RadioGroupItem value="system" id="system" className="sr-only peer" />
+              <Label htmlFor="system" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer">
+                <Laptop className="mb-2 size-5" />
+                Système
+              </Label>
+            </RadioGroup>
+          </div>
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
               <Label htmlFor="currency">Devise</Label>
@@ -182,20 +208,13 @@ export function SettingsClient() {
           <CardDescription>Gérez la sécurité et les données du portefeuille.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-           <div className="flex flex-col items-start justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
-            <div className="space-y-1">
-              <Label htmlFor="2fa" className="font-semibold">Authentification à deux facteurs (2FA)</Label>
-              <p className="text-sm text-muted-foreground">Ajoutez une couche de sécurité supplémentaire à votre portefeuille.</p>
-            </div>
-            <Switch id="2fa" />
-          </div>
           <div className="flex flex-col items-start justify-between gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
               <p className="font-semibold">Sauvegarder le Portefeuille</p>
               <p className="text-sm text-muted-foreground">Affichez votre clé privée WIF. Sauvegardez-la dans un endroit sûr et hors ligne.</p>
             </div>
             <Button onClick={handleBackup} className="w-full sm:w-auto" disabled={isBackupLoading}>
-              {isBackupLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isBackupLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Sauvegarder maintenant
             </Button>
           </div>
@@ -238,7 +257,7 @@ export function SettingsClient() {
                             <AlertDialogFooter className="pt-2">
                                 <Button type="button" variant="ghost" onClick={() => setIsRestoreDialogOpen(false)} disabled={isRestoring}>Annuler</Button>
                                 <Button type="submit" disabled={isRestoring}>
-                                    {isRestoring && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isRestoring ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                     {isRestoring ? "Restauration..." : "Restaurer le portefeuille"}
                                 </Button>
                             </AlertDialogFooter>
@@ -293,3 +312,5 @@ export function SettingsClient() {
     </>
   );
 }
+
+    

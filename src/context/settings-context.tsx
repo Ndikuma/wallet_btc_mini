@@ -5,21 +5,24 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 
 type DisplayUnit = 'btc' | 'sats' | 'usd' | 'bif';
 type Currency = 'usd' | 'eur' | 'jpy' | 'bif';
+type Theme = 'light' | 'dark' | 'system';
 
 interface Settings {
   displayUnit: DisplayUnit;
   currency: Currency;
+  theme: Theme;
 }
 
 interface SettingsContextType {
   settings: Settings;
   setDisplayUnit: (unit: DisplayUnit) => void;
   setCurrency: (currency: Currency) => void;
+  setTheme: (theme: Theme) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-const defaultSettings: Settings = { displayUnit: 'btc', currency: 'usd' };
+const defaultSettings: Settings = { displayUnit: 'btc', currency: 'usd', theme: 'dark' };
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
@@ -35,6 +38,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
                   return {
                       displayUnit: parsed.displayUnit || 'btc',
                       currency: parsed.currency || 'usd',
+                      theme: parsed.theme || 'dark',
                   };
               } catch (e) {
                   console.error("Failed to parse settings from localStorage", e);
@@ -66,9 +70,13 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     updateSettings({ currency });
   }, [updateSettings]);
 
+  const setTheme = useCallback((theme: Theme) => {
+    updateSettings({ theme });
+  }, [updateSettings]);
+
 
   return (
-    <SettingsContext.Provider value={{ settings, setDisplayUnit, setCurrency }}>
+    <SettingsContext.Provider value={{ settings, setDisplayUnit, setCurrency, setTheme }}>
       {children}
     </SettingsContext.Provider>
   );
@@ -81,3 +89,5 @@ export const useSettings = () => {
   }
   return context;
 };
+
+    

@@ -9,6 +9,7 @@ import {
   History,
   User,
   ScanLine,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ const menuItems = [
   { path: "/orders", icon: Receipt, label: "Commandes" },
   { path: "/send", icon: ScanLine, label: "Scanner" }, // Special item for the center button
   { path: "/transactions", icon: History, label: "Historique" },
-  { path: "/profile", icon: User, label: "Profil" },
+  { path: "/lightning", icon: Zap, label: "Lightning" },
 ];
 
 export function MobileNav() {

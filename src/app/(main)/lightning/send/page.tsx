@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import jsQR from "jsqr";
-import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2, Zap, Info, User as UserIcon, MessageSquare, Bitcoin, AlertTriangle, AlertCircle } from "lucide-react";
+import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2, Zap, Info, User as UserIcon, MessageSquare, Bitcoin, AlertTriangle, AlertCircle, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import api from "@/lib/api";
-import { DecodedLightningRequest } from "@/lib/types";
+import { DecodedLightningRequest, LightningBalance } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFiat } from "@/lib/utils";
 
@@ -124,27 +124,46 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isPaying, setIsPaying] = useState(false);
+    
+    const [lightningBalance, setLightningBalance] = useState<LightningBalance | null>(null);
+    const [isBalanceLoading, setIsBalanceLoading] = useState(true);
+    const [balanceError, setBalanceError] = useState<string | null>(null);
 
     const [amountSats, setAmountSats] = useState<number | string>("");
 
     useEffect(() => {
-        const decodeRequest = async () => {
+        const fetchInitialData = async () => {
             setIsLoading(true);
             setError(null);
+            setBalanceError(null);
+            
             try {
-                const response = await api.decodeLightningRequest({ request });
-                setDecoded(response.data);
-                if (response.data.amount_sats) {
-                    setAmountSats(response.data.amount_sats);
+                const [decodedRes, balanceRes] = await Promise.all([
+                    api.decodeLightningRequest({ request }),
+                    api.getLightningBalance()
+                ]);
+                
+                setDecoded(decodedRes.data);
+                if (decodedRes.data.amount_sats) {
+                    setAmountSats(decodedRes.data.amount_sats);
                 }
+
+                setLightningBalance(balanceRes.data);
+
             } catch (err: any) {
-                setError(err.message);
-                toast({ variant: "destructive", title: "Erreur de décodage", description: err.message });
+                if (err.config?.url.includes('decode')) {
+                    setError(err.message);
+                    toast({ variant: "destructive", title: "Erreur de décodage", description: err.message });
+                } else {
+                    setBalanceError(err.message);
+                }
             } finally {
                 setIsLoading(false);
+                setIsBalanceLoading(false);
             }
         };
-        decodeRequest();
+
+        fetchInitialData();
     }, [request, toast]);
     
     const handlePay = async () => {
@@ -177,6 +196,9 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
         </div>
     );
     
+    const totalAmountSats = decoded?.amount_sats || Number(amountSats) || 0;
+    const hasSufficientBalance = lightningBalance ? lightningBalance.balance >= totalAmountSats : false;
+    
     return (
         <Card>
             <CardHeader>
@@ -184,7 +206,7 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
                 <CardDescription>Veuillez vérifier les détails de la transaction avant de confirmer.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                {isLoading && (
+                {(isLoading || isBalanceLoading) && (
                     <div className="space-y-4">
                         <Skeleton className="h-12 w-full" />
                         <Skeleton className="h-12 w-full" />
@@ -192,9 +214,10 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
                     </div>
                 )}
                 {error && <Alert variant="destructive"><AlertTitle>Impossible de traiter la requête</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+                {balanceError && <Alert variant="destructive"><AlertTitle>Impossible de charger le solde</AlertTitle><AlertDescription>{balanceError}</AlertDescription></Alert>}
                 
 
-                {decoded && (
+                {!isLoading && decoded && (
                     <div className="space-y-6">
                         <div className="space-y-4 rounded-lg border bg-secondary/50 p-4">
                            <DetailRow icon={UserIcon} label="Destination" value={decoded.payee_pubkey ? `${decoded.payee_pubkey.substring(0, 20)}...` : "Inconnue"} />
@@ -220,12 +243,26 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
                                 )}
                             </div>
                         )}
+                        
+                        {!isBalanceLoading && lightningBalance && (
+                            <DetailRow icon={Wallet} label="Votre solde Lightning">
+                                <p className="font-semibold">{lightningBalance.balance} sats</p>
+                            </DetailRow>
+                        )}
+
+                        {totalAmountSats > 0 && !hasSufficientBalance && !isBalanceLoading && (
+                             <Alert variant="destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertTitle>Solde insuffisant</AlertTitle>
+                                <AlertDescription>Vous n'avez pas assez de fonds pour effectuer ce paiement.</AlertDescription>
+                            </Alert>
+                        )}
                     </div>
                 )}
             </CardContent>
             <CardFooter className="grid grid-cols-2 gap-4">
                 <Button variant="outline" onClick={onBack} disabled={isPaying}>Retour</Button>
-                <Button onClick={handlePay} disabled={isLoading || !!error || isPaying || (!decoded?.amount_sats && !amountSats)}>
+                <Button onClick={handlePay} disabled={isLoading || isBalanceLoading || !!error || isPaying || !hasSufficientBalance || totalAmountSats <= 0}>
                     {isPaying ? <><Loader2 className="mr-2 size-4 animate-spin"/>Envoi...</> : "Payer"}
                 </Button>
             </CardFooter>
@@ -270,3 +307,5 @@ export default function SendPaymentPage() {
         </div>
     );
 }
+
+    

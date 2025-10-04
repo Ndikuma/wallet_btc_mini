@@ -90,20 +90,21 @@ export function MainNav() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
+                            asChild
                             isActive={isOnChainSectionActive}
                             tooltip={"On-Chain"}
                             className="justify-between"
                         >
-                             <div className="flex items-center gap-2">
+                             <Link href="/dashboard" className="flex items-center gap-2">
                                 <BitcoinIcon />
                                 <span className="group-data-[collapsible=icon]:hidden">On-Chain</span>
-                            </div>
-                            <CollapsibleTrigger asChild>
-                                <button className="p-1 rounded-md hover:bg-sidebar-accent group-data-[collapsible=icon]:hidden">
-                                    <ChevronDown className={cn("size-4 transition-transform", isOnChainOpen && "rotate-180")} />
-                                </button>
-                            </CollapsibleTrigger>
+                            </Link>
                         </SidebarMenuButton>
+                         <CollapsibleTrigger asChild>
+                            <button className="absolute right-2 top-1/2 -translate-y-1/2 group-data-[collapsible=icon]:hidden p-1 rounded-md hover:bg-sidebar-accent">
+                                <ChevronDown className={cn("size-4 transition-transform", isOnChainOpen && "rotate-180")} />
+                            </button>
+                        </CollapsibleTrigger>
                     </SidebarMenuItem>
                 </SidebarMenu>
                 <CollapsibleContent>

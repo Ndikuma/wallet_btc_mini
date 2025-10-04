@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, FileText, Zap } from "lucide-react";
+import { ArrowLeft, FileText, Zap, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,10 +17,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CopyButton } from "@/components/copy-button";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const mockInvoice = "lnbc15u1p3xnhl2pp5j5za6e3s3p2h4p4y3j5z6k2g9q9q9q9q9q9q9q9q9q9q9q9q9q9qsq9qsqqqqqqqqqqqqqqqqqsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq";
+import api from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 export default function GenerateInvoicePage() {
+  const { toast } = useToast();
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
   const [invoice, setInvoice] = useState<string | null>(null);
@@ -31,11 +31,25 @@ export default function GenerateInvoicePage() {
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call to generate invoice
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setInvoice(mockInvoice);
-    setQrCode(`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${mockInvoice}`);
-    setIsLoading(false);
+    setInvoice(null);
+    setQrCode(null);
+    
+    try {
+      const response = await api.generateLightningInvoice({
+        amount: parseInt(amount, 10),
+        memo: memo || undefined,
+      });
+      setInvoice(response.data.bolt11);
+      setQrCode(response.data.qr_code);
+    } catch(error: any) {
+       toast({
+        variant: "destructive",
+        title: "Échec de la génération",
+        description: error.message || "Impossible de générer une facture.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleReset = () => {
@@ -120,6 +134,7 @@ export default function GenerateInvoicePage() {
             </CardContent>
             <CardFooter>
               <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 size-4 animate-spin"/>}
                 {isLoading ? "Génération en cours..." : "Générer la facture"}
               </Button>
             </CardFooter>

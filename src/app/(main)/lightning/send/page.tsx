@@ -1,10 +1,9 @@
-
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import jsQR from "jsqr";
-import { ArrowLeft, ScanLine, Send, X, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,6 +26,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import api from "@/lib/api";
 
 export default function SendPaymentPage() {
   const { toast } = useToast();
@@ -46,11 +46,15 @@ export default function SendPaymentPage() {
         return;
     }
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    setIsSuccess(true);
-    toast({ title: "Paiement réussi !", description: "Votre paiement a été envoyé."});
+    try {
+      const response = await api.payLightningInvoice({ invoice });
+      setIsSuccess(true);
+      toast({ title: "Paiement réussi !", description: response.data.message || "Votre paiement a été envoyé."});
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Échec du paiement", description: error.message });
+    } finally {
+       setIsLoading(false);
+    }
   };
   
   useEffect(() => {
@@ -186,6 +190,7 @@ export default function SendPaymentPage() {
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading || !invoice}>
+              {isLoading && <Loader2 className="mr-2 size-4 animate-spin"/>}
               {isLoading ? "Envoi en cours..." : "Payer la facture"}
             </Button>
           </CardFooter>

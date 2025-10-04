@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: number;
   username: string;
@@ -167,6 +168,50 @@ export interface Order {
     created_at: string;
     updated_at: string;
     payout_data?: PayoutData;
+}
+
+// Lightning Network Types
+export interface LightningBalance {
+  balance_sats: number;
+  balance_usd?: number;
+}
+
+export interface LightningInvoice {
+  payment_hash: string;
+  bolt11: string;
+  amount_sats: number;
+  memo: string | null;
+  status: 'pending' | 'paid' | 'expired';
+  created_at: string;
+  expires_at: string;
+  qr_code: string;
+}
+
+export interface CreateInvoicePayload {
+  amount: number;
+  memo?: string;
+}
+
+export interface LightningPayment {
+  payment_hash: string;
+  status: 'succeeded' | 'failed' | 'pending';
+  fee_sats: number;
+  message?: string;
+  created_at: string;
+}
+
+export interface PayInvoicePayload {
+  invoice: string; // The bolt11 invoice string
+}
+
+export interface LightningTransaction {
+  type: 'incoming' | 'outgoing';
+  amount_sats: number;
+  fee_sats: number;
+  memo: string | null;
+  status: 'succeeded' | 'failed' | 'pending';
+  created_at: string;
+  payment_hash: string;
 }
 
 export interface ApiErrorDetails {

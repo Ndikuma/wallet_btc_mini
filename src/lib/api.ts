@@ -1,5 +1,6 @@
 
-import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload, OrderUpdatePayload } from '@/lib/types';
+
+import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload, OrderUpdatePayload, LightningBalance, CreateInvoicePayload, LightningInvoice, PayInvoicePayload, LightningPayment, LightningTransaction } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
 const BACKEND_URL = 'https://umuhoratech-wallet.onrender.com/';
@@ -130,6 +131,14 @@ const updateOrder = (orderId: number, data: OrderUpdatePayload): Promise<AxiosRe
     return axiosInstance.patch(`orders/${orderId}/`, data);
 }
 
+// Lightning API
+const getLightningBalance = (): Promise<AxiosResponse<LightningBalance>> => axiosInstance.get('lightning/balance/');
+const getLightningTransactions = (): Promise<AxiosResponse<PaginatedResponse<LightningTransaction>>> => axiosInstance.get('lightning/transactions/');
+const generateLightningInvoice = (payload: CreateInvoicePayload): Promise<AxiosResponse<LightningInvoice>> => axiosInstance.post('lightning/invoices/', payload);
+const payLightningInvoice = (payload: PayInvoicePayload): Promise<AxiosResponse<LightningPayment>> => axiosInstance.post('lightning/payments/', payload);
+const getLightningInvoice = (invoiceId: string): Promise<AxiosResponse<LightningInvoice>> => axiosInstance.get(`lightning/invoices/${invoiceId}/`);
+
+
 const api = {
     login,
     register,
@@ -157,6 +166,12 @@ const api = {
     getOrders,
     getOrder,
     updateOrder,
+    // Lightning
+    getLightningBalance,
+    getLightningTransactions,
+    generateLightningInvoice,
+    payLightningInvoice,
+    getLightningInvoice,
 };
 
 export default api;

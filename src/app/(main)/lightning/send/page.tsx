@@ -194,7 +194,7 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
                 {error && <Alert variant="destructive"><AlertTitle>Impossible de traiter la requête</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
                 
                 {decoded?.internal && (
-                    <Alert variant="destructive">
+                    <Alert variant="warning">
                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>Facture Interne</AlertTitle>
                         <AlertDescription>

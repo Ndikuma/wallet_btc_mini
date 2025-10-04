@@ -82,7 +82,7 @@ export interface FeeEstimation {
     sendable_usd: number;
     sendable_bif: number;
     network_fee_usd: number;
-    network_fee_bif: number;
+network_fee_bif: number;
 }
 
 export interface ProviderPaymentInfo {
@@ -172,9 +172,8 @@ export interface Order {
 
 // Lightning Network Types
 export interface LightningBalance {
-  balance_sats: number;
-  balance_usd?: number;
-  balance_bif?: number;
+  balance: number;
+  currency: string;
 }
 
 export interface LightningInvoice {

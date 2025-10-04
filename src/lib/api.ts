@@ -3,7 +3,7 @@
 import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload, OrderUpdatePayload, LightningBalance, CreateInvoicePayload, LightningInvoice, PayInvoicePayload, LightningPayment, LightningTransaction } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
-const BACKEND_URL = 'https://umuhoratech-wallet.onrender.com/';
+const BACKEND_URL = 'https://satisfactory-leather-considered-travis.trycloudflare.com/';
 
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,

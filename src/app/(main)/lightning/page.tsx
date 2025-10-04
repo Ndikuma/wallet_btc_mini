@@ -102,11 +102,8 @@ export default function LightningPage() {
         ) : balance ? (
             <>
                 <h1 className="text-5xl font-bold tracking-tighter">
-                {formatSats(balance.balance_sats)} sats
+                {formatSats(balance.balance)} {balance.currency}
                 </h1>
-                <p className="text-muted-foreground">
-                ≈ {balance.balance_usd?.toFixed(2)} USD
-                </p>
             </>
         ) : (
              <p className="text-muted-foreground">Aucun solde disponible.</p>

@@ -167,9 +167,9 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
         }
     };
 
-    const DetailRow = ({ icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | number | null, children?: React.ReactNode}) => (
+    const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | number | null, children?: React.ReactNode}) => (
         <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-muted-foreground"><icon className="size-5" /></div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-muted-foreground"><Icon className="size-5" /></div>
             <div>
                 <p className="text-sm font-medium text-muted-foreground">{label}</p>
                 {children || <p className="font-semibold break-all">{value || "N/A"}</p>}
@@ -268,5 +268,3 @@ export default function SendPaymentPage() {
         </div>
     );
 }
-
-    

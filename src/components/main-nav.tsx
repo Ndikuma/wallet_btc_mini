@@ -13,6 +13,8 @@ import {
   ShoppingCart,
   Receipt,
   Zap,
+  ChevronDown,
+  FileText,
 } from "lucide-react";
 import { BitcoinIcon } from "@/components/icons";
 import {
@@ -25,7 +27,13 @@ import {
   SidebarSeparator,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
+import React from "react";
 
 const mainNavItems = [
   { path: "/dashboard", icon: Home, label: "Tableau de bord" },
@@ -40,8 +48,9 @@ const onChainNavItems = [
   { path: "/orders", icon: ShoppingCart, label: "Commandes" },
 ];
 
-const lightningNavItems = [
-    { path: "/lightning", icon: Zap, label: "Lightning" },
+const lightningSubNavItems = [
+    { path: "/lightning/invoice", icon: FileText, label: "Générer facture" },
+    { path: "/lightning/send", icon: Send, label: "Payer facture" },
 ]
 
 const footerNavItems = [
@@ -58,6 +67,8 @@ export function MainNav() {
     }
     return pathname.startsWith(path);
   }
+
+  const [isLightningOpen, setIsLightningOpen] = React.useState(pathname.startsWith('/lightning'));
 
   return (
     <>
@@ -115,22 +126,42 @@ export function MainNav() {
 
         <SidebarGroup>
             <SidebarGroupLabel>Lightning</SidebarGroupLabel>
-            <SidebarMenu>
-                    {lightningNavItems.map((item) => (
-                        <SidebarMenuItem key={item.path}>
-                            <SidebarMenuButton
+            <Collapsible open={isLightningOpen} onOpenChange={setIsLightningOpen}>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
                             asChild
-                            isActive={isDashboardActive(item.path)}
-                            tooltip={item.label}
-                            >
-                            <Link href={item.path}>
-                                <item.icon />
-                                <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                            isActive={isDashboardActive("/lightning") && pathname === '/lightning'}
+                            tooltip={"Lightning"}
+                        >
+                            <Link href="/lightning" className="w-full justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Zap />
+                                    <span className="group-data-[collapsible=icon]:hidden">Lightning</span>
+                                </div>
                             </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    ))}
-            </SidebarMenu>
+                        </SidebarMenuButton>
+                        <CollapsibleTrigger asChild>
+                            <button className="absolute right-2 top-1/2 -translate-y-1/2 group-data-[collapsible=icon]:hidden p-1 rounded-md hover:bg-sidebar-accent">
+                                <ChevronDown className={cn("size-4 transition-transform", isLightningOpen && "rotate-180")} />
+                            </button>
+                        </CollapsibleTrigger>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+                <CollapsibleContent>
+                    <SidebarMenuSub>
+                        {lightningSubNavItems.map((item) => (
+                            <SidebarMenuSubItem key={item.path}>
+                                <SidebarMenuSubButton asChild isActive={isDashboardActive(item.path)}>
+                                    <Link href={item.path}>
+                                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                                    </Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                        ))}
+                    </SidebarMenuSub>
+                </CollapsibleContent>
+            </Collapsible>
         </SidebarGroup>
 
       </SidebarContent>

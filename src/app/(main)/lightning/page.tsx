@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -141,7 +142,7 @@ export default function LightningPage() {
             ) : (
                 <div className="space-y-4">
                 {transactions.map((tx, index) => (
-                    <React.Fragment key={tx.payment_hash}>
+                    <React.Fragment key={tx.payment_hash || `${index}-${tx.created_at}`}>
                     <div className="flex items-center gap-4 p-4">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
                         {tx.type === "incoming" ? (

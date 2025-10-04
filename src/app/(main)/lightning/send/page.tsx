@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import jsQR from "jsqr";
-import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2, Zap, Info, User as UserIcon, MessageSquare, Bitcoin, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2, Zap, Info, User as UserIcon, MessageSquare, Bitcoin, AlertTriangle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -193,15 +193,6 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
                 )}
                 {error && <Alert variant="destructive"><AlertTitle>Impossible de traiter la requête</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
                 
-                {decoded?.internal && (
-                    <Alert>
-                        <Info className="h-4 w-4" />
-                        <AlertTitle>Facture Interne</AlertTitle>
-                        <AlertDescription>
-                            Ceci est une facture de votre propre portefeuille. Le paiement sera réglé instantanément.
-                        </AlertDescription>
-                    </Alert>
-                )}
 
                 {decoded && (
                     <div className="space-y-6">
@@ -235,7 +226,7 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
             <CardFooter className="grid grid-cols-2 gap-4">
                 <Button variant="outline" onClick={onBack} disabled={isPaying}>Retour</Button>
                 <Button onClick={handlePay} disabled={isLoading || !!error || isPaying || (!decoded?.amount_sats && !amountSats)}>
-                    {isPaying ? <><Loader2 className="mr-2 size-4 animate-spin"/>Envoi...</> : (decoded?.internal ? "Régler la facture" : "Payer")}
+                    {isPaying ? <><Loader2 className="mr-2 size-4 animate-spin"/>Envoi...</> : "Payer"}
                 </Button>
             </CardFooter>
         </Card>

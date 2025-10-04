@@ -218,14 +218,6 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
                                 )}
                             </div>
                         )}
-
-                        {decoded.fee_sats !== undefined && (
-                             <div className="space-y-4 rounded-lg border p-4">
-                                <DetailRow icon={Info} label="Frais estimés">
-                                     <div className="font-semibold">{decoded.fee_sats} sats</div>
-                                </DetailRow>
-                            </div>
-                        )}
                     </div>
                 )}
             </CardContent>
@@ -276,3 +268,5 @@ export default function SendPaymentPage() {
         </div>
     );
 }
+
+    

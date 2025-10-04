@@ -44,12 +44,6 @@ const onChainSubNavItems = [
     { path: "/orders", icon: ShoppingCart, label: "Commandes" },
 ];
 
-
-const lightningSubNavItems = [
-    { path: "/lightning/invoice", icon: FileText, label: "Générer facture" },
-    { path: "/lightning/send", icon: Send, label: "Payer facture" },
-]
-
 const footerNavItems = [
     { path: "/profile", icon: User, label: "Profil" },
     { path: "/settings", icon: Settings, label: "Paramètres" },
@@ -71,7 +65,6 @@ export function MainNav() {
   
   const isOnChainSectionActive = onChainSubNavItems.some(item => pathname.startsWith(item.path));
   const [isOnChainOpen, setIsOnChainOpen] = React.useState(isOnChainSectionActive);
-  const [isLightningOpen, setIsLightningOpen] = React.useState(pathname.startsWith('/lightning'));
 
   return (
     <>
@@ -128,43 +121,22 @@ export function MainNav() {
         <SidebarSeparator />
 
         <SidebarGroup>
-            <Collapsible open={isLightningOpen} onOpenChange={setIsLightningOpen}>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton
-                            asChild
-                            isActive={isRouteActive("/lightning", true)}
-                            tooltip={"Lightning"}
-                        >
-                            <Link href="/lightning" className="w-full justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Zap />
-                                    <span className="group-data-[collapsible=icon]:hidden">Lightning</span>
-                                </div>
-                            </Link>
-                        </SidebarMenuButton>
-                        <CollapsibleTrigger asChild>
-                            <button className="absolute right-2 top-1/2 -translate-y-1/2 group-data-[collapsible=icon]:hidden p-1 rounded-md hover:bg-sidebar-accent">
-                                <ChevronDown className={cn("size-4 transition-transform", isLightningOpen && "rotate-180")} />
-                            </button>
-                        </CollapsibleTrigger>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-                <CollapsibleContent>
-                    <SidebarMenuSub>
-                        {lightningSubNavItems.map((item) => (
-                            <SidebarMenuSubItem key={item.path}>
-                                <SidebarMenuSubButton asChild isActive={isRouteActive(item.path)}>
-                                    <Link href={item.path}>
-                                        <item.icon className="mr-2" />
-                                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                                    </Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        ))}
-                    </SidebarMenuSub>
-                </CollapsibleContent>
-            </Collapsible>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={isRouteActive("/lightning")}
+                        tooltip={"Lightning"}
+                    >
+                        <Link href="/lightning" className="w-full justify-between">
+                            <div className="flex items-center gap-2">
+                                <Zap />
+                                <span className="group-data-[collapsible=icon]:hidden">Lightning</span>
+                            </div>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
         </SidebarGroup>
 
       </SidebarContent>

@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import jsQR from "jsqr";
-import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2, Zap, Info, User as UserIcon, MessageSquare, Bitcoin, AlertTriangle, AlertCircle, Wallet } from "lucide-react";
+import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2, Zap, Info, User as UserIcon, MessageSquare, Bitcoin, AlertCircle, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,

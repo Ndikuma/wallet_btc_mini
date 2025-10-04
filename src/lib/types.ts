@@ -174,6 +174,8 @@ export interface Order {
 export interface LightningBalance {
   balance: number;
   currency: string;
+  balance_usd?: number;
+  balance_bif?: number;
 }
 
 export interface LightningInvoice {

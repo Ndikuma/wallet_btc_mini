@@ -10,6 +10,7 @@ import { CheckCircle2, ArrowUpRight, Camera, Loader2, AlertCircle } from "lucide
 import api from "@/lib/api";
 import type { LightningBalance, LightningTransaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getFiat } from "@/lib/utils";
 
 // Mock data for transactions until the backend is ready
 const mockTransactions: LightningTransaction[] = [
@@ -86,10 +87,10 @@ export default function LightningPage() {
       {/* Balance Section */}
       <div className="py-8 text-center">
         {loading ? (
-            <>
+            <div className="space-y-2">
                 <Skeleton className="h-14 w-48 mx-auto" />
-                <Skeleton className="h-5 w-24 mx-auto mt-2" />
-            </>
+                <Skeleton className="h-5 w-36 mx-auto mt-2" />
+            </div>
         ) : error ? (
              <div className="text-center text-destructive p-4 border border-destructive/50 rounded-lg">
                 <AlertCircle className="mx-auto h-8 w-8" />
@@ -100,11 +101,16 @@ export default function LightningPage() {
                 </Button>
             </div>
         ) : balance ? (
-            <>
+            <div className="space-y-2">
                 <h1 className="text-5xl font-bold tracking-tighter">
                 {formatSats(balance.balance)} {balance.currency}
                 </h1>
-            </>
+                <div className="flex justify-center items-center gap-4 text-muted-foreground">
+                    {balance.balance_usd !== undefined && <p>{getFiat(balance.balance_usd, 'USD')}</p>}
+                    {balance.balance_usd !== undefined && balance.balance_bif !== undefined && <span>•</span>}
+                    {balance.balance_bif !== undefined && <p>{getFiat(balance.balance_bif, 'BIF')}</p>}
+                </div>
+            </div>
         ) : (
              <p className="text-muted-foreground">Aucun solde disponible.</p>
         )}

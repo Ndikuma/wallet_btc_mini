@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 
 const onChainSubNavItems = [
-    { path: "/dashboard", icon: Home, label: "Tableau de bord" },
+    { path: "/dashboard", icon: BitcoinIcon, label: "Tableau de bord" },
     { path: "/send", icon: Send, label: "Envoyer" },
     { path: "/receive", icon: Download, label: "Recevoir" },
     { path: "/buy", icon: ShoppingCart, label: "Acheter" },
@@ -112,6 +112,7 @@ export function MainNav() {
                             <SidebarMenuSubItem key={item.path}>
                                 <SidebarMenuSubButton asChild isActive={isRouteActive(item.path)}>
                                     <Link href={item.path}>
+                                        <item.icon className="mr-2" />
                                         <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                                     </Link>
                                 </SidebarMenuSubButton>
@@ -153,6 +154,7 @@ export function MainNav() {
                             <SidebarMenuSubItem key={item.path}>
                                 <SidebarMenuSubButton asChild isActive={isRouteActive(item.path)}>
                                     <Link href={item.path}>
+                                        <item.icon className="mr-2" />
                                         <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                                     </Link>
                                 </SidebarMenuSubButton>

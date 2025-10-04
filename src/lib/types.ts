@@ -208,14 +208,18 @@ export interface PayLightningRequestPayload {
 }
 
 export interface DecodedLightningRequest {
-    type: 'invoice' | 'lnurl' | 'ln_address';
-    amount_sats: number | null;
-    amount_usd?: number;
-    amount_bif?: number;
-    fee_sats?: number;
-    memo?: string;
-    payee_pubkey?: string;
-    expires_at?: string;
+  type: 'invoice' | 'lnurl' | 'ln_address';
+  amount_sats: number | null;
+  amount_usd?: number;
+  amount_bif?: number;
+  fee_sats?: number;
+  memo?: string | null;
+  payee_pubkey?: string | null;
+  expires_at?: string | null;
+  internal: boolean;
+  status?: 'unpaid' | 'paid' | 'cancelled' | 'expired';
+  created_at?: string | null;
+  payment_hash?: string | null;
 }
 
 export interface DecodeLightningRequestPayload {

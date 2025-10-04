@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import jsQR from "jsqr";
-import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2, Zap, Info, User, MessageSquare, Bitcoin } from "lucide-react";
+import { ArrowLeft, ScanLine, Send, X, CheckCircle2, Loader2, Zap, Info, User as UserIcon, MessageSquare, Bitcoin, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -192,10 +192,21 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
                     </div>
                 )}
                 {error && <Alert variant="destructive"><AlertTitle>Impossible de traiter la requête</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+                
+                {decoded?.internal && (
+                    <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Facture Interne</AlertTitle>
+                        <AlertDescription>
+                            Vous ne pouvez pas payer une facture générée par votre propre portefeuille.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
                 {decoded && (
                     <div className="space-y-6">
                         <div className="space-y-4 rounded-lg border bg-secondary/50 p-4">
-                           <DetailRow icon={User} label="Destination" value={decoded.payee_pubkey ? `${decoded.payee_pubkey.substring(0, 20)}...` : "Inconnue"} />
+                           <DetailRow icon={UserIcon} label="Destination" value={decoded.payee_pubkey ? `${decoded.payee_pubkey.substring(0, 20)}...` : "Inconnue"} />
                            {decoded.memo && <DetailRow icon={MessageSquare} label="Mémo" value={decoded.memo} />}
                         </div>
                         
@@ -223,7 +234,7 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
             </CardContent>
             <CardFooter className="grid grid-cols-2 gap-4">
                 <Button variant="outline" onClick={onBack} disabled={isPaying}>Retour</Button>
-                <Button onClick={handlePay} disabled={isLoading || !!error || isPaying || (!decoded?.amount_sats && !amountSats)}>
+                <Button onClick={handlePay} disabled={isLoading || !!error || isPaying || decoded?.internal || (!decoded?.amount_sats && !amountSats)}>
                     {isPaying ? <><Loader2 className="mr-2 size-4 animate-spin"/>Envoi...</> : "Payer"}
                 </Button>
             </CardFooter>

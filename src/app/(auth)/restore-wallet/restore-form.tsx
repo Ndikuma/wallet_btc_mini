@@ -18,8 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import { useState, useEffect } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   mnemonic: z.string().min(20, { message: "La phrase de récupération semble trop courte." })
@@ -33,15 +32,7 @@ export function RestoreForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("authToken");
-      setIsLoggedIn(!!token);
-    }
-  }, []);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,19 +43,12 @@ export function RestoreForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const response = await api.restoreWallet(values.mnemonic);
-      const token = response.data.token;
-
-      if (token) {
-        localStorage.setItem('authToken', token);
-        document.cookie = `authToken=${token}; path=/; max-age=604800; samesite=lax`;
-      }
-      
+      await api.restoreWallet(values.mnemonic);
       toast({
         title: "Portefeuille restauré avec succès",
-        description: "Votre portefeuille est prêt. Bienvenue !",
+        description: "Votre portefeuille est prêt. Veuillez vous connecter.",
       });
-      router.push("/dashboard");
+      router.push("/login");
       router.refresh();
     } catch (error: any) {
       toast({
@@ -75,18 +59,6 @@ export function RestoreForm() {
     } finally {
         setIsLoading(false);
     }
-  }
-
-  if (!isLoggedIn) {
-      return (
-          <Alert>
-              <Info className="h-4 w-4" />
-              <AlertTitle>Non connecté</AlertTitle>
-              <AlertDescription>
-                  Vous devez vous connecter ou créer un compte avant de restaurer un portefeuille.
-              </AlertDescription>
-          </Alert>
-      )
   }
 
   return (

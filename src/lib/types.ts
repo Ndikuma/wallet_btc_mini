@@ -202,9 +202,26 @@ export interface LightningPayment {
   created_at: string;
 }
 
-export interface PayInvoicePayload {
-  invoice: string; // The bolt11 invoice string
+export interface PayLightningRequestPayload {
+  request: string;
+  amount_sats?: number;
 }
+
+export interface DecodedLightningRequest {
+    type: 'invoice' | 'lnurl' | 'ln_address';
+    amount_sats: number | null;
+    amount_usd?: number;
+    amount_bif?: number;
+    fee_sats?: number;
+    memo?: string;
+    payee_pubkey?: string;
+    expires_at?: string;
+}
+
+export interface DecodeLightningRequestPayload {
+    request: string;
+}
+
 
 export interface LightningTransaction {
   type: 'incoming' | 'outgoing';

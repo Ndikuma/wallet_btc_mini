@@ -93,11 +93,12 @@ export function MainNav() {
                             asChild
                             isActive={isOnChainSectionActive}
                             tooltip={"On-Chain"}
-                            className="justify-between"
                         >
-                             <Link href="/dashboard" className="flex items-center gap-2">
-                                <BitcoinIcon />
-                                <span className="group-data-[collapsible=icon]:hidden">On-Chain</span>
+                             <Link href="/dashboard" className="w-full justify-between">
+                                <div className="flex items-center gap-2">
+                                    <BitcoinIcon />
+                                    <span className="group-data-[collapsible=icon]:hidden">On-Chain</span>
+                                </div>
                             </Link>
                         </SidebarMenuButton>
                          <CollapsibleTrigger asChild>
@@ -111,7 +112,7 @@ export function MainNav() {
                     <SidebarMenuSub>
                         {onChainSubNavItems.map((item) => (
                             <SidebarMenuSubItem key={item.path}>
-                                <SidebarMenuSubButton asChild isActive={isRouteActive(item.path)}>
+                                <SidebarMenuSubButton asChild isActive={isRouteActive(item.path, item.path === '/dashboard')}>
                                     <Link href={item.path}>
                                         <item.icon className="mr-2" />
                                         <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>

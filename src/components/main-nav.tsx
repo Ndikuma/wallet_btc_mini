@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 
 const onChainSubNavItems = [
+    { path: "/dashboard", icon: Home, label: "Tableau de bord" },
     { path: "/send", icon: Send, label: "Envoyer" },
     { path: "/receive", icon: Download, label: "Recevoir" },
     { path: "/buy", icon: ShoppingCart, label: "Acheter" },
@@ -69,7 +70,7 @@ export function MainNav() {
     return pathname.startsWith(path);
   }
   
-  const isOnChainSectionActive = onChainSubNavItems.some(item => pathname.startsWith(item.path)) || pathname === '/dashboard';
+  const isOnChainSectionActive = onChainSubNavItems.some(item => pathname.startsWith(item.path));
   const [isOnChainOpen, setIsOnChainOpen] = React.useState(isOnChainSectionActive);
   const [isLightningOpen, setIsLightningOpen] = React.useState(pathname.startsWith('/lightning'));
 
@@ -86,27 +87,24 @@ export function MainNav() {
       <SidebarContent className="p-2">
 
         <SidebarGroup>
-            <SidebarGroupLabel>On-Chain</SidebarGroupLabel>
             <Collapsible open={isOnChainOpen} onOpenChange={setIsOnChainOpen}>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
-                            asChild
-                            isActive={isRouteActive("/dashboard", true)}
-                            tooltip={"Tableau de bord"}
+                            isActive={isOnChainSectionActive}
+                            tooltip={"On-Chain"}
+                            className="justify-between"
                         >
-                            <Link href="/dashboard" className="w-full justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Home />
-                                    <span className="group-data-[collapsible=icon]:hidden">Tableau de bord</span>
-                                </div>
-                            </Link>
+                             <div className="flex items-center gap-2">
+                                <Home />
+                                <span className="group-data-[collapsible=icon]:hidden">On-Chain</span>
+                            </div>
+                            <CollapsibleTrigger asChild>
+                                <button className="p-1 rounded-md hover:bg-sidebar-accent group-data-[collapsible=icon]:hidden">
+                                    <ChevronDown className={cn("size-4 transition-transform", isOnChainOpen && "rotate-180")} />
+                                </button>
+                            </CollapsibleTrigger>
                         </SidebarMenuButton>
-                        <CollapsibleTrigger asChild>
-                            <button className="absolute right-2 top-1/2 -translate-y-1/2 group-data-[collapsible=icon]:hidden p-1 rounded-md hover:bg-sidebar-accent">
-                                <ChevronDown className={cn("size-4 transition-transform", isOnChainOpen && "rotate-180")} />
-                            </button>
-                        </CollapsibleTrigger>
                     </SidebarMenuItem>
                 </SidebarMenu>
                 <CollapsibleContent>
@@ -128,7 +126,6 @@ export function MainNav() {
         <SidebarSeparator />
 
         <SidebarGroup>
-            <SidebarGroupLabel>Lightning</SidebarGroupLabel>
             <Collapsible open={isLightningOpen} onOpenChange={setIsLightningOpen}>
                 <SidebarMenu>
                     <SidebarMenuItem>

@@ -26,7 +26,6 @@ import {
   SidebarMenuButton,
   SidebarSeparator,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton
@@ -96,7 +95,7 @@ export function MainNav() {
                             className="justify-between"
                         >
                              <div className="flex items-center gap-2">
-                                <Home />
+                                <BitcoinIcon />
                                 <span className="group-data-[collapsible=icon]:hidden">On-Chain</span>
                             </div>
                             <CollapsibleTrigger asChild>

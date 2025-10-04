@@ -166,16 +166,18 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
         fetchInitialData();
     }, [request, toast]);
     
+    const totalAmountSats = decoded?.amount_sats || Number(amountSats) || 0;
+
     const handlePay = async () => {
-        if (!decoded || (!decoded.amount_sats && !amountSats)) {
-            toast({ variant: "destructive", title: "Montant manquant", description: "Veuillez spécifier un montant." });
+        if (!decoded || totalAmountSats <= 0) {
+            toast({ variant: "destructive", title: "Montant invalide", description: "Veuillez spécifier un montant supérieur à zéro." });
             return;
         }
         setIsPaying(true);
         try {
-            await api.payLightningInvoice({ 
+            await api.payLightningInvoice({
                 request,
-                amount_sats: decoded.amount_sats ? undefined : Number(amountSats),
+                amount_sats: totalAmountSats,
                 type: decoded.type,
                 internal: decoded.internal,
              });
@@ -198,7 +200,6 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
         </div>
     );
     
-    const totalAmountSats = decoded?.amount_sats || Number(amountSats) || 0;
     const hasSufficientBalance = lightningBalance ? lightningBalance.balance >= totalAmountSats : false;
     
     return (
@@ -309,3 +310,5 @@ export default function SendPaymentPage() {
         </div>
     );
 }
+
+    

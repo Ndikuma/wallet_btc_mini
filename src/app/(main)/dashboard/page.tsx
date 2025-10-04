@@ -50,12 +50,12 @@ const ActionButton = ({ icon: Icon, label, href, disabled = false }: { icon: Rea
   return <Link href={href}>{content}</Link>;
 };
 
-const ActionCard = () => (
+const ActionCard = ({ disabled }: { disabled: boolean }) => (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <ActionButton icon={Send} label="Envoyer" href="/send" />
-        <ActionButton icon={Download} label="Recevoir" href="/receive" />
-        <ActionButton icon={ShoppingCart} label="Acheter" href="/buy" />
-        <ActionButton icon={Receipt} label="Vendre" href="/sell" />
+        <ActionButton icon={Send} label="Envoyer" href="/send" disabled={disabled} />
+        <ActionButton icon={Download} label="Recevoir" href="/receive" disabled={disabled} />
+        <ActionButton icon={ShoppingCart} label="Acheter" href="/buy" disabled={disabled} />
+        <ActionButton icon={Receipt} label="Vendre" href="/sell" disabled={disabled} />
     </div>
 )
 
@@ -130,7 +130,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
       
-      <ActionCard />
+      <ActionCard disabled={!!walletError} />
 
 
        <div className="grid grid-cols-1 gap-4 md:gap-6">

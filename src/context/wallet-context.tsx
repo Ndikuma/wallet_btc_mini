@@ -39,9 +39,9 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (err instanceof AxiosError && err.response?.status === 403) {
-             setError("Your wallet is being set up. This can take a moment. Please try refreshing in a few seconds.");
+             setError("Votre portefeuille est en cours de configuration. Cela peut prendre un moment. Veuillez essayer d'actualiser dans quelques secondes.");
         } else {
-            setError(err.message || "Could not load balance.");
+            setError(err.message || "Impossible de charger le solde.");
         }
         console.error("Failed to fetch balance data", err);
     } finally {

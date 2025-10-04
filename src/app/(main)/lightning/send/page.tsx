@@ -175,7 +175,9 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
         try {
             await api.payLightningInvoice({ 
                 request,
-                amount_sats: decoded.amount_sats ? undefined : Number(amountSats)
+                amount_sats: decoded.amount_sats ? undefined : Number(amountSats),
+                type: decoded.type,
+                internal: decoded.internal,
              });
             toast({ title: "Paiement réussi !", description: "Votre paiement a été envoyé." });
             onSuccess();
@@ -307,5 +309,3 @@ export default function SendPaymentPage() {
         </div>
     );
 }
-
-    

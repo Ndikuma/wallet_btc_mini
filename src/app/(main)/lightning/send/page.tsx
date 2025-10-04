@@ -194,11 +194,11 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
                 {error && <Alert variant="destructive"><AlertTitle>Impossible de traiter la requête</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
                 
                 {decoded?.internal && (
-                    <Alert variant="warning">
-                        <AlertTriangle className="h-4 w-4" />
+                    <Alert>
+                        <Info className="h-4 w-4" />
                         <AlertTitle>Facture Interne</AlertTitle>
                         <AlertDescription>
-                            Vous ne pouvez pas payer une facture générée par votre propre portefeuille.
+                            Ceci est une facture de votre propre portefeuille. Le paiement sera réglé instantanément.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -234,8 +234,8 @@ const StepConfirm = ({ request, onBack, onSuccess }: { request: string, onBack: 
             </CardContent>
             <CardFooter className="grid grid-cols-2 gap-4">
                 <Button variant="outline" onClick={onBack} disabled={isPaying}>Retour</Button>
-                <Button onClick={handlePay} disabled={isLoading || !!error || isPaying || decoded?.internal || (!decoded?.amount_sats && !amountSats)}>
-                    {isPaying ? <><Loader2 className="mr-2 size-4 animate-spin"/>Envoi...</> : "Payer"}
+                <Button onClick={handlePay} disabled={isLoading || !!error || isPaying || (!decoded?.amount_sats && !amountSats)}>
+                    {isPaying ? <><Loader2 className="mr-2 size-4 animate-spin"/>Envoi...</> : (decoded?.internal ? "Régler la facture" : "Payer")}
                 </Button>
             </CardFooter>
         </Card>

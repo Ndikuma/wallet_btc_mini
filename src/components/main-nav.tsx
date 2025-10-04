@@ -35,18 +35,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils";
 import React from "react";
 
-const mainNavItems = [
-  { path: "/dashboard", icon: Home, label: "Tableau de bord" },
+const onChainSubNavItems = [
+    { path: "/send", icon: Send, label: "Envoyer" },
+    { path: "/receive", icon: Download, label: "Recevoir" },
+    { path: "/buy", icon: ShoppingCart, label: "Acheter" },
+    { path: "/sell", icon: Receipt, label: "Vendre" },
+    { path: "/transactions", icon: History, label: "Transactions" },
+    { path: "/orders", icon: ShoppingCart, label: "Commandes" },
 ];
 
-const onChainNavItems = [
-  { path: "/send", icon: Send, label: "Envoyer" },
-  { path: "/receive", icon: Download, label: "Recevoir" },
-  { path: "/buy", icon: ShoppingCart, label: "Acheter" },
-  { path: "/sell", icon: Receipt, label: "Vendre" },
-  { path: "/transactions", icon: History, label: "Transactions" },
-  { path: "/orders", icon: ShoppingCart, label: "Commandes" },
-];
 
 const lightningSubNavItems = [
     { path: "/lightning/invoice", icon: FileText, label: "Générer facture" },
@@ -61,13 +58,19 @@ const footerNavItems = [
 export function MainNav() {
   const pathname = usePathname();
 
-  const isDashboardActive = (path: string) => {
+  const isRouteActive = (path: string, exact: boolean = false) => {
+    if (exact) {
+      return pathname === path;
+    }
     if (path === '/dashboard') {
-      return pathname === path || pathname === '/';
+        // Only active for /dashboard, not for other on-chain routes
+        return pathname === path;
     }
     return pathname.startsWith(path);
   }
-
+  
+  const isOnChainSectionActive = onChainSubNavItems.some(item => pathname.startsWith(item.path)) || pathname === '/dashboard';
+  const [isOnChainOpen, setIsOnChainOpen] = React.useState(isOnChainSectionActive);
   const [isLightningOpen, setIsLightningOpen] = React.useState(pathname.startsWith('/lightning'));
 
   return (
@@ -81,45 +84,45 @@ export function MainNav() {
         </Link>
       </SidebarHeader>
       <SidebarContent className="p-2">
-        <SidebarGroup>
-          <SidebarMenu>
-            {mainNavItems.map((item) => (
-              <SidebarMenuItem key={item.path}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isDashboardActive(item.path)}
-                  tooltip={item.label}
-                >
-                  <Link href={item.path}>
-                    <item.icon />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarSeparator />
 
         <SidebarGroup>
             <SidebarGroupLabel>On-Chain</SidebarGroupLabel>
-            <SidebarMenu>
-                 {onChainNavItems.map((item) => (
-                    <SidebarMenuItem key={item.path}>
+            <Collapsible open={isOnChainOpen} onOpenChange={setIsOnChainOpen}>
+                <SidebarMenu>
+                    <SidebarMenuItem>
                         <SidebarMenuButton
-                        asChild
-                        isActive={isDashboardActive(item.path)}
-                        tooltip={item.label}
+                            asChild
+                            isActive={isRouteActive("/dashboard", true)}
+                            tooltip={"Tableau de bord"}
                         >
-                        <Link href={item.path}>
-                            <item.icon />
-                            <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                        </Link>
+                            <Link href="/dashboard" className="w-full justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Home />
+                                    <span className="group-data-[collapsible=icon]:hidden">Tableau de bord</span>
+                                </div>
+                            </Link>
                         </SidebarMenuButton>
+                        <CollapsibleTrigger asChild>
+                            <button className="absolute right-2 top-1/2 -translate-y-1/2 group-data-[collapsible=icon]:hidden p-1 rounded-md hover:bg-sidebar-accent">
+                                <ChevronDown className={cn("size-4 transition-transform", isOnChainOpen && "rotate-180")} />
+                            </button>
+                        </CollapsibleTrigger>
                     </SidebarMenuItem>
-                    ))}
-            </SidebarMenu>
+                </SidebarMenu>
+                <CollapsibleContent>
+                    <SidebarMenuSub>
+                        {onChainSubNavItems.map((item) => (
+                            <SidebarMenuSubItem key={item.path}>
+                                <SidebarMenuSubButton asChild isActive={isRouteActive(item.path)}>
+                                    <Link href={item.path}>
+                                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                                    </Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                        ))}
+                    </SidebarMenuSub>
+                </CollapsibleContent>
+            </Collapsible>
         </SidebarGroup>
 
         <SidebarSeparator />
@@ -131,7 +134,7 @@ export function MainNav() {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             asChild
-                            isActive={isDashboardActive("/lightning") && pathname === '/lightning'}
+                            isActive={isRouteActive("/lightning", true)}
                             tooltip={"Lightning"}
                         >
                             <Link href="/lightning" className="w-full justify-between">
@@ -152,7 +155,7 @@ export function MainNav() {
                     <SidebarMenuSub>
                         {lightningSubNavItems.map((item) => (
                             <SidebarMenuSubItem key={item.path}>
-                                <SidebarMenuSubButton asChild isActive={isDashboardActive(item.path)}>
+                                <SidebarMenuSubButton asChild isActive={isRouteActive(item.path)}>
                                     <Link href={item.path}>
                                         <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                                     </Link>

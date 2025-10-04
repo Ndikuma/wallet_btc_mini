@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -23,11 +24,14 @@ import {
   SidebarMenuButton,
   SidebarSeparator,
   SidebarGroup,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [
   { path: "/dashboard", icon: Home, label: "Tableau de bord" },
-  { path: "/lightning", icon: Zap, label: "Lightning" },
+];
+
+const onChainNavItems = [
   { path: "/send", icon: Send, label: "Envoyer" },
   { path: "/receive", icon: Download, label: "Recevoir" },
   { path: "/buy", icon: ShoppingCart, label: "Acheter" },
@@ -35,6 +39,10 @@ const mainNavItems = [
   { path: "/transactions", icon: History, label: "Transactions" },
   { path: "/orders", icon: ShoppingCart, label: "Commandes" },
 ];
+
+const lightningNavItems = [
+    { path: "/lightning", icon: Zap, label: "Lightning" },
+]
 
 const footerNavItems = [
     { path: "/profile", icon: User, label: "Profil" },
@@ -80,6 +88,51 @@ export function MainNav() {
             ))}
           </SidebarMenu>
         </SidebarGroup>
+
+        <SidebarSeparator />
+
+        <SidebarGroup>
+            <SidebarGroupLabel>On-Chain</SidebarGroupLabel>
+            <SidebarMenu>
+                 {onChainNavItems.map((item) => (
+                    <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton
+                        asChild
+                        isActive={isDashboardActive(item.path)}
+                        tooltip={item.label}
+                        >
+                        <Link href={item.path}>
+                            <item.icon />
+                            <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                        </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    ))}
+            </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        <SidebarGroup>
+            <SidebarGroupLabel>Lightning</SidebarGroupLabel>
+            <SidebarMenu>
+                    {lightningNavItems.map((item) => (
+                        <SidebarMenuItem key={item.path}>
+                            <SidebarMenuButton
+                            asChild
+                            isActive={isDashboardActive(item.path)}
+                            tooltip={item.label}
+                            >
+                            <Link href={item.path}>
+                                <item.icon />
+                                <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                            </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+            </SidebarMenu>
+        </SidebarGroup>
+
       </SidebarContent>
       <SidebarFooter className="p-2">
         <SidebarSeparator />

@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, ReactNode } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
-import type { Order, LightningTransaction } from "@/lib/types";
+import type { Order } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -13,16 +13,12 @@ import {
   CardDescription
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, ArrowUpRight, ArrowDownLeft, Zap } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import type { VariantProps } from "class-variance-authority";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator";
 
-// On-Chain Order Components
 const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
   switch (status.toLowerCase()) {
     case 'completed': return 'success';
@@ -141,115 +137,6 @@ const OnChainOrders = () => {
   );
 }
 
-
-// Lightning Transactions Components
-const formatSats = (sats: number) => {
-  return new Intl.NumberFormat("fr-FR").format(sats);
-};
-
-const LightningHistory = () => {
-    const [transactions, setTransactions] = useState<LightningTransaction[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const fetchTransactions = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await api.getLightningTransactions();
-            setTransactions(response.data.results || response.data);
-        } catch (err: any) {
-            setError(err.message || "Impossible de charger l'historique des transactions.");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-     useEffect(() => {
-        fetchTransactions();
-    }, [fetchTransactions]);
-
-    if (loading) {
-        return (
-            <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-4 px-2 h-20">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-3 w-1/2" />
-                        </div>
-                    </div>
-                ))}
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="p-4 text-center text-destructive border border-destructive/20 bg-destructive/10 rounded-lg">
-                <AlertCircle className="mx-auto h-6 w-6" />
-                <p className="mt-2 font-semibold">Erreur de chargement</p>
-                <p className="text-sm">{error}</p>
-                <Button onClick={fetchTransactions} variant="secondary" size="sm" className="mt-4">
-                    Réessayer
-                </Button>
-            </div>
-        )
-    }
-
-    return (
-        <div className="space-y-0">
-            {transactions.length > 0 ? (
-                transactions.map((tx, index) => (
-                    <div key={tx.payment_hash || `${index}-${tx.created_at}`}>
-                        <div className="flex items-center gap-4 p-4">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-                            {tx.type === "incoming" ? (
-                                <ArrowDownLeft className="size-5 text-green-500" />
-                            ) : (
-                                <ArrowUpRight className="size-5 text-red-500" />
-                            )}
-                            </div>
-                            <div className="flex-1">
-                            <p
-                                className={`font-semibold ${
-                                tx.type === "incoming"
-                                    ? "text-green-500"
-                                    : "text-red-500"
-                                }`}
-                            >
-                                {tx.type === "incoming" ? "+" : "-"}
-                                {formatSats(tx.amount_sats)} sats
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                                {tx.memo || (tx.type === 'incoming' ? 'Paiement reçu' : 'Paiement envoyé')}
-                            </p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-xs text-muted-foreground">
-                                    {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                Frais: {tx.fee_sats} sats
-                                </p>
-                            </div>
-                        </div>
-                        {index < transactions.length - 1 && (
-                            <Separator />
-                        )}
-                    </div>
-                ))
-            ) : (
-                 <div className="p-8 text-center text-muted-foreground">
-                    <Zap className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <p className="mt-4">Aucune transaction Lightning pour le moment.</p>
-                </div>
-            )}
-        </div>
-    )
-}
-
 export default function OrdersPage() {
 
   return (
@@ -257,30 +144,10 @@ export default function OrdersPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Mes Commandes</h1>
         <p className="text-muted-foreground">
-          Affichez l'historique et le statut de vos commandes et transactions.
+          Affichez l'historique et le statut de vos commandes d'achat et de vente on-chain.
         </p>
       </div>
-
-       <Tabs defaultValue="on-chain" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="on-chain">On-Chain</TabsTrigger>
-                <TabsTrigger value="lightning">Lightning</TabsTrigger>
-            </TabsList>
-            <TabsContent value="on-chain" className="pt-4">
-                <OnChainOrders />
-            </TabsContent>
-            <TabsContent value="lightning" className="pt-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Historique Lightning</CardTitle>
-                        <CardDescription>Vos paiements Lightning récents.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                         <LightningHistory />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-        </Tabs>
+      <OnChainOrders />
     </div>
   );
 }

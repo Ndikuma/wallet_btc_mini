@@ -4,11 +4,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Download,
   History,
-  Home,
   Bitcoin,
-  Send,
   Settings,
   User,
   ShoppingCart,
@@ -61,7 +58,6 @@ export function MainNav() {
         </Link>
       </SidebarHeader>
       <SidebarContent className="p-2">
-
         <SidebarGroup>
             <SidebarMenu>
                 <SidebarMenuItem>
@@ -95,20 +91,54 @@ export function MainNav() {
 
         <SidebarGroup>
             <SidebarMenu>
-                {mainNavItems.map((item) => (
-                     <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton
-                            asChild
-                            isActive={pathname.startsWith(item.path)}
-                            tooltip={item.label}
-                        >
-                            <Link href={item.path}>
-                                <item.icon />
-                                <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={isRouteActive("/buy")}
+                        tooltip={"Acheter"}
+                    >
+                        <Link href="/buy">
+                            <ShoppingCart />
+                            <span className="group-data-[collapsible=icon]:hidden">Acheter</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={isRouteActive("/sell")}
+                        tooltip={"Vendre"}
+                    >
+                        <Link href="/sell">
+                            <Receipt />
+                            <span className="group-data-[collapsible=icon]:hidden">Vendre</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={isRouteActive("/orders")}
+                        tooltip={"Commandes"}
+                    >
+                        <Link href="/orders">
+                            <History />
+                            <span className="group-data-[collapsible=icon]:hidden">Commandes</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={isRouteActive("/transactions")}
+                        tooltip={"Transactions"}
+                    >
+                        <Link href="/transactions">
+                            <History />
+                            <span className="group-data-[collapsible=icon]:hidden">Transactions</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
             </SidebarMenu>
         </SidebarGroup>
 

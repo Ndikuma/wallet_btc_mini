@@ -5,6 +5,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription
 } from "@/components/ui/card";
 import {
   AlertCircle,
@@ -20,10 +23,11 @@ import {
   CircleX,
   Clock,
   Loader2,
+  Zap,
 } from "lucide-react";
 import { cn, shortenText } from "@/lib/utils";
 import api from "@/lib/api";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, LightningTransaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -37,6 +41,10 @@ import {
 } from "@/components/ui/accordion";
 import { type VariantProps } from "class-variance-authority";
 import { AxiosError } from "axios";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+
+// --- On-Chain Components ---
 
 const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | null, children?: React.ReactNode }) => {
   const { toast } = useToast();
@@ -69,8 +77,7 @@ const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.Element
 
 const TransactionCard = ({ tx }: { tx: Transaction }) => {
   const isSent = tx.transaction_type === "internal" || tx.transaction_type === "send";
-  const relevantAddress = isSent ? tx.to_address : tx.from_address;
-
+  
   const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
     switch (status.toLowerCase()) {
       case 'confirmed': return 'success';
@@ -154,35 +161,33 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
   );
 }
 
-
-export default function TransactionsPage() {
+const OnChainTransactions = () => {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loadingTransactions, setLoadingTransactions] = useState(true);
-  const [transactionsError, setTransactionsError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTransactions = useCallback(async () => {
-    setTransactionsError(null);
-    setLoadingTransactions(true);
+    setError(null);
+    setLoading(true);
     try {
       const transactionsRes = await api.getTransactions();
       setTransactions(transactionsRes.data.results || transactionsRes.data || []);
     } catch (err: any) {
-      console.error("Échec du chargement des transactions", err);
       let errorMsg = "Impossible de charger l'historique des transactions.";
       if (err instanceof AxiosError && err.code === 'ERR_NETWORK') {
           errorMsg = "Erreur réseau. Impossible de se connecter au serveur.";
       } else if (err.message) {
           errorMsg = err.message;
       }
-      setTransactionsError(errorMsg);
+      setError(errorMsg);
       toast({
         variant: "destructive",
         title: "Erreur",
         description: errorMsg,
       });
     } finally {
-      setLoadingTransactions(false);
+      setLoading(false);
     }
   }, [toast]);
 
@@ -190,42 +195,183 @@ export default function TransactionsPage() {
     fetchTransactions();
   }, [fetchTransactions]);
 
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+        ))}
+      </div>
+    );
+  }
 
+  if (error) {
+    return (
+        <Card className="flex h-48 items-center justify-center">
+            <div className="text-center text-destructive">
+                <AlertCircle className="mx-auto h-8 w-8" />
+                <p className="mt-2 font-semibold">Erreur de chargement</p>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
+                <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    Réessayer
+                </Button>
+            </div>
+        </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {transactions.length > 0 ? (
+        transactions.map((tx) => (
+          <TransactionCard key={tx.id} tx={tx} />
+        ))
+      ) : (
+        <Card className="flex h-48 items-center justify-center">
+          <p className="text-muted-foreground">Aucune transaction on-chain disponible.</p>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+// --- Lightning Components ---
+
+const formatSats = (sats: number) => {
+  return new Intl.NumberFormat("fr-FR").format(sats);
+};
+
+const LightningHistory = () => {
+    const [transactions, setTransactions] = useState<LightningTransaction[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchTransactions = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await api.getLightningTransactions();
+            setTransactions(response.data.results || response.data);
+        } catch (err: any) {
+            setError(err.message || "Impossible de charger l'historique des transactions.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+     useEffect(() => {
+        fetchTransactions();
+    }, [fetchTransactions]);
+
+    if (loading) {
+        return (
+            <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 px-2 h-20">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="p-4 text-center text-destructive border border-destructive/20 bg-destructive/10 rounded-lg">
+                <AlertCircle className="mx-auto h-6 w-6" />
+                <p className="mt-2 font-semibold">Erreur de chargement</p>
+                <p className="text-sm">{error}</p>
+                <Button onClick={fetchTransactions} variant="secondary" size="sm" className="mt-4">
+                    Réessayer
+                </Button>
+            </div>
+        )
+    }
+
+    return (
+        <Card>
+            <CardContent className="p-0">
+                <div className="space-y-0">
+                    {transactions.length > 0 ? (
+                        transactions.map((tx, index) => (
+                            <div key={tx.payment_hash || `${index}-${tx.created_at}`}>
+                                <div className="flex items-center gap-4 p-4">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+                                    {tx.type === "incoming" ? (
+                                        <ArrowDownLeft className="size-5 text-green-500" />
+                                    ) : (
+                                        <ArrowUpRight className="size-5 text-red-500" />
+                                    )}
+                                    </div>
+                                    <div className="flex-1">
+                                    <p
+                                        className={`font-semibold ${
+                                        tx.type === "incoming"
+                                            ? "text-green-500"
+                                            : "text-red-500"
+                                        }`}
+                                    >
+                                        {tx.type === "incoming" ? "+" : "-"}
+                                        {formatSats(tx.amount_sats)} sats
+                                    </p>
+                                    <p className="text-sm text-muted-foreground truncate">
+                                        {tx.memo || (tx.type === 'incoming' ? 'Paiement reçu' : 'Paiement envoyé')}
+                                    </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-muted-foreground">
+                                            {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                        Frais: {tx.fee_sats} sats
+                                        </p>
+                                    </div>
+                                </div>
+                                {index < transactions.length - 1 && (
+                                    <Separator />
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="p-8 text-center text-muted-foreground">
+                            <Zap className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <p className="mt-4">Aucune transaction Lightning pour le moment.</p>
+                        </div>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+
+export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Historique des Transactions</h1>
         <p className="text-muted-foreground">
-          Consultez toutes les transactions de votre portefeuille.
+          Consultez toutes les transactions de votre portefeuille, on-chain et Lightning.
         </p>
       </div>
-      <div className="space-y-4">
-        {loadingTransactions ? (
-          Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-xl" />
-          ))
-        ) : transactionsError ? (
-            <Card className="flex h-48 items-center justify-center">
-                <div className="text-center text-destructive">
-                    <AlertCircle className="mx-auto h-8 w-8" />
-                    <p className="mt-2 font-semibold">Erreur de chargement des transactions</p>
-                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">{transactionsError}</p>
-                    <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
-                        {loadingTransactions && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Réessayer
-                    </Button>
-                </div>
-            </Card>
-        ) : transactions.length > 0 ? (
-          transactions.map((tx) => (
-            <TransactionCard key={tx.id} tx={tx} />
-          ))
-        ) : (
-          <Card className="flex h-48 items-center justify-center">
-            <p className="text-muted-foreground">Aucune transaction disponible.</p>
-          </Card>
-        )}
-      </div>
+      
+      <Tabs defaultValue="on-chain" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="on-chain">On-Chain</TabsTrigger>
+                <TabsTrigger value="lightning">Lightning</TabsTrigger>
+            </TabsList>
+            <TabsContent value="on-chain" className="pt-4">
+                <OnChainTransactions />
+            </TabsContent>
+            <TabsContent value="lightning" className="pt-4">
+                <LightningHistory />
+            </TabsContent>
+        </Tabs>
     </div>
   );
 }

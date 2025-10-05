@@ -1,10 +1,11 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
 const getTitleFromPath = (path: string) => {
-    if (path.startsWith('/dashboard')) return 'Tableau de bord';
+    if (path.startsWith('/dashboard')) return 'On-chain';
     if (path.startsWith('/send')) return 'Envoyer';
     if (path.startsWith('/receive')) return 'Recevoir';
     if (path.startsWith('/buy')) return 'Acheter des Bitcoins';

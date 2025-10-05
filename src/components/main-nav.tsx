@@ -30,8 +30,6 @@ import React from "react";
 
 
 const mainNavItems = [
-    { path: "/send", icon: Send, label: "Envoyer" },
-    { path: "/receive", icon: Download, label: "Recevoir" },
     { path: "/buy", icon: ShoppingCart, label: "Acheter" },
     { path: "/sell", icon: Receipt, label: "Vendre" },
     { path: "/orders", icon: History, label: "Commandes" },
@@ -70,11 +68,11 @@ export function MainNav() {
                     <SidebarMenuButton
                         asChild
                         isActive={isRouteActive("/dashboard", true)}
-                        tooltip={"Tableau de bord"}
+                        tooltip={"On-chain"}
                     >
                         <Link href="/dashboard">
-                            <Home />
-                            <span className="group-data-[collapsible=icon]:hidden">Tableau de bord</span>
+                            <Bitcoin />
+                            <span className="group-data-[collapsible=icon]:hidden">On-chain</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

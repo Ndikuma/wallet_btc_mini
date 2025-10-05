@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -33,7 +32,7 @@ export function MobileNav() {
   };
 
   const menuItems = [
-    { path: "/dashboard", icon: Home, label: "Accueil" },
+    { path: "/dashboard", icon: Bitcoin, label: "On chain" },
     receiveAction,
     { path: "/orders", icon: Receipt, label: "Commandes" },
     { path: "/lightning", icon: Zap, label: "Lightning" },
@@ -43,11 +42,14 @@ export function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-20 h-20 border-t bg-background/95 backdrop-blur-sm md:hidden">
       <div className="relative grid h-full grid-cols-5 items-center">
         {menuItems.slice(0, 2).map((item) => {
-          const isActive = (item.path && pathname.startsWith(item.path) && item.path !== '/') || pathname === item.path;
+          const linkPath = item.path || item.href || "/";
+          const isActive =
+            (item.path && pathname.startsWith(item.path) && item.path !== "/") ||
+            pathname === item.path;
           return (
             <Link
               key={item.label}
-              href={item.path || "/"}
+              href={linkPath}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
                 isActive
@@ -62,18 +64,23 @@ export function MobileNav() {
         })}
 
         <div className="relative flex justify-center items-center col-start-3">
-          <Link href={fabAction.href} className="absolute bottom-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105">
+          <Link
+            href={fabAction.href}
+            className="absolute bottom-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105"
+          >
             <fabAction.icon className="size-7" />
             <span className="sr-only">{fabAction.label}</span>
           </Link>
         </div>
 
         {menuItems.slice(2).map((item) => {
-          const isActive = (item.path && pathname.startsWith(item.path)) || pathname === item.path;
+          const linkPath = item.path || item.href || "/";
+          const isActive =
+            (item.path && pathname.startsWith(item.path)) || pathname === item.path;
           return (
             <Link
               key={item.label}
-              href={item.path || "/"}
+              href={linkPath}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
                 isActive

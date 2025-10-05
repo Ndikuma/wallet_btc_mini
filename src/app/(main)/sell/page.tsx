@@ -8,7 +8,7 @@ import { z } from "zod";
 import api from "@/lib/api";
 import type { Balance, SellProvider, FeeEstimation, SellOrderPayload, PayoutData } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check } from "lucide-react";
+import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check, Zap, Construction } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,10 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { getFiat } from "@/lib/utils";
 
+const networkSchema = z.object({
+    network: z.enum(["on-chain", "lightning"]),
+});
+
 const amountSchema = z.object({
   amount: z.coerce
     .number({ invalid_type_error: "Veuillez entrer un nombre valide." })
@@ -53,6 +57,7 @@ const paymentDetailsSchema = z.object({
 })
 
 type FormData = {
+    network?: "on-chain" | "lightning";
     amount?: number;
     providerId?: string;
     paymentDetails?: PayoutData;
@@ -67,7 +72,7 @@ export default function SellPage() {
 
     const [providers, setProviders] = useState<SellProvider[]>([]);
     
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState<FormData>({});
     
     const [feeEstimation, setFeeEstimation] = useState<FeeEstimation | null>(null);
@@ -77,6 +82,10 @@ export default function SellPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const currentBalance = balance ? parseFloat(balance.balance) : 0;
+    
+    const networkForm = useForm<z.infer<typeof networkSchema>>({
+        resolver: zodResolver(networkSchema),
+    });
 
     const amountForm = useForm<{ amount: number }>({
         resolver: zodResolver(amountSchema.extend({
@@ -145,7 +154,15 @@ export default function SellPage() {
 
     const handleNext = async () => {
         let isStepValid = false;
-        if (currentStep === 1) {
+        if (currentStep === 0) {
+            isStepValid = await networkForm.trigger();
+            if(isStepValid) {
+                const newFormData = { ...formData, ...networkForm.getValues() };
+                setFormData(newFormData);
+                setCurrentStep(1);
+            }
+        }
+        else if (currentStep === 1) {
             isStepValid = await amountForm.trigger();
             if (isStepValid) {
                 const newFormData = { ...formData, ...amountForm.getValues() };
@@ -174,7 +191,7 @@ export default function SellPage() {
 
 
     const handleBack = () => {
-        setCurrentStep(prev => Math.max(1, prev - 1));
+        setCurrentStep(prev => Math.max(0, prev - 1));
         if (currentStep <= 3) {
             setFeeEstimation(null);
             setFeeError(null);
@@ -216,11 +233,61 @@ export default function SellPage() {
         return providers.find(p => String(p.id) === formData.providerId);
     }, [providers, formData.providerId]);
 
+    const renderNetworkStep = () => (
+         <Card>
+            <CardHeader>
+                <CardTitle>Étape 1: Choisissez le Réseau</CardTitle>
+                <CardDescription>Indiquez si vous souhaitez vendre des fonds depuis votre solde On-Chain ou Lightning.</CardDescription>
+            </CardHeader>
+            <Form {...networkForm}>
+                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+                    <CardContent>
+                         <FormField
+                            control={networkForm.control}
+                            name="network"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <FormItem>
+                                                <FormControl>
+                                                    <RadioGroupItem value="on-chain" id="on-chain" className="peer sr-only" />
+                                                </FormControl>
+                                                <Label htmlFor="on-chain" className="cursor-pointer hover:border-primary transition-colors p-6 flex flex-col items-center justify-center text-center rounded-lg border-2 border-muted bg-popover peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                                    <Bitcoin className="size-10 text-primary mb-3"/>
+                                                    <h3 className="font-semibold text-lg">On-Chain</h3>
+                                                    <p className="text-sm text-muted-foreground mt-1">Vendre depuis votre solde principal. Idéal pour des montants plus importants.</p>
+                                                </Label>
+                                            </FormItem>
+                                             <FormItem>
+                                                <FormControl>
+                                                    <RadioGroupItem value="lightning" id="lightning" className="peer sr-only" />
+                                                </FormControl>
+                                                <Label htmlFor="lightning" className="cursor-pointer hover:border-primary transition-colors p-6 flex flex-col items-center justify-center text-center rounded-lg border-2 border-muted bg-popover peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                                    <Zap className="size-10 text-primary mb-3"/>
+                                                    <h3 className="font-semibold text-lg">Lightning</h3>
+                                                    <p className="text-sm text-muted-foreground mt-1">Vendre depuis votre solde Lightning. Instantané et moins de frais.</p>
+                                                </Label>
+                                            </FormItem>
+                                        </RadioGroup>
+                                    </FormControl>
+                                    <FormMessage className="pt-2" />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit" className="w-full" size="lg">Suivant</Button>
+                    </CardFooter>
+                </form>
+            </Form>
+        </Card>
+    );
 
     const renderAmountStep = () => (
          <Card>
             <CardHeader>
-                <CardTitle>Étape 1: Entrez le Montant</CardTitle>
+                <CardTitle>Étape 2: Entrez le Montant</CardTitle>
                 <CardDescription>Spécifiez la quantité de Bitcoin que vous souhaitez vendre.</CardDescription>
             </CardHeader>
             <Form {...amountForm}>
@@ -265,7 +332,7 @@ export default function SellPage() {
      const renderProviderStep = () => (
          <Card>
             <CardHeader>
-                <CardTitle>Étape 2: Choisissez un Fournisseur</CardTitle>
+                <CardTitle>Étape 3: Choisissez un Fournisseur</CardTitle>
                 <CardDescription>Sélectionnez un fournisseur pour traiter votre transaction de vente.</CardDescription>
             </CardHeader>
              <Form {...providerForm}>
@@ -321,7 +388,7 @@ export default function SellPage() {
     const renderPaymentDetailsStep = () => (
          <Card>
             <CardHeader>
-                <CardTitle>Étape 3: Entrez les Détails de Paiement</CardTitle>
+                <CardTitle>Étape 4: Entrez les Détails de Paiement</CardTitle>
                 <CardDescription>Fournissez vos informations de compte pour recevoir les fonds. C'est là que votre argent sera envoyé, alors assurez-vous de l'exactitude.</CardDescription>
             </CardHeader>
              <Form {...paymentDetailsForm}>
@@ -393,7 +460,7 @@ export default function SellPage() {
             return (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Étape 4: Confirmer & Vendre</CardTitle>
+                        <CardTitle>Étape 5: Confirmer & Vendre</CardTitle>
                         <CardDescription>Passez en revue les détails de votre transaction avant de confirmer la vente.</CardDescription>
                     </CardHeader>
                     <CardContent className="flex items-center justify-center h-48">
@@ -408,7 +475,7 @@ export default function SellPage() {
             return (
                  <Card>
                     <CardHeader>
-                        <CardTitle>Étape 4: Confirmer & Vendre</CardTitle>
+                        <CardTitle>Étape 5: Confirmer & Vendre</CardTitle>
                         <CardDescription>Passez en revue les détails de votre transaction avant de confirmer la vente.</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -431,7 +498,7 @@ export default function SellPage() {
             return (
                  <Card>
                     <CardHeader>
-                        <CardTitle>Étape 4: Confirmer & Vendre</CardTitle>
+                        <CardTitle>Étape 5: Confirmer & Vendre</CardTitle>
                         <CardDescription>Veuillez compléter toutes les étapes précédentes pour voir le résumé de votre transaction.</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -457,7 +524,7 @@ export default function SellPage() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Étape 4: Confirmer & Vendre</CardTitle>
+                    <CardTitle>Étape 5: Confirmer & Vendre</CardTitle>
                     <CardDescription>Passez en revue les détails de votre transaction avant de confirmer la vente.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -529,6 +596,20 @@ export default function SellPage() {
         );
     };
 
+    const renderLightningSell = () => (
+         <Card>
+            <CardHeader>
+                <CardTitle>Vendre via Lightning</CardTitle>
+                <CardDescription>Cette fonctionnalité est en cours de développement.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center text-center h-48">
+                <Construction className="size-12 text-muted-foreground mb-4" />
+                <p className="text-lg font-semibold">Bientôt Disponible</p>
+                <p className="text-muted-foreground">La vente de Bitcoin depuis votre solde Lightning sera bientôt possible.</p>
+            </CardContent>
+        </Card>
+    );
+
 
     if (isLoadingData) {
         return (
@@ -563,10 +644,11 @@ export default function SellPage() {
     }
 
     const steps = [
-        { title: "Montant", isComplete: currentStep > 1 },
-        { title: "Fournisseur", isComplete: currentStep > 2 },
-        { title: "Paiement", isComplete: currentStep > 3 },
-        { title: "Confirmer", isComplete: currentStep > 4 }
+        { title: "Réseau" },
+        { title: "Montant" },
+        { title: "Fournisseur" },
+        { title: "Paiement" },
+        { title: "Confirmer" }
     ];
 
     return (
@@ -580,26 +662,32 @@ export default function SellPage() {
                 {steps.map((step, index) => (
                     <React.Fragment key={index}>
                         <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:gap-2">
-                            <div className={`flex size-6 items-center justify-center rounded-full text-xs font-bold ${currentStep > index + 1 ? 'bg-primary text-primary-foreground' : currentStep === index + 1 ? 'border-2 border-primary text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                {currentStep > index + 1 ? <Check className="size-4" /> : index + 1}
+                            <div className={`flex size-6 items-center justify-center rounded-full text-xs font-bold ${currentStep > index ? 'bg-primary text-primary-foreground' : currentStep === index ? 'border-2 border-primary text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                {currentStep > index ? <Check className="size-4" /> : index + 1}
                             </div>
-                            <span className={`hidden sm:block ${currentStep >= index + 1 ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
+                            <span className={`hidden sm:block ${currentStep >= index ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
                         </div>
                         {index < steps.length - 1 && <div className="flex-1 h-px bg-border mx-2" />}
                     </React.Fragment>
                 ))}
             </div>
             
-            {currentStep > 1 && (
+            {currentStep > 0 && (
                 <Button variant="ghost" onClick={handleBack} className="-mb-2">
                     <ArrowLeft className="mr-2 size-4" /> Retour
                 </Button>
             )}
 
-            {currentStep === 1 && renderAmountStep()}
-            {currentStep === 2 && renderProviderStep()}
-            {currentStep === 3 && renderPaymentDetailsStep()}
-            {currentStep === 4 && renderConfirmationStep()}
+            {currentStep === 0 && renderNetworkStep()}
+            {formData.network === "on-chain" && (
+                <>
+                    {currentStep === 1 && renderAmountStep()}
+                    {currentStep === 2 && renderProviderStep()}
+                    {currentStep === 3 && renderPaymentDetailsStep()}
+                    {currentStep === 4 && renderConfirmationStep()}
+                </>
+            )}
+             {formData.network === "lightning" && currentStep > 0 && renderLightningSell()}
         </div>
     );
 }

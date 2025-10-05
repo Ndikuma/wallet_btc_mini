@@ -14,7 +14,6 @@ import {
   Receipt,
   Zap,
   ChevronDown,
-  FileText,
 } from "lucide-react";
 import { BitcoinIcon } from "@/components/icons";
 import {
@@ -38,9 +37,12 @@ const onChainSubNavItems = [
     { path: "/dashboard", icon: Home, label: "Tableau de bord" },
     { path: "/send", icon: Send, label: "Envoyer" },
     { path: "/receive", icon: Download, label: "Recevoir" },
+    { path: "/transactions", icon: History, label: "Transactions" },
+];
+
+const mainNavItems = [
     { path: "/buy", icon: ShoppingCart, label: "Acheter" },
     { path: "/sell", icon: Receipt, label: "Vendre" },
-    { path: "/transactions", icon: History, label: "Transactions" },
     { path: "/orders", icon: ShoppingCart, label: "Commandes" },
 ];
 
@@ -136,6 +138,27 @@ export function MainNav() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+            </SidebarMenu>
+        </SidebarGroup>
+        
+        <SidebarSeparator />
+
+        <SidebarGroup>
+            <SidebarMenu>
+                {mainNavItems.map((item) => (
+                     <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton
+                            asChild
+                            isActive={pathname.startsWith(item.path)}
+                            tooltip={item.label}
+                        >
+                            <Link href={item.path}>
+                                <item.icon />
+                                <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
             </SidebarMenu>
         </SidebarGroup>
 

@@ -106,31 +106,37 @@ const OnChainBuy = () => {
   }
 
   return (
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {providers.length > 0 ? (
-          providers.map((provider) => (
-            <ProviderCard key={provider.id} provider={provider} />
-          ))
-        ) : (
-          <Card className="col-span-full flex h-48 items-center justify-center">
-            <p className="text-muted-foreground">Aucun fournisseur d'achat n'est disponible pour le moment.</p>
-          </Card>
-        )}
+     <div className="space-y-4">
+        <h2 className="text-xl font-semibold tracking-tight">Fournisseurs On-Chain</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {providers.length > 0 ? (
+            providers.map((provider) => (
+              <ProviderCard key={provider.id} provider={provider} />
+            ))
+          ) : (
+            <Card className="col-span-full flex h-48 items-center justify-center">
+              <p className="text-muted-foreground">Aucun fournisseur d'achat n'est disponible pour le moment.</p>
+            </Card>
+          )}
+        </div>
       </div>
   )
 }
 
 const LightningBuy = () => {
     return (
-        <Card className="col-span-full flex h-48 items-center justify-center text-center">
-            <div className="space-y-4">
-                <Construction className="mx-auto h-12 w-12 text-muted-foreground" />
-                <div>
-                    <h3 className="text-lg font-semibold">Bientôt Disponible</h3>
-                    <p className="text-muted-foreground">L'achat de Bitcoin via Lightning Network sera bientôt disponible.</p>
+        <div className="space-y-4">
+            <h2 className="text-xl font-semibold tracking-tight">Fournisseurs Lightning</h2>
+            <Card className="col-span-full flex h-48 items-center justify-center text-center">
+                <div className="space-y-4">
+                    <Construction className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <div>
+                        <h3 className="text-lg font-semibold">Bientôt Disponible</h3>
+                        <p className="text-muted-foreground">L'achat de Bitcoin via Lightning Network sera bientôt disponible.</p>
+                    </div>
                 </div>
-            </div>
-        </Card>
+            </Card>
+        </div>
     )
 }
 
@@ -181,3 +187,5 @@ export default function BuyPage() {
     </div>
   );
 }
+
+    

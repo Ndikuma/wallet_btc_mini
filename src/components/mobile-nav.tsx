@@ -23,7 +23,7 @@ export function MobileNav() {
   const fabAction = {
     href: isLightning ? "/lightning/send" : "/send",
     icon: isLightning ? Zap : Bitcoin,
-    label: isLightning ? "Payer" : "Envoyer",
+    label: "Envoyer",
   };
 
   const receiveAction = {
@@ -36,7 +36,7 @@ export function MobileNav() {
     { path: "/dashboard", icon: Home, label: "Accueil" },
     receiveAction,
     { path: "/orders", icon: Receipt, label: "Commandes" },
-    { path: "/profile", icon: User, label: "Profil" },
+    { path: "/lightning", icon: Zap, label: "Lightning" },
   ];
 
   return (

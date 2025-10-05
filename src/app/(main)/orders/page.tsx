@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
-import type { Order } from "@/lib/types";
+import type { Order, LightningTransaction } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -14,11 +14,13 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, Construction } from "lucide-react";
+import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, Construction, ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import type { VariantProps } from "class-variance-authority";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import React from "react";
 
 
 const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
@@ -139,16 +141,119 @@ const OnChainOrders = () => {
   );
 }
 
+const formatSats = (sats: number) => {
+  return new Intl.NumberFormat("fr-FR").format(sats);
+};
+
 const LightningOrders = () => {
-    return (
-        <Card className="col-span-full flex h-48 items-center justify-center text-center">
+    const [transactions, setTransactions] = useState<LightningTransaction[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchTransactions = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await api.getLightningTransactions();
+            setTransactions(response.data.results || response.data);
+        } catch (err: any) {
+            setError(err.message || "Impossible de charger l'historique des transactions.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+     useEffect(() => {
+        fetchTransactions();
+    }, [fetchTransactions]);
+
+    if (loading) {
+        return (
             <div className="space-y-4">
-                <Construction className="mx-auto h-12 w-12 text-muted-foreground" />
-                <div>
-                    <h3 className="text-lg font-semibold">Bientôt Disponible</h3>
-                    <p className="text-muted-foreground">Les commandes Lightning (swaps, etc.) apparaîtront ici.</p>
-                </div>
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 px-2 h-20">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                        </div>
+                    </div>
+                ))}
             </div>
+        )
+    }
+
+    if (error) {
+        return (
+             <Card className="flex h-48 items-center justify-center">
+                <div className="text-center text-destructive">
+                    <AlertCircle className="mx-auto h-8 w-8" />
+                    <p className="mt-2 font-semibold">Erreur de chargement</p>
+                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
+                    <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                        Réessayer
+                    </Button>
+                </div>
+            </Card>
+        )
+    }
+
+    return (
+        <Card>
+            <CardContent className="p-0">
+                <div className="space-y-0">
+                    {transactions.length > 0 ? (
+                        transactions.map((tx, index) => (
+                            <div key={tx.payment_hash || `${index}-${tx.created_at}`}>
+                                <div className="flex items-center gap-4 p-4">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+                                    {tx.type === "incoming" ? (
+                                        <ArrowDownLeft className="size-5 text-green-500" />
+                                    ) : (
+                                        <ArrowUpRight className="size-5 text-red-500" />
+                                    )}
+                                    </div>
+                                    <div className="flex-1">
+                                    <p
+                                        className={`font-semibold ${
+                                        tx.type === "incoming"
+                                            ? "text-green-500"
+                                            : "text-red-500"
+                                        }`}
+                                    >
+                                        {tx.type === "incoming" ? "+" : "-"}
+                                        {formatSats(tx.amount_sats)} sats
+                                    </p>
+                                    <p className="text-sm text-muted-foreground truncate">
+                                        {tx.memo || (tx.type === 'incoming' ? 'Paiement reçu' : 'Paiement envoyé')}
+                                    </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-muted-foreground">
+                                            {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                        Frais: {tx.fee_sats} sats
+                                        </p>
+                                    </div>
+                                </div>
+                                {index < transactions.length - 1 && (
+                                    <Separator />
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="p-8 text-center text-muted-foreground">
+                            <Zap className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <p className="mt-4">Aucune transaction Lightning pour le moment.</p>
+                             <Button asChild className="mt-4">
+                                <Link href="/lightning">Aller au Portefeuille Lightning</Link>
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            </CardContent>
         </Card>
     )
 }

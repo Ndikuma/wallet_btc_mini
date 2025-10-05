@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   Receipt,
-  History,
+  Send,
   User,
   Zap,
 } from "lucide-react";
@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 
 const menuItems = [
   { path: "/dashboard", icon: Home, label: "Accueil" },
-  { path: "/transactions", icon: History, label: "Activité" },
-  { path: "/lightning/send", icon: Zap, label: "Payer" }, 
+  { path: "/lightning", icon: Zap, label: "Lightning" },
+  { path: "/lightning/send", icon: Send, label: "Payer" }, 
   { path: "/orders", icon: Receipt, label: "Commandes" },
   { path: "/profile", icon: User, label: "Profil" },
 ];

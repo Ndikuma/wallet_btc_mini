@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 
 const onChainSubNavItems = [
-    { path: "/dashboard", icon: BitcoinIcon, label: "Tableau de bord" },
+    { path: "/dashboard", icon: Home, label: "Tableau de bord" },
     { path: "/send", icon: Send, label: "Envoyer" },
     { path: "/receive", icon: Download, label: "Recevoir" },
     { path: "/buy", icon: ShoppingCart, label: "Acheter" },
@@ -89,7 +89,7 @@ export function MainNav() {
                         >
                              <Link href="/dashboard" className="w-full justify-between">
                                 <div className="flex items-center gap-2">
-                                    <BitcoinIcon />
+                                    <Home />
                                     <span className="group-data-[collapsible=icon]:hidden">On-Chain</span>
                                 </div>
                             </Link>

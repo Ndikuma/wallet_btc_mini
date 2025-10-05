@@ -43,13 +43,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'edward-provincial-graham-opens.trycloudflare.com',
+        hostname: 'daniel-few-tournament-quiet.trycloudflare.com',
         port: '',
         pathname: '/**',
       },
       {
         protocol: 'http',
-        hostname: 'edward-provincial-graham-opens.trycloudflare.com',
+        hostname: 'daniel-few-tournament-quiet.trycloudflare.com',
         port: '',
         pathname: '/**',
       },

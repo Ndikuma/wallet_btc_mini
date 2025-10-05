@@ -94,7 +94,7 @@ const PaymentInfoDisplay = ({ provider }: { provider: BuyProvider }) => {
                                 <span className="text-muted-foreground">{formatLabel(key)}</span>
                                 <div className="flex items-center gap-2 font-mono">
                                     <span>{value}</span>
-                                    <CopyButton textToCopy={value} size="icon" variant="ghost" className="h-7 w-7" />
+                                    <CopyButton textToCopy={value as string} size="icon" variant="ghost" className="h-7 w-7" />
                                 </div>
                             </div>
                         ))}
@@ -445,3 +445,5 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
+
+    

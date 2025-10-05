@@ -46,7 +46,7 @@ export function MobileNav() {
           const isActive = (item.path && pathname.startsWith(item.path) && item.path !== '/') || pathname === item.path;
           return (
             <Link
-              key={item.label} // Key prop on the Link component
+              key={item.label}
               href={item.path || "/"}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
@@ -72,7 +72,7 @@ export function MobileNav() {
           const isActive = (item.path && pathname.startsWith(item.path)) || pathname === item.path;
           return (
             <Link
-              key={item.label} // Key prop on the Link component
+              key={item.label}
               href={item.path || "/"}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",

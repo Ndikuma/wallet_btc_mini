@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -11,6 +12,7 @@ import {
   Zap,
   Bitcoin,
   FileText,
+  Send
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +34,7 @@ export function MobileNav() {
   };
 
   const menuItems = [
-    { path: "/dashboard", icon: Bitcoin, label: "On chain" },
+    { path: "/dashboard", icon: Home, label: "Accueil" },
     receiveAction,
     { path: "/orders", icon: Receipt, label: "Commandes" },
     { path: "/lightning", icon: Zap, label: "Lightning" },

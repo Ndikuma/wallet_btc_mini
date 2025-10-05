@@ -14,10 +14,12 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2 } from "lucide-react";
+import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, Construction } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import type { VariantProps } from "class-variance-authority";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
   switch (status.toLowerCase()) {
@@ -137,6 +139,20 @@ const OnChainOrders = () => {
   );
 }
 
+const LightningOrders = () => {
+    return (
+        <Card className="col-span-full flex h-48 items-center justify-center text-center">
+            <div className="space-y-4">
+                <Construction className="mx-auto h-12 w-12 text-muted-foreground" />
+                <div>
+                    <h3 className="text-lg font-semibold">Bientôt Disponible</h3>
+                    <p className="text-muted-foreground">Les commandes Lightning (swaps, etc.) apparaîtront ici.</p>
+                </div>
+            </div>
+        </Card>
+    )
+}
+
 export default function OrdersPage() {
 
   return (
@@ -144,10 +160,22 @@ export default function OrdersPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Mes Commandes</h1>
         <p className="text-muted-foreground">
-          Affichez l'historique et le statut de vos commandes d'achat et de vente on-chain.
+          Suivez le statut de vos commandes d'achat et de vente.
         </p>
       </div>
-      <OnChainOrders />
+
+       <Tabs defaultValue="on-chain" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="on-chain">On-Chain</TabsTrigger>
+                <TabsTrigger value="lightning">Lightning</TabsTrigger>
+            </TabsList>
+            <TabsContent value="on-chain" className="pt-4">
+                <OnChainOrders />
+            </TabsContent>
+            <TabsContent value="lightning" className="pt-4">
+                <LightningOrders />
+            </TabsContent>
+        </Tabs>
     </div>
   );
 }

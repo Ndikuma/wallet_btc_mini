@@ -10,15 +10,9 @@ import {
   User,
   Zap,
   Bitcoin,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const menuItems = [
-  { path: "/dashboard", icon: Home, label: "Accueil" },
-  { path: "/receive", icon: Download, label: "Recevoir" },
-  { path: "/orders", icon: Receipt, label: "Commandes" },
-  { path: "/profile", icon: User, label: "Profil" },
-];
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -30,6 +24,19 @@ export function MobileNav() {
     icon: isLightning ? Zap : Bitcoin,
     label: isLightning ? "Payer" : "Envoyer",
   };
+
+  const receiveAction = {
+      href: isLightning ? "/lightning/invoice" : "/receive",
+      icon: isLightning ? FileText : Download,
+      label: "Recevoir",
+  };
+
+  const menuItems = [
+    { path: "/dashboard", icon: Home, label: "Accueil" },
+    receiveAction,
+    { path: "/orders", icon: Receipt, label: "Commandes" },
+    { path: "/profile", icon: User, label: "Profil" },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-20 h-20 border-t bg-background/95 backdrop-blur-sm md:hidden">

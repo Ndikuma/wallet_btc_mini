@@ -10,14 +10,19 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  CardFooter
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, ArrowRight, Landmark, Loader2, Zap, Construction, Bitcoin } from "lucide-react";
+import { AlertCircle, ArrowRight, Landmark, Loader2, Zap, Construction, Bitcoin, FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CopyButton } from "@/components/copy-button";
+import { useToast } from "@/hooks/use-toast";
 
 const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
   <Link href={`/buy/${provider.id}`} className="block h-full transition-all rounded-lg hover:shadow-lg hover:-translate-y-1">
@@ -124,17 +129,120 @@ const OnChainBuy = () => {
 }
 
 const LightningBuy = () => {
+    const { toast } = useToast();
+    const [amount, setAmount] = useState("");
+    const [memo, setMemo] = useState("");
+    const [invoice, setInvoice] = useState<string | null>(null);
+    const [qrCode, setQrCode] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleGenerate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setInvoice(null);
+        setQrCode(null);
+        
+        try {
+        const response = await api.generateLightningInvoice({
+            amount: parseInt(amount, 10),
+            memo: memo || undefined,
+        });
+        setInvoice(response.data.bolt11);
+        setQrCode(response.data.qr_code);
+        } catch(error: any) {
+        toast({
+            variant: "destructive",
+            title: "Échec de la génération",
+            description: error.message || "Impossible de générer une facture.",
+        });
+        } finally {
+        setIsLoading(false);
+        }
+    };
+    
+    const handleReset = () => {
+        setAmount("");
+        setMemo("");
+        setInvoice(null);
+        setQrCode(null);
+    }
+    
     return (
         <div className="space-y-4">
-            <h2 className="text-xl font-semibold tracking-tight">Fournisseurs Lightning</h2>
-            <Card className="col-span-full flex h-48 items-center justify-center text-center">
-                <div className="space-y-4">
-                    <Construction className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <div>
-                        <h3 className="text-lg font-semibold">Bientôt Disponible</h3>
-                        <p className="text-muted-foreground">L'achat de Bitcoin via Lightning Network sera bientôt disponible.</p>
-                    </div>
-                </div>
+            <h2 className="text-xl font-semibold tracking-tight">Achat via Lightning</h2>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Générer une facture de dépôt</CardTitle>
+                    <CardDescription>
+                        Créez une facture Lightning que vous pouvez payer avec un autre service pour déposer des sats dans ce portefeuille.
+                    </CardDescription>
+                </CardHeader>
+                 {invoice ? (
+                    <>
+                    <CardContent className="flex flex-col items-center gap-6">
+                        <div className="rounded-lg border bg-white p-4 shadow-sm">
+                            {qrCode ? (
+                                <Image
+                                src={qrCode}
+                                alt="Code QR de la facture Lightning"
+                                width={256}
+                                height={256}
+                                className="rounded-md"
+                                data-ai-hint="qr code"
+                            />
+                            ) : (
+                                <Skeleton className="h-64 w-64" />
+                            )}
+                        </div>
+                        <div className="w-full space-y-2">
+                            <Label>Facture Lightning</Label>
+                            <div className="break-all rounded-md border bg-secondary p-3 font-mono text-sm text-muted-foreground">
+                            {invoice}
+                            </div>
+                        </div>
+                        <CopyButton textToCopy={invoice} toastMessage="Facture copiée dans le presse-papiers">
+                            Copier la facture
+                        </CopyButton>
+                    </CardContent>
+                    <CardFooter>
+                        <Button variant="outline" className="w-full" onClick={handleReset}>Créer une autre facture</Button>
+                    </CardFooter>
+                    </>
+                ) : (
+                <form onSubmit={handleGenerate}>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="amount">Montant (sats)</Label>
+                            <Input
+                            id="amount"
+                            type="number"
+                            placeholder="0"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            required
+                            disabled={isLoading}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="memo">Mémo (optionnel)</Label>
+                            <Input
+                            id="memo"
+                            type="text"
+                            placeholder="Ex: Dépôt via service X"
+                            value={memo}
+                            onChange={(e) => setMemo(e.target.value)}
+                            disabled={isLoading}
+                            />
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading && <Loader2 className="mr-2 size-4 animate-spin"/>}
+                        {isLoading ? "Génération en cours..." : "Générer la facture"}
+                    </Button>
+                    </CardFooter>
+                </form>
+                )}
             </Card>
         </div>
     )
@@ -172,11 +280,12 @@ export default function BuyPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="space-y-2">
+        <Button variant="ghost" size="sm" className="-ml-4" onClick={() => setMethod(null)}><ArrowLeft className="mr-2 size-4" />Changer de méthode</Button>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Acheter des Bitcoins ({method === 'on-chain' ? 'On-Chain' : 'Lightning'})</h1>
         <p className="text-muted-foreground">
           {method === 'on-chain' 
             ? "Choisissez un fournisseur pour payer et recevoir des Bitcoins dans votre portefeuille."
-            : "Achetez des sats qui seront crédités sur votre solde Lightning."
+            : "Générez une facture pour déposer des sats sur votre solde Lightning."
           }
         </p>
       </div>
@@ -187,5 +296,3 @@ export default function BuyPage() {
     </div>
   );
 }
-
-    

@@ -34,7 +34,7 @@ export function MobileNav() {
   };
 
   const menuItems = [
-    { path: "/dashboard", icon: Home, label: "Accueil" },
+    { path: "/dashboard", icon: Bitcoin, label: "On chain" },
     receiveAction,
     { path: "/orders", icon: Receipt, label: "Commandes" },
     { path: "/lightning", icon: Zap, label: "Lightning" },

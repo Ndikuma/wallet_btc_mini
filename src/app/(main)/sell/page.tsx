@@ -1,14 +1,14 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/lib/api";
-import type { Balance, SellProvider, FeeEstimation, SellOrderPayload, PayoutData } from "@/lib/types";
+import type { Balance, SellProvider, FeeEstimation, SellOrderPayload, PayoutData, DecodedLightningRequest, LightningBalance } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check, Zap, Construction } from "lucide-react";
+import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check, Zap, Construction, ScanLine, MessageSquare, Wallet, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { getFiat } from "@/lib/utils";
+import jsQR from "jsqr";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
 
 const networkSchema = z.object({
     network: z.enum(["on-chain", "lightning"]),
@@ -62,6 +66,180 @@ type FormData = {
     providerId?: string;
     paymentDetails?: PayoutData;
 };
+
+type PaymentStep = "input" | "confirm" | "success";
+
+const LightningSell = () => {
+    const { toast } = useToast();
+    const router = useRouter();
+    const [step, setStep] = useState<PaymentStep>("input");
+    const [request, setRequest] = useState("");
+    const [decoded, setDecoded] = useState<DecodedLightningRequest | null>(null);
+    const [isPaying, setIsPaying] = useState(false);
+    const [isDecoding, setIsDecoding] = useState(false);
+    const [decodeError, setDecodeError] = useState<string | null>(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+     useEffect(() => {
+        if (!isScanning) return;
+        let stream: MediaStream | null = null;
+        let animationFrameId: number;
+
+        const scanQRCode = () => {
+            if (videoRef.current?.readyState === videoRef.current?.HAVE_ENOUGH_DATA && canvasRef.current) {
+                const video = videoRef.current;
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                    canvas.height = video.videoHeight;
+                    canvas.width = video.videoWidth;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    if (code) {
+                        const data = code.data.toLowerCase().replace("lightning:", "");
+                        setRequest(data);
+                        toast({ title: "Code scanné avec succès" });
+                        setIsScanning(false);
+                        return;
+                    }
+                }
+            }
+            animationFrameId = requestAnimationFrame(scanQRCode);
+        };
+
+        const startScan = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                setHasCameraPermission(true);
+                if (videoRef.current) videoRef.current.srcObject = stream;
+            } catch (err) {
+                setHasCameraPermission(false);
+            }
+        };
+
+        startScan();
+        animationFrameId = requestAnimationFrame(scanQRCode);
+        return () => {
+            stream?.getTracks().forEach(track => track.stop());
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [isScanning, toast]);
+
+
+    const handleDecode = async () => {
+        if (!request) return;
+        setIsDecoding(true);
+        setDecodeError(null);
+        setDecoded(null);
+        try {
+            const res = await api.decodeLightningRequest({ request });
+            setDecoded(res.data);
+            setStep("confirm");
+        } catch (err: any) {
+            setDecodeError(err.message);
+            toast({ variant: "destructive", title: "Erreur", description: err.message });
+        } finally {
+            setIsDecoding(false);
+        }
+    }
+
+    const handlePay = async () => {
+        if (!decoded) return;
+        setIsPaying(true);
+        try {
+            await api.payLightningInvoice({
+                request,
+                amount_sats: decoded.amount_sats || undefined,
+                type: decoded.type,
+                internal: decoded.internal,
+            });
+            setStep("success");
+        } catch (err: any) {
+            toast({ variant: "destructive", title: "Échec du paiement", description: err.message });
+        } finally {
+            setIsPaying(false);
+        }
+    }
+
+    if (step === 'success') {
+        return (
+            <Card className="p-8 text-center">
+                <CheckCircle2 className="mx-auto size-20 text-green-500" />
+                <CardHeader>
+                    <CardTitle className="text-2xl">Paiement Envoyé</CardTitle>
+                    <CardDescription>Votre transaction a été complétée avec succès.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild className="w-full">
+                        <Link href="/lightning">Retour au portefeuille Lightning</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    if (step === 'confirm' && decoded) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Confirmer le Paiement</CardTitle>
+                    <CardDescription>Vérifiez les détails avant de payer.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="space-y-4 rounded-lg border bg-secondary/50 p-4">
+                        {decoded.payee_pubkey && <p className="text-sm"><span className="font-semibold">À:</span> <span className="font-mono break-all text-xs">{decoded.payee_pubkey}</span></p>}
+                        {decoded.memo && <p className="text-sm"><span className="font-semibold">Mémo:</span> {decoded.memo}</p>}
+                        <p className="text-lg font-bold">{decoded.amount_sats ? `${decoded.amount_sats} sats` : 'Montant flexible'}</p>
+                    </div>
+                </CardContent>
+                <CardFooter className="grid grid-cols-2 gap-4">
+                    <Button variant="outline" onClick={() => setStep('input')}>Retour</Button>
+                    <Button onClick={handlePay} disabled={isPaying}>
+                        {isPaying ? <Loader2 className="mr-2 size-4 animate-spin"/> : null}
+                        Payer
+                    </Button>
+                </CardFooter>
+            </Card>
+        )
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Zap className="text-primary"/>Vendre / Payer via Lightning</CardTitle>
+                <CardDescription>Collez une facture ou scannez un QR code pour effectuer un paiement.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Textarea id="invoice" placeholder="lnbc... / user@domain.com / lnurl..." value={request} onChange={(e) => setRequest(e.target.value)} required rows={5} className="font-mono" />
+                 <Dialog open={isScanning} onOpenChange={setIsScanning}>
+                    <DialogTrigger asChild>
+                        <Button type="button" variant="outline" className="w-full"><ScanLine className="mr-2 size-4" />Scanner un QR code</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader><DialogTitle>Scanner le QR</DialogTitle><DialogDescription>Pointez votre caméra vers un code QR Lightning.</DialogDescription></DialogHeader>
+                        <div className="relative w-full aspect-square bg-muted rounded-md overflow-hidden">
+                            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                            <canvas ref={canvasRef} className="hidden" />
+                            <div className="absolute inset-0 border-4 border-primary rounded-lg" />
+                        </div>
+                        {hasCameraPermission === false && <Alert variant="destructive"><AlertTitle>Accès caméra requis</AlertTitle><AlertDescription>Veuillez autoriser l'accès à la caméra.</AlertDescription></Alert>}
+                    </DialogContent>
+                </Dialog>
+                {decodeError && <p className="text-sm text-destructive">{decodeError}</p>}
+            </CardContent>
+            <CardFooter>
+                <Button onClick={handleDecode} disabled={!request || isDecoding} className="w-full">
+                    {isDecoding && <Loader2 className="mr-2 size-4 animate-spin"/>}
+                    Suivant
+                </Button>
+            </CardFooter>
+        </Card>
+    )
+}
 
 export default function SellPage() {
     const { toast } = useToast();
@@ -159,7 +337,12 @@ export default function SellPage() {
             if(isStepValid) {
                 const newFormData = { ...formData, ...networkForm.getValues() };
                 setFormData(newFormData);
-                setCurrentStep(1);
+                const network = newFormData.network;
+                if (network === 'lightning') {
+                    // Skip to Lightning component directly
+                } else if (network === 'on-chain') {
+                    setCurrentStep(1);
+                }
             }
         }
         else if (currentStep === 1) {
@@ -191,7 +374,11 @@ export default function SellPage() {
 
 
     const handleBack = () => {
-        setCurrentStep(prev => Math.max(0, prev - 1));
+        if (currentStep === 0 && formData.network) {
+            setFormData({}); // Reset network choice
+        } else {
+            setCurrentStep(prev => Math.max(0, prev - 1));
+        }
         if (currentStep <= 3) {
             setFeeEstimation(null);
             setFeeError(null);
@@ -266,7 +453,7 @@ export default function SellPage() {
                                                 <Label htmlFor="lightning" className="cursor-pointer hover:border-primary transition-colors p-6 flex flex-col items-center justify-center text-center rounded-lg border-2 border-muted bg-popover peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
                                                     <Zap className="size-10 text-primary mb-3"/>
                                                     <h3 className="font-semibold text-lg">Lightning</h3>
-                                                    <p className="text-sm text-muted-foreground mt-1">Vendre depuis votre solde Lightning. Instantané et moins de frais.</p>
+                                                    <p className="text-sm text-muted-foreground mt-1">Payer une facture ou un service avec votre solde Lightning.</p>
                                                 </Label>
                                             </FormItem>
                                         </RadioGroup>
@@ -596,21 +783,6 @@ export default function SellPage() {
         );
     };
 
-    const renderLightningSell = () => (
-         <Card>
-            <CardHeader>
-                <CardTitle>Vendre via Lightning</CardTitle>
-                <CardDescription>Cette fonctionnalité est en cours de développement.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center text-center h-48">
-                <Construction className="size-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-semibold">Bientôt Disponible</p>
-                <p className="text-muted-foreground">La vente de Bitcoin depuis votre solde Lightning sera bientôt possible.</p>
-            </CardContent>
-        </Card>
-    );
-
-
     if (isLoadingData) {
         return (
             <div className="mx-auto max-w-2xl space-y-6">
@@ -621,7 +793,7 @@ export default function SellPage() {
         )
     }
     
-    if (dataError) {
+    if (dataError && !formData.network) {
       return (
         <div className="mx-auto max-w-2xl space-y-6">
           <div className="space-y-2">
@@ -643,42 +815,45 @@ export default function SellPage() {
       )
     }
 
-    const steps = [
-        { title: "Réseau" },
+    const onChainSteps = [
         { title: "Montant" },
         { title: "Fournisseur" },
         { title: "Paiement" },
         { title: "Confirmer" }
     ];
 
+    const showBackButton = currentStep > 0 || formData.network;
+
     return (
         <div className="mx-auto max-w-2xl space-y-6">
             <div className="space-y-2">
+                {showBackButton && (
+                    <Button variant="ghost" onClick={handleBack} className="-ml-4">
+                        <ArrowLeft className="mr-2 size-4" /> Retour
+                    </Button>
+                )}
                 <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Vendre des Bitcoins</h1>
                 <p className="text-muted-foreground">Suivez les étapes pour vendre vos Bitcoins en toute sécurité.</p>
             </div>
             
-             <div className="flex w-full items-center justify-between rounded-lg border bg-card p-2 text-xs sm:text-sm">
-                {steps.map((step, index) => (
-                    <React.Fragment key={index}>
-                        <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:gap-2">
-                            <div className={`flex size-6 items-center justify-center rounded-full text-xs font-bold ${currentStep > index ? 'bg-primary text-primary-foreground' : currentStep === index ? 'border-2 border-primary text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                {currentStep > index ? <Check className="size-4" /> : index + 1}
+            {formData.network === 'on-chain' && (
+                <div className="flex w-full items-center justify-between rounded-lg border bg-card p-2 text-xs sm:text-sm">
+                    {onChainSteps.map((step, index) => (
+                        <React.Fragment key={index}>
+                            <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:gap-2">
+                                <div className={`flex size-6 items-center justify-center rounded-full text-xs font-bold ${currentStep > index + 1 ? 'bg-primary text-primary-foreground' : currentStep === index + 1 ? 'border-2 border-primary text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                    {currentStep > index + 1 ? <Check className="size-4" /> : index + 1}
+                                </div>
+                                <span className={`hidden sm:block ${currentStep >= index + 1 ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
                             </div>
-                            <span className={`hidden sm:block ${currentStep >= index ? 'font-semibold' : 'text-muted-foreground'}`}>{step.title}</span>
-                        </div>
-                        {index < steps.length - 1 && <div className="flex-1 h-px bg-border mx-2" />}
-                    </React.Fragment>
-                ))}
-            </div>
-            
-            {currentStep > 0 && (
-                <Button variant="ghost" onClick={handleBack} className="-mb-2">
-                    <ArrowLeft className="mr-2 size-4" /> Retour
-                </Button>
+                            {index < onChainSteps.length - 1 && <div className="flex-1 h-px bg-border mx-2" />}
+                        </React.Fragment>
+                    ))}
+                </div>
             )}
+            
 
-            {currentStep === 0 && renderNetworkStep()}
+            {!formData.network && renderNetworkStep()}
             {formData.network === "on-chain" && (
                 <>
                     {currentStep === 1 && renderAmountStep()}
@@ -687,7 +862,8 @@ export default function SellPage() {
                     {currentStep === 4 && renderConfirmationStep()}
                 </>
             )}
-             {formData.network === "lightning" && currentStep > 0 && renderLightningSell()}
+             {formData.network === "lightning" && <LightningSell />}
         </div>
     );
 }
+

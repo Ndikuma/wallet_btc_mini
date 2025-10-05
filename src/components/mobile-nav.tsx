@@ -1,6 +1,7 @@
 
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -42,11 +43,11 @@ export function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-20 h-20 border-t bg-background/95 backdrop-blur-sm md:hidden">
       <div className="relative grid h-full grid-cols-5 items-center">
         {menuItems.slice(0, 2).map((item) => {
-          const isActive = pathname.startsWith(item.path) && item.path !== '/' || pathname === item.path;
+          const isActive = (item.path && pathname.startsWith(item.path) && item.path !== '/') || pathname === item.path;
           return (
             <Link
-              key={item.path}
-              href={item.path}
+              key={item.label} // Key prop on the Link component
+              href={item.path || "/"}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
                 isActive
@@ -68,11 +69,11 @@ export function MobileNav() {
         </div>
 
         {menuItems.slice(2).map((item) => {
-          const isActive = pathname.startsWith(item.path);
+          const isActive = (item.path && pathname.startsWith(item.path)) || pathname === item.path;
           return (
             <Link
-              key={item.path}
-              href={item.path}
+              key={item.label} // Key prop on the Link component
+              href={item.path || "/"}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
                 isActive

@@ -77,19 +77,18 @@ const LandingPage = () => (
 
 export default function RootPage() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = getCookie('authToken');
     if (token) {
-      setIsAuthenticated(true);
       router.replace('/dashboard');
     } else {
-      setIsAuthenticated(false);
+      setLoading(false);
     }
   }, [router]);
 
-  if (isAuthenticated === null || isAuthenticated) {
+  if (loading) {
     return (
        <div className="flex h-dvh w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import api from "@/lib/api";
 import type { Order, LightningTransaction } from "@/lib/types";
@@ -152,6 +152,20 @@ const formatSats = (sats: number) => {
   return new Intl.NumberFormat("fr-FR").format(sats);
 };
 
+const getLightningStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'paid':
+      case 'succeeded':
+      case 'confirmed':
+        return <CircleCheck className="size-3.5" />;
+      case 'pending': return <Clock className="size-3.5" />;
+       case 'failed':
+       case 'expired':
+        return <CircleX className="size-3.5" />;
+      default: return <AlertCircle className="size-3.5" />;
+    }
+}
+
 const LightningOrders = () => {
     const [transactions, setTransactions] = useState<LightningTransaction[]>([]);
     const [loading, setLoading] = useState(true);
@@ -239,10 +253,10 @@ const LightningOrders = () => {
                                     </div>
                                     <div className="text-right space-y-1">
                                         <p className="text-xs text-muted-foreground capitalize">
-                                          {format(new Date(tx.created_at), "d MMM", { locale: fr })}
+                                          {format(parseISO(tx.created_at), "d MMM", { locale: fr })}
                                         </p>
                                         <Badge variant={getStatusVariant(tx.status)} className="capitalize text-xs py-0.5 px-1.5 font-medium">
-                                            {getStatusIcon(tx.status)}
+                                            {getLightningStatusIcon(tx.status)}
                                             <span className="ml-1">{tx.status}</span>
                                         </Badge>
                                     </div>
@@ -295,4 +309,5 @@ export default function OrdersPage() {
   );
 }
 
+    
     

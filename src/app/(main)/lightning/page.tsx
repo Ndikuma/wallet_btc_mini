@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -228,7 +228,7 @@ export default function LightningPage() {
                         </div>
                          <div className="text-right space-y-1">
                              <p className="text-xs text-muted-foreground capitalize">
-                                {format(new Date(tx.created_at), "d MMM", { locale: fr })}
+                                {format(parseISO(tx.created_at), "d MMM", { locale: fr })}
                             </p>
                             <Badge variant={getStatusVariant(tx.status)} className="capitalize text-xs py-0.5 px-1.5 font-medium">
                                 {getStatusIcon(tx.status)}
@@ -253,4 +253,5 @@ export default function LightningPage() {
   );
 }
 
+    
     

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -294,9 +293,9 @@ const LightningTransactionCard = ({ tx }: { tx: LightningTransaction }) => {
                    <p className="font-medium truncate">
                       {tx.memo || (isIncoming ? 'Paiement reçu' : 'Paiement envoyé')}
                    </p>
-                   <p className="text-sm text-muted-foreground">
+                   <div className="text-sm text-muted-foreground">
                       {format(parseISO(tx.created_at), "d MMMM yyyy", { locale: fr })}
-                   </p>
+                   </div>
                  </div>
                  <div className="text-right">
                     <p className={cn("font-semibold font-mono", isIncoming ? "text-green-500" : "text-red-500")}>
@@ -422,4 +421,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-

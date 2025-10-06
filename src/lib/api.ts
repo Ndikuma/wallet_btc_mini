@@ -115,7 +115,7 @@ const getBuyProviders = (payment_method?: 'on_chain' | 'lightning'): Promise<Axi
     return axiosInstance.get('providers/buy/', { params: { payment_method } });
 }
 const getBuyProvider = (providerId: number): Promise<AxiosResponse<BuyProvider>> => {
-    return axiosInstance.get(`providers/buy/${providerId}/`);
+    return axiosInstance.get(`providers/${providerId}/`);
 }
 const getSellProviders = (payment_method?: 'on_chain' | 'lightning'): Promise<AxiosResponse<SellProvider[]>> => {
     return axiosInstance.get('providers/sell/', { params: { payment_method } });

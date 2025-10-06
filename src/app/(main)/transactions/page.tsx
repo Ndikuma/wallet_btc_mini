@@ -26,13 +26,13 @@ import {
   Loader2,
   Zap,
 } from "lucide-react";
-import { cn, shortenText } from "@/lib/utils";
+import { cn, shortenText } from "@/lib/utils.tsx";
 import api from "@/lib/api";
 import type { Transaction, LightningTransaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Accordion,
@@ -43,7 +43,6 @@ import {
 import { type VariantProps } from "class-variance-authority";
 import { AxiosError } from "axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { badgeVariants } from "@/components/ui/badge";
 
 // --- On-Chain Components ---
 

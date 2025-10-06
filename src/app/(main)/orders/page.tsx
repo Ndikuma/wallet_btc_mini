@@ -1,10 +1,7 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { format, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
 import api from "@/lib/api";
 import type { Order } from "@/lib/types";
 import {
@@ -15,39 +12,12 @@ import {
   CardDescription
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, Zap } from "lucide-react";
+import { AlertCircle, ShoppingCart, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge, badgeVariants } from "@/components/ui/badge";
-import type { VariantProps } from "class-variance-authority";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getStatusIcon, getStatusVariant } from "@/lib/utils.tsx";
 
-const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
-  switch (status.toLowerCase()) {
-    case 'completed': return 'success';
-    case 'paid': return 'success';
-    case 'succeeded': return 'success';
-    case 'pending': return 'warning';
-    case 'awaiting_confirmation': return 'warning';
-    case 'failed': return 'destructive';
-    case 'expired': return 'destructive';
-    default: return 'secondary';
-  }
-}
-
-const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-      case 'paid':
-      case 'succeeded':
-        return <CircleCheck className="size-4" />;
-      case 'pending': return <Clock className="size-4" />;
-      case 'awaiting_confirmation': return <Hourglass className="size-4" />;
-      case 'failed':
-      case 'expired':
-        return <CircleX className="size-4" />;
-      default: return <ShoppingCart className="size-4" />;
-    }
-}
 
 const formatSats = (sats: number | null | undefined) => {
   if (sats === null || sats === undefined) return '0';
@@ -99,7 +69,7 @@ const OnChainOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.getOrders({ payment_method: 'on_chain' });
+      const response = await api.getOnChainOrders();
       setOrders(response.data.results || response.data);
     } catch (err: any) {
       setError(err.message || "Échec du chargement des commandes.");
@@ -166,7 +136,7 @@ const LightningOrders = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.getOrders({ payment_method: 'lightning' });
+            const response = await api.getLightningOrders();
             setOrders(response.data.results || response.data || []);
         } catch (err: any) {
             setError(err.message || "Impossible de charger les commandes Lightning.");

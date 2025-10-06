@@ -33,7 +33,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { getFiat } from "@/lib/utils";
+import { getFiat } from "@/lib/utils.tsx";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 

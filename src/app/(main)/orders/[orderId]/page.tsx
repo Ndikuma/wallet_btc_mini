@@ -41,8 +41,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { Badge, badgeVariants } from "@/components/ui/badge";
-import { VariantProps } from "class-variance-authority";
+import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,7 +50,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CopyButton } from "@/components/copy-button";
-import { shortenText } from "@/lib/utils";
+import { shortenText, getStatusIcon, getStatusVariant } from "@/lib/utils.tsx";
 
 const paymentProofSchema = z.object({
     payment_proof_ref: z.string().min(4, "Veuillez entrer une référence valide."),
@@ -221,25 +220,6 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
             </Form>
         </Card>
     );
-}
-
-const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
-    switch (status.toLowerCase()) {
-        case 'completed': return 'success';
-        case 'pending': return 'warning';
-        case 'awaiting_confirmation': return 'warning';
-        case 'failed': return 'destructive';
-        default: return 'secondary';
-    }
-}
-const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-        case 'completed': return <CircleCheck className="size-6 text-green-500" />;
-        case 'pending': return <Clock className="size-6 text-yellow-500" />;
-        case 'awaiting_confirmation': return <Hourglass className="size-6 text-yellow-500" />;
-        case 'failed': return <CircleX className="size-6 text-destructive" />;
-        default: return <ReceiptText className="size-6" />;
-    }
 }
 
 const PayoutDetailItem = ({ icon, label, value }: { icon: React.ElementType, label: string, value?: string | number | null }) => {

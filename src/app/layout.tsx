@@ -35,12 +35,12 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <body className={cn("font-body antialiased", fontBody.variable, fontCode.variable)}>
         <SettingsProvider>
-          <WalletProvider>
             <ThemeProvider>
-              {children}
+              <WalletProvider>
+                {children}
+              </WalletProvider>
               <Toaster />
             </ThemeProvider>
-          </WalletProvider>
         </SettingsProvider>
       </body>
     </html>

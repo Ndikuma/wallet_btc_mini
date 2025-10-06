@@ -1,16 +1,24 @@
 
-"use client";
+"use server";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BitcoinIcon } from "@/components/icons";
 import { ArrowRight } from "lucide-react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-// This is the clean, client-side landing page component.
-// All complex auth logic has been removed to prevent hydration errors.
-// The redirection logic is now handled by the page protection mechanisms
-// within the main application layout and WalletProvider.
+// This is now a Server Component. It checks for the auth cookie on the server.
+// If the user is authenticated, it redirects them immediately to the dashboard.
+// This is the most robust and performant way to handle this, avoiding client-side logic.
 export default function LandingPage() {
+  const cookieStore = cookies();
+  const authToken = cookieStore.get("authToken");
+
+  if (authToken) {
+    redirect("/dashboard");
+  }
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-background/80 backdrop-blur-sm">

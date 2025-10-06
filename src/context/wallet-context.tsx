@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import api from '@/lib/api';
 import type { Balance } from '@/lib/types';
 import { AxiosError } from 'axios';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface WalletContextType {
   balance: Balance | null;
@@ -20,10 +20,12 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const pathname = usePathname();
+  const router = useRouter();
 
   const fetchBalance = useCallback(async () => {
+    // This function will only be called on authenticated routes,
+    // so we can be more direct with our logic.
     setIsLoading(true);
     setError(null);
     try {
@@ -31,10 +33,12 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       setBalance(balanceRes.data);
     } catch (err: any) {
         if (err instanceof AxiosError && (err.response?.status === 401)) {
+            // The token is invalid. Clear it and let the UI react.
+            // DO NOT redirect here to avoid race conditions.
             localStorage.removeItem("authToken");
             document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
             setError("Session invalide. Veuillez vous reconnecter.");
-            router.push('/login'); // Redirect on the client side
+            router.push('/login'); // Redirect on the client-side to be safe.
         } else if (err instanceof AxiosError && err.response?.status === 403) {
              setError("Votre portefeuille est en cours de configuration. Cela peut prendre un moment. Veuillez essayer d'actualiser dans quelques secondes.");
         } else {
@@ -47,13 +51,15 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   }, [router]);
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     const isPublicPage = ['/login', '/register', '/', '/restore-wallet', '/create-wallet', '/verify-mnemonic', '/create-or-restore'].includes(pathname);
-    
+    const token = typeof window !== "undefined" ? localStorage.getItem('authToken') : null;
+
     if (token && !isPublicPage) {
         fetchBalance();
     } else {
-        setIsLoading(false); // If no token or on a public page, we are not loading balance.
+        // If we're on a public page or have no token, we are not loading balance data.
+        // If we somehow land on a private page with no token, protected route logic should handle it.
+        setIsLoading(false);
     }
   }, [fetchBalance, pathname]);
 

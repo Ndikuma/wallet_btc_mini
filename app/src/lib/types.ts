@@ -82,7 +82,7 @@ export interface FeeEstimation {
     sendable_usd: number;
     sendable_bif: number;
     network_fee_usd: number;
-network_fee_bif: number;
+    network_fee_bif: number;
 }
 
 export interface ProviderPaymentInfo {
@@ -123,23 +123,43 @@ export interface PayoutData {
     email?: string;
 }
 
-export interface BuyOrderPayload {
+// --- Order Creation Payloads ---
+
+export interface OnChainBuyOrderPayload {
     direction: 'buy';
+    payment_method: 'on_chain';
     provider_id: number;
     amount: number;
     amount_currency: string;
     btc_amount: number;
 }
 
-export interface SellOrderPayload {
+export interface OnChainSellOrderPayload {
     direction: 'sell';
+    payment_method: 'on_chain';
     provider_id: number;
-    amount: number;
-    btc_amount: number;
+    amount: number; // This is BTC amount from user input
+    btc_amount: number; // This is the final BTC amount after fees
     amount_currency: string;
     payout_data: PayoutData;
-    total_amount: string;
+    total_amount: string; // The fiat value user will receive
 }
+
+export interface LightningBuyOrderPayload {
+    direction: 'buy';
+    payment_method: 'lightning';
+    ln_amount_sats: number;
+    memo?: string;
+}
+
+export interface LightningSellOrderPayload {
+    direction: 'sell';
+    payment_method: 'lightning';
+    ln_invoice: string;
+}
+
+export type OrderPayload = OnChainBuyOrderPayload | OnChainSellOrderPayload | LightningBuyOrderPayload | LightningSellOrderPayload;
+
 
 export interface OrderUpdatePayload {
   payment_proof?: {
@@ -174,10 +194,17 @@ export interface OnChainOrder extends OrderBase {
   btc_address?: string | null;
   btc_amount?: string | null;
   btc_txid?: string | null;
+  ln_invoice?: never;
+  ln_amount_sats?: never;
+  ln_payment_hash?: never;
+  ln_paid_at?: never;
 }
 
 export interface LightningOrder extends OrderBase {
   payment_method: "lightning";
+  btc_address?: never;
+  btc_amount?: never;
+  btc_txid?: never;
   ln_invoice?: string | null;
   ln_amount_sats?: number | null;
   ln_payment_hash?: string | null;

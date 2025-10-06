@@ -65,7 +65,7 @@ export default function DashboardPage() {
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
-  const { error: walletError } = useWallet();
+  const { error: walletError, refreshBalance } = useWallet();
 
   const fetchTransactions = useCallback(async () => {
     setLoadingTransactions(true);
@@ -91,10 +91,6 @@ export default function DashboardPage() {
 
   
     if (walletError) {
-        const handleRefresh = () => {
-             window.location.reload();
-        };
-
         return (
             <div className="flex h-full items-center justify-center">
                 <Alert variant="destructive" className="max-w-lg">
@@ -103,7 +99,7 @@ export default function DashboardPage() {
                     <AlertDescription>
                         {walletError}
                         <div className="mt-4">
-                            <Button onClick={handleRefresh}>Actualiser</Button>
+                            <Button onClick={refreshBalance}>Actualiser</Button>
                         </div>
                     </AlertDescription>
                 </Alert>

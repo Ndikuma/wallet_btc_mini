@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { Order, Provider as OrderProvider } from "@/lib/types";
+import type { Order, Provider as OrderProvider, OnChainOrder, LightningOrder } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -413,13 +413,13 @@ export default function OrderDetailsPage() {
                             <>
                                 <div className="space-y-1">
                                     <Label>Montant</Label>
-                                    <div className="font-semibold font-mono text-lg">{order.ln_amount_sats} sats</div>
+                                    <div className="font-semibold font-mono text-lg">{(order as LightningOrder).ln_amount_sats} sats</div>
                                 </div>
-                                {order.ln_invoice && (
+                                {(order as LightningOrder).ln_invoice && (
                                      <div className="space-y-1">
                                         <Label>Facture</Label>
                                         <div className="flex items-center gap-2">
-                                            <p className="font-mono text-muted-foreground text-xs break-all">{order.ln_invoice}</p>
+                                            <p className="font-mono text-muted-foreground text-xs break-all">{(order as LightningOrder).ln_invoice}</p>
                                         </div>
                                     </div>
                                 )}
@@ -428,22 +428,24 @@ export default function OrderDetailsPage() {
                             <>
                                 <div className="space-y-1">
                                     <Label>Montant</Label>
-                                    <div className="font-semibold font-mono text-lg">{order.btc_amount} BTC</div>
+                                    <div className="font-semibold font-mono text-lg">{(order as OnChainOrder).btc_amount} BTC</div>
                                 </div>
+                                {(order as OnChainOrder).btc_address && (
                                 <div className="space-y-1">
                                     <Label>Adresse de réception</Label>
                                     <div className="flex items-center gap-2">
-                                        <p className="font-mono text-muted-foreground">{shortenText(order.btc_address, 12, 12)}</p>
-                                        <CopyButton textToCopy={order.btc_address || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                                        <p className="font-mono text-muted-foreground">{shortenText((order as OnChainOrder).btc_address, 12, 12)}</p>
+                                        <CopyButton textToCopy={(order as OnChainOrder).btc_address || ''} size="icon" variant="ghost" className="h-7 w-7"/>
                                     </div>
                                 </div>
-                                {order.btc_txid && (
+                                )}
+                                {(order as OnChainOrder).btc_txid && (
                                    <>
                                      <div className="space-y-1">
                                         <Label>ID de transaction (TxID)</Label>
                                         <div className="flex items-center gap-2">
-                                            <p className="font-mono text-muted-foreground">{shortenText(order.btc_txid, 12, 12)}</p>
-                                            <CopyButton textToCopy={order.btc_txid || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                                            <p className="font-mono text-muted-foreground">{shortenText((order as OnChainOrder).btc_txid, 12, 12)}</p>
+                                            <CopyButton textToCopy={(order as OnChainOrder).btc_txid || ''} size="icon" variant="ghost" className="h-7 w-7"/>
                                         </div>
                                     </div>
                                    </>

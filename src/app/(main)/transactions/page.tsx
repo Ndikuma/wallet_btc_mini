@@ -33,7 +33,7 @@ import type { Transaction, LightningTransaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Badge, badgeVariants } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Accordion,
@@ -44,11 +44,11 @@ import {
 import { type VariantProps } from "class-variance-authority";
 import { AxiosError } from "axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
+import { badgeVariants } from "@/components/ui/badge";
 
 // --- On-Chain Components ---
 
-const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.ElementType, label: string, value?: string | null, children?: React.ReactNode }) => {
+const DetailRow = ({ icon: Icon, label, value, children, isCopyable = true }: { icon: React.ElementType, label: string, value?: string | null, children?: React.ReactNode, isCopyable?: boolean }) => {
   const { toast } = useToast();
   const onCopy = () => {
     if (value) {
@@ -69,7 +69,7 @@ const DetailRow = ({ icon: Icon, label, value, children }: { icon: React.Element
         ) : (
           <div className="flex items-center gap-2">
             <p className="font-code text-sm font-semibold break-all">{value ? shortenText(value, 6, 6) : 'N/A'}</p>
-            {value && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onCopy}><Copy className="size-3.5" /></Button>}
+            {value && isCopyable && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onCopy}><Copy className="size-3.5" /></Button>}
           </div>
         )}
       </div>
@@ -117,7 +117,7 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
                     {isSent ? "Envoyé" : "Reçu"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'long', day: 'numeric' })}
+                    {format(parseISO(tx.created_at), "d MMMM yyyy", { locale: fr })}
                   </p>
                 </div>
                 <div className="text-right">
@@ -140,10 +140,10 @@ const TransactionCard = ({ tx }: { tx: Transaction }) => {
                      <Badge variant={getStatusVariant(tx.status)} className="capitalize text-sm">{tx.status}</Badge>
                   </DetailRow>
                   <DetailRow icon={CalendarClock} label="Date & Heure">
-                     <p className="text-sm font-semibold">{new Date(tx.created_at).toLocaleString('fr-FR')}</p>
+                     <p className="text-sm font-semibold">{format(parseISO(tx.created_at), "d MMMM yyyy, HH:mm:ss", { locale: fr })}</p>
                   </DetailRow>
                   <DetailRow icon={Hash} label="ID de Transaction" value={tx.txid} />
-                  <DetailRow icon={Landmark} label="Frais de réseau" value={tx.fee_formatted.replace("BTC", "")} />
+                  <DetailRow icon={Landmark} label="Frais de réseau" value={tx.fee_formatted} isCopyable={false} />
                   <DetailRow icon={ArrowUpRight} label="Adresse de l'expéditeur" value={tx.from_address} />
                   <DetailRow icon={ArrowDownLeft} label="Adresse du destinataire" value={tx.to_address} />
                 </div>
@@ -248,6 +248,7 @@ const getLightningStatusVariant = (status: string): VariantProps<typeof badgeVar
   switch (status.toLowerCase()) {
     case 'paid':
     case 'succeeded':
+    case 'confirmed':
        return 'success';
     case 'pending': return 'warning';
     case 'failed':
@@ -261,13 +262,72 @@ const getLightningStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'paid':
       case 'succeeded':
-        return <CircleCheck className="size-3.5" />;
-      case 'pending': return <Clock className="size-3.5" />;
+      case 'confirmed':
+        return CircleCheck;
+      case 'pending': return Clock;
        case 'failed':
        case 'expired':
-        return <CircleX className="size-3.5" />;
-      default: return <AlertCircle className="size-3.5" />;
+        return CircleX;
+      default: return AlertCircle;
     }
+}
+
+const LightningTransactionCard = ({ tx }: { tx: LightningTransaction }) => {
+    const isIncoming = tx.type === "incoming";
+    const StatusIcon = getLightningStatusIcon(tx.status);
+
+    return (
+    <Card className="shadow-sm">
+      <CardContent className="p-0">
+        <Accordion type="single" collapsible>
+          <AccordionItem value={tx.payment_hash} className="border-b-0">
+            <AccordionTrigger className="p-4 hover:no-underline">
+              <div className="flex flex-1 items-center gap-4">
+                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+                    {isIncoming ? (
+                        <ArrowDownLeft className="size-5 text-green-500" />
+                    ) : (
+                        <ArrowUpRight className="size-5 text-red-500" />
+                    )}
+                 </div>
+                 <div className="flex-1 grid gap-1 text-left">
+                   <p className="font-medium truncate">
+                      {tx.memo || (isIncoming ? 'Paiement reçu' : 'Paiement envoyé')}
+                   </p>
+                   <p className="text-sm text-muted-foreground">
+                      {format(parseISO(tx.created_at), "d MMMM yyyy", { locale: fr })}
+                   </p>
+                 </div>
+                 <div className="text-right">
+                    <p className={cn("font-semibold font-mono", isIncoming ? "text-green-500" : "text-red-500")}>
+                        {isIncoming ? '+' : '-'}{formatSats(tx.amount_sats)} sats
+                    </p>
+                 </div>
+                <div className="pl-2">
+                    <ChevronDown className="chevron size-5 text-muted-foreground transition-transform" />
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="border-t pt-4 px-4 pb-4">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                  <DetailRow icon={StatusIcon} label="Statut">
+                     <Badge variant={getLightningStatusVariant(tx.status)} className="capitalize text-sm">{tx.status}</Badge>
+                  </DetailRow>
+                  <DetailRow icon={CalendarClock} label="Date & Heure">
+                     <p className="text-sm font-semibold">{format(parseISO(tx.created_at), "d MMMM yyyy, HH:mm:ss", { locale: fr })}</p>
+                  </DetailRow>
+                  <DetailRow icon={Zap} label="Frais Lightning" value={`${tx.fee_sats} sats`} isCopyable={false} />
+                  <DetailRow icon={Hash} label="Hash de Paiement" value={tx.payment_hash} />
+                </div>
+                 {tx.memo && <p className="text-sm text-muted-foreground italic">Mémo: {tx.memo}</p>}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </CardContent>
+    </Card>
+    )
 }
 
 const LightningHistory = () => {
@@ -297,13 +357,7 @@ const LightningHistory = () => {
         return (
             <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i}><CardContent className="p-4"><div className="flex items-center gap-4 h-16">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                          <Skeleton className="h-4 w-3/4" />
-                          <Skeleton className="h-3 w-1/2" />
-                      </div>
-                  </div></CardContent></Card>
+                    <Skeleton key={i} className="h-24 w-full rounded-xl" />
                 ))}
             </div>
         )
@@ -325,59 +379,20 @@ const LightningHistory = () => {
     }
 
     return (
-        <Card>
-            <CardContent className="p-0">
-                <div className="space-y-0">
-                    {transactions.length > 0 ? (
-                        transactions.map((tx, index) => (
-                            <div key={tx.payment_hash || `${index}-${tx.created_at}`}>
-                                <div className="flex items-center gap-4 p-4">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-                                    {tx.type === "incoming" ? (
-                                        <ArrowDownLeft className="size-5 text-green-500" />
-                                    ) : (
-                                        <ArrowUpRight className="size-5 text-red-500" />
-                                    )}
-                                    </div>
-                                    <div className="flex-1">
-                                    <p
-                                        className={`font-semibold ${
-                                        tx.type === "incoming"
-                                            ? "text-green-500"
-                                            : "text-red-500"
-                                        }`}
-                                    >
-                                        {tx.type === "incoming" ? "+" : "-"}
-                                        {formatSats(tx.amount_sats)} sats
-                                    </p>
-                                    <p className="text-sm text-muted-foreground truncate">
-                                        {tx.memo || (tx.type === 'incoming' ? 'Paiement reçu' : 'Paiement envoyé')}
-                                    </p>
-                                    </div>
-                                    <div className="text-right space-y-1">
-                                        <p className="text-xs text-muted-foreground capitalize">
-                                            {format(parseISO(tx.created_at), "d MMM", { locale: fr })}
-                                        </p>
-                                        <Badge variant={getLightningStatusVariant(tx.status)} className="capitalize text-xs py-0.5 px-1.5 font-medium">
-                                            {getLightningStatusIcon(tx.status)}
-                                            <span className="ml-1">{tx.status}</span>
-                                        </Badge>
-                                    </div>
-                                </div>
-                                {index < transactions.length - 1 && (
-                                    <Separator />
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <div className="p-8 text-center text-muted-foreground">
-                            <Zap className="mx-auto h-12 w-12 text-muted-foreground" />
-                            <p className="mt-4">Aucune transaction Lightning pour le moment.</p>
-                        </div>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
+        <div className="space-y-4">
+            {transactions.length > 0 ? (
+                transactions.map((tx, index) => (
+                    <LightningTransactionCard key={tx.payment_hash || index} tx={tx} />
+                ))
+            ) : (
+                <Card className="flex h-48 items-center justify-center">
+                    <div className="p-8 text-center text-muted-foreground">
+                        <Zap className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <p className="mt-4">Aucune transaction Lightning pour le moment.</p>
+                    </div>
+                </Card>
+            )}
+        </div>
     )
 }
 
@@ -408,5 +423,3 @@ export default function TransactionsPage() {
   );
 }
 
-    
-    

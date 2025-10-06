@@ -13,29 +13,16 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, AlertCircle, ArrowRight, Landmark, Loader2, Zap, Bitcoin } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { ProviderIcon } from "@/components/provider-icon";
 
 const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
   <Link href={`/buy/${provider.id}`} className="block h-full transition-all rounded-lg hover:shadow-lg hover:-translate-y-1">
     <Card className="h-full flex flex-col hover:border-primary/50">
       <CardHeader className="flex-grow">
         <div className="flex items-start gap-4">
-          {provider.image ? (
-              <Image
-              src={provider.image}
-              alt={`${provider.name} logo`}
-              width={48}
-              height={48}
-              className="rounded-lg border"
-              />
-          ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-secondary">
-                  <Landmark className="size-6 text-muted-foreground" />
-              </div>
-          )}
+          <ProviderIcon provider={provider} />
           <div className="flex-1">
             <CardTitle>{provider.name}</CardTitle>
             <CardDescription>{provider.description}</CardDescription>

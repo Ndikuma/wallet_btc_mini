@@ -77,7 +77,7 @@ function LandingPage() {
 }
 
 
-export default function RootPage() {
+export default function Page() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 

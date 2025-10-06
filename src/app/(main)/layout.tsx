@@ -18,7 +18,8 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-      <WalletProvider>
+    <WalletProvider>
+      <SettingsProvider>
         <SidebarProvider>
           <Sidebar collapsible="icon" variant="inset">
             <Suspense>
@@ -39,8 +40,7 @@ export default function MainLayout({
             <MobileNav />
           </SidebarInset>
         </SidebarProvider>
-      </WalletProvider>
+      </SettingsProvider>
+    </WalletProvider>
   );
 }
-
-    

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/lib/api";
-import type { Balance, SellProvider, FeeEstimation, SellOrderPayload, PayoutData, DecodedLightningRequest, LightningBalance } from "@/lib/types";
+import type { Balance, SellProvider, FeeEstimation, OnChainSellOrderPayload, PayoutData, DecodedLightningRequest, LightningBalance } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check, Zap, ScanLine, Wallet, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
@@ -394,18 +394,23 @@ export default function SellPage() {
         setIsSubmitting(true);
         try {
             const finalAmountBtc = parseFloat(feeEstimation.sendable_btc);
-
-            const orderPayload: SellOrderPayload = {
+            const selectedProvider = providers.find(p => String(p.id) === formData.providerId);
+            if (!selectedProvider) {
+                throw new Error("Provider not found");
+            }
+            
+            const orderPayload: OnChainSellOrderPayload = {
                 direction: 'sell',
+                payment_method: 'on_chain',
                 provider_id: Number(formData.providerId),
                 amount: formData.amount,
                 btc_amount: finalAmountBtc,
-                amount_currency: 'BTC',
+                amount_currency: selectedProvider.currency,
                 payout_data: formData.paymentDetails,
-                total_amount: String(feeEstimation.sendable_bif),
+                total_amount: String(feeEstimation.sendable_bif), // Example, should be based on currency
             };
             
-            const response = await api.createSellOrder(orderPayload);
+            const response = await api.createOrder(orderPayload);
             toast({ title: 'Commande de vente créée', description: `Votre commande #${response.data.id} est en cours de traitement.` });
             router.push(`/orders/${response.data.id}`);
 
@@ -863,6 +868,3 @@ export default function SellPage() {
         </div>
     );
 }
-
-
-    

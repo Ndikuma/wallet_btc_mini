@@ -7,7 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/lib/api";
-import type { BuyProvider, BuyFeeCalculation, Order, BuyOrderPayload } from "@/lib/types";
+import type { BuyProvider, BuyFeeCalculation, Order, OnChainBuyOrderPayload } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/use-debounce";
 import { ArrowLeft, Banknote, Landmark, Loader2, Receipt, ShoppingCart, Bitcoin, AlertCircle } from "lucide-react";
@@ -138,16 +138,18 @@ export default function BuyWithProviderPage() {
     }
     setIsSubmitting(true);
     try {
-        const orderPayload: BuyOrderPayload = {
+        const orderPayload: OnChainBuyOrderPayload = {
             direction: 'buy',
+            payment_method: 'on_chain',
             provider_id: provider.id,
             amount: data.amount,
             amount_currency: data.currency,
             btc_amount: parseFloat(feeCalc.btc_amount)
         };
-        const order = await api.createBuyOrder(orderPayload);
-        toast({ title: 'Commande créée', description: `Votre commande #${order.data.id} a été créée.` });
-        router.push(`/orders/${order.data.id}`);
+        const response = await api.createOrder(orderPayload);
+        const order = response.data;
+        toast({ title: 'Commande créée', description: `Votre commande #${order.id} a été créée.` });
+        router.push(`/orders/${order.id}`);
     } catch (err: any) {
         toast({ variant: 'destructive', title: 'Échec de la commande', description: err.message || 'Impossible de créer votre commande.' });
     } finally {

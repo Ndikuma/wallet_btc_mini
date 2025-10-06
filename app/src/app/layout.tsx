@@ -36,10 +36,8 @@ export default function RootLayout({
       <body className={cn("font-body antialiased", fontBody.variable, fontCode.variable)}>
         <SettingsProvider>
           <ThemeProvider>
-            <WalletProvider>
               {children}
               <Toaster />
-            </WalletProvider>
           </ThemeProvider>
         </SettingsProvider>
       </body>

@@ -252,7 +252,8 @@ const LightningHistory = () => {
         setError(null);
         try {
             const response = await api.getLightningTransactions();
-            setTransactions(response.data.results || response.data);
+            const results = response.data.results || response.data || [];
+            setTransactions(results);
         } catch (err: any) {
             setError(err.message || "Impossible de charger l'historique des transactions.");
         } finally {
@@ -282,6 +283,7 @@ const LightningHistory = () => {
 
     if (error) {
         return (
+          <Card className="flex h-48 items-center justify-center">
             <div className="p-4 text-center text-destructive border border-destructive/20 bg-destructive/10 rounded-lg">
                 <AlertCircle className="mx-auto h-6 w-6" />
                 <p className="mt-2 font-semibold">Erreur de chargement</p>
@@ -290,6 +292,7 @@ const LightningHistory = () => {
                     Réessayer
                 </Button>
             </div>
+          </Card>
         )
     }
 

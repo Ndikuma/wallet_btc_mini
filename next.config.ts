@@ -43,13 +43,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'daniel-few-tournament-quiet.trycloudflare.com',
+        hostname: 'indicating-exit-customise-vegetation.trycloudflare.com',
         port: '',
         pathname: '/**',
       },
       {
         protocol: 'http',
-        hostname: 'daniel-few-tournament-quiet.trycloudflare.com',
+        hostname: 'indicating-exit-customise-vegetation.trycloudflare.com',
         port: '',
         pathname: '/**',
       },

@@ -14,14 +14,12 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, Construction, ArrowDownLeft, ArrowUpRight, Zap } from "lucide-react";
+import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, Zap, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import type { VariantProps } from "class-variance-authority";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import React from "react";
-
 
 const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
   switch (status.toLowerCase()) {
@@ -155,7 +153,8 @@ const LightningOrders = () => {
         setError(null);
         try {
             const response = await api.getLightningTransactions();
-            setTransactions(response.data.results || response.data);
+            const results = response.data.results || response.data || [];
+            setTransactions(results);
         } catch (err: any) {
             setError(err.message || "Impossible de charger l'historique des transactions.");
         } finally {
@@ -257,6 +256,7 @@ const LightningOrders = () => {
         </Card>
     )
 }
+
 
 export default function OrdersPage() {
 

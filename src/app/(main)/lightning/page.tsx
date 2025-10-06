@@ -58,7 +58,8 @@ export default function LightningPage() {
         setTransactionsError(null);
         try {
             const response = await api.getLightningTransactions();
-            setTransactions(response.data.results || response.data);
+            const results = response.data.results || response.data || [];
+            setTransactions(results.slice(0, 5)); // Limit to recent 5
         } catch (err: any) {
             setTransactionsError(err.message || "Impossible de charger l'historique des transactions.");
         } finally {
@@ -132,9 +133,14 @@ export default function LightningPage() {
 
       {/* Transaction History */}
       <Card>
-          <CardHeader>
-              <CardTitle className="text-lg">Historique des Transactions</CardTitle>
-              <CardDescription>Vos paiements Lightning récents.</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Historique des Transactions</CardTitle>
+                <CardDescription>Vos paiements Lightning récents.</CardDescription>
+              </div>
+               <Button asChild variant="link" className="text-primary">
+                    <Link href="/transactions">Voir tout</Link>
+                </Button>
           </CardHeader>
           <CardContent className="p-0">
             {loadingTransactions ? (
@@ -162,7 +168,8 @@ export default function LightningPage() {
                 </div>
             ) : (
                 <div className="space-y-0">
-                {transactions.map((tx, index) => (
+                {transactions.length > 0 ? (
+                    transactions.map((tx, index) => (
                     <React.Fragment key={tx.payment_hash || `${index}-${tx.created_at}`}>
                     <div className="flex items-center gap-4 p-4">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
@@ -200,8 +207,7 @@ export default function LightningPage() {
                         <Separator />
                     )}
                     </React.Fragment>
-                ))}
-                {transactions.length === 0 && (
+                ))) : (
                     <div className="p-8 text-center text-muted-foreground">
                     Aucune transaction pour le moment.
                     </div>

@@ -50,9 +50,9 @@ export default function GenerateInvoicePage() {
       } catch (error: any) {
         // Stop polling on error to avoid spamming the console.
         // This can happen if the backend hasn't processed the invoice yet.
-        clearInterval(intervalId);
+        // We let it continue polling silently.
       }
-    }, 3000); // Poll every 3 seconds
+    }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(intervalId);
   }, [invoice, isPaid, toast]);

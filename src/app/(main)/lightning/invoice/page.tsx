@@ -1,9 +1,10 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, FileText, Zap, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Zap, Loader2, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,28 +20,55 @@ import { CopyButton } from "@/components/copy-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import type { LightningInvoice } from "@/lib/types";
 
 export default function GenerateInvoicePage() {
   const { toast } = useToast();
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
-  const [invoice, setInvoice] = useState<string | null>(null);
-  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [invoice, setInvoice] = useState<LightningInvoice | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+
+  // Polling effect to check invoice status
+  useEffect(() => {
+    if (!invoice || isPaid || invoice.status === 'paid') {
+      return;
+    }
+
+    const intervalId = setInterval(async () => {
+      try {
+        const response = await api.getLightningInvoice(invoice.payment_hash);
+        if (response.data.status === 'paid') {
+          setIsPaid(true);
+          toast({
+            title: "Paiement Reçu!",
+            description: `Vous avez reçu ${response.data.amount_sats} sats.`,
+          });
+          clearInterval(intervalId);
+        }
+      } catch (error: any) {
+        // Stop polling on error to avoid spamming
+        console.error("Failed to check invoice status:", error);
+        clearInterval(intervalId);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(intervalId);
+  }, [invoice, isPaid, toast]);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setInvoice(null);
-    setQrCode(null);
+    setIsPaid(false);
     
     try {
       const response = await api.generateLightningInvoice({
         amount: parseInt(amount, 10),
         memo: memo || undefined,
       });
-      setInvoice(response.data.bolt11);
-      setQrCode(response.data.qr_code);
+      setInvoice(response.data);
     } catch(error: any) {
        toast({
         variant: "destructive",
@@ -56,7 +84,7 @@ export default function GenerateInvoicePage() {
     setAmount("");
     setMemo("");
     setInvoice(null);
-    setQrCode(null);
+    setIsPaid(false);
   }
 
   return (
@@ -72,39 +100,65 @@ export default function GenerateInvoicePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="text-primary" />
-            Générer une facture Lightning
+            {isPaid ? "Paiement Reçu" : "Générer une facture Lightning"}
           </CardTitle>
           <CardDescription>
-            Créez une facture pour recevoir un paiement via le Lightning Network.
+             {isPaid 
+                ? `La facture de ${invoice?.amount_sats} sats a été payée.`
+                : "Créez une facture pour recevoir un paiement via le Lightning Network."
+             }
           </CardDescription>
         </CardHeader>
         
         {invoice ? (
-          <CardContent className="flex flex-col items-center gap-6">
-              <div className="rounded-lg border bg-white p-4 shadow-sm">
-                {qrCode ? (
-                    <Image
-                    src={qrCode}
-                    alt="Code QR de la facture Lightning"
-                    width={256}
-                    height={256}
-                    className="rounded-md"
-                    data-ai-hint="qr code"
-                />
-                ) : (
-                    <Skeleton className="h-64 w-64" />
-                )}
-              </div>
-              <div className="w-full space-y-2">
-                <Label>Facture Lightning</Label>
-                <div className="break-all rounded-md border bg-secondary p-3 font-mono text-sm text-muted-foreground">
-                  {invoice}
+          <>
+            <CardContent className="flex flex-col items-center gap-6">
+              {isPaid ? (
+                <div className="flex flex-col items-center justify-center text-center space-y-4 my-8">
+                  <CheckCircle2 className="size-24 text-green-500" />
+                  <p className="text-2xl font-bold">Paiement Reçu !</p>
+                  <p className="text-muted-foreground">
+                    {invoice.amount_sats} sats ont été ajoutés à votre solde.
+                  </p>
                 </div>
-              </div>
-              <CopyButton textToCopy={invoice} toastMessage="Facture copiée dans le presse-papiers">
-                Copier la facture
-              </CopyButton>
-          </CardContent>
+              ) : (
+                <>
+                  <div className="relative rounded-lg border bg-white p-4 shadow-sm">
+                    {invoice.qr_code ? (
+                      <Image
+                        src={invoice.qr_code}
+                        alt="Code QR de la facture Lightning"
+                        width={256}
+                        height={256}
+                        className="rounded-md"
+                        data-ai-hint="qr code"
+                      />
+                    ) : (
+                      <Skeleton className="h-64 w-64" />
+                    )}
+                  </div>
+                   <div className="flex items-center gap-2 text-sm text-muted-foreground p-2 rounded-lg bg-secondary">
+                        <Clock className="size-4 animate-pulse" />
+                        <span>En attente du paiement...</span>
+                    </div>
+                  <div className="w-full space-y-2">
+                    <Label>Facture Lightning</Label>
+                    <div className="break-all rounded-md border bg-secondary p-3 font-mono text-sm text-muted-foreground">
+                      {invoice.bolt11}
+                    </div>
+                  </div>
+                  <CopyButton textToCopy={invoice.bolt11} toastMessage="Facture copiée dans le presse-papiers">
+                    Copier la facture
+                  </CopyButton>
+                </>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button variant={isPaid ? "default" : "outline"} className="w-full" onClick={handleReset}>
+                Créer une autre facture
+              </Button>
+            </CardFooter>
+          </>
         ) : (
           <form onSubmit={handleGenerate}>
             <CardContent className="space-y-4">
@@ -139,12 +193,6 @@ export default function GenerateInvoicePage() {
               </Button>
             </CardFooter>
           </form>
-        )}
-        
-        {invoice && (
-            <CardFooter>
-                 <Button variant="outline" className="w-full" onClick={handleReset}>Créer une autre facture</Button>
-            </CardFooter>
         )}
       </Card>
     </div>

@@ -111,8 +111,15 @@ const sendTransaction = (values: { to_address: string; amount: string }) => {
     return axiosInstance.post('transaction/send/', values);
 };
 
-const getBuyProviders = (): Promise<AxiosResponse<BuyProvider[]>> => axiosInstance.get('providers/buy/');
-const getSellProviders = (): Promise<AxiosResponse<SellProvider[]>> => axiosInstance.get('providers/sell/');
+const getBuyProviders = (payment_method?: 'on_chain' | 'lightning'): Promise<AxiosResponse<BuyProvider[]>> => {
+    return axiosInstance.get('providers/buy/', { params: { payment_method } });
+}
+const getBuyProvider = (providerId: number): Promise<AxiosResponse<BuyProvider>> => {
+    return axiosInstance.get(`providers/buy/${providerId}/`);
+}
+const getSellProviders = (payment_method?: 'on_chain' | 'lightning'): Promise<AxiosResponse<SellProvider[]>> => {
+    return axiosInstance.get('providers/sell/', { params: { payment_method } });
+}
 const calculateBuyFee = (providerId: number, amount: number, currency: string): Promise<AxiosResponse<BuyFeeCalculation>> => {
     return axiosInstance.post('providers/buy/calculate-fee/', { provider_id: providerId, amount: String(amount), currency });
 }
@@ -123,15 +130,6 @@ const createBuyOrder = (payload: BuyOrderPayload): Promise<AxiosResponse<Order>>
 const createSellOrder = (payload: SellOrderPayload): Promise<AxiosResponse<Order>> => {
     return axiosInstance.post('orders/', payload);
 }
-
-const createLightningBuyOrder = (payload: LightningBuyOrderPayload): Promise<AxiosResponse<Order>> => {
-    return axiosInstance.post('orders/', payload);
-};
-
-const createLightningSellOrder = (payload: LightningSellOrderPayload): Promise<AxiosResponse<Order>> => {
-    return axiosInstance.post('orders/', payload);
-};
-
 
 const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');
 const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);
@@ -169,12 +167,11 @@ const api = {
     sendTransaction,
     estimateFee,
     getBuyProviders,
+    getBuyProvider,
     getSellProviders,
     calculateBuyFee,
     createBuyOrder,
     createSellOrder,
-    createLightningBuyOrder,
-    createLightningSellOrder,
     getOrders,
     getOrder,
     updateOrder,

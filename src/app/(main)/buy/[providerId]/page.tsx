@@ -3,14 +3,14 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/lib/api";
-import type { BuyProvider, BuyFeeCalculation, Order, BuyOrderPayload } from "@/lib/types";
+import type { BuyProvider, BuyFeeCalculation, BuyOrderPayload } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/use-debounce";
-import { ArrowLeft, Banknote, Landmark, Loader2, Receipt, ShoppingCart, Bitcoin, AlertCircle } from "lucide-react";
+import { ArrowLeft, Loader2, ShoppingCart, Bitcoin, AlertCircle, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -41,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CopyButton } from "@/components/copy-button";
+import { ProviderIcon } from "@/components/provider-icon";
 
 
 const buySchema = z.object({
@@ -86,15 +85,10 @@ export default function BuyWithProviderPage() {
         return;
       }
       try {
-        const response = await api.getBuyProviders();
-        const foundProvider = response.data.find((p: BuyProvider) => p.id === providerId);
-        if (foundProvider) {
-          setProvider(foundProvider);
-          if (foundProvider.currencies.length > 0) {
-            form.setValue('currency', foundProvider.currencies[0]);
-          }
-        } else {
-          setError("Fournisseur non trouvé.");
+        const response = await api.getBuyProvider(providerId);
+        setProvider(response.data);
+        if (response.data.currencies.length > 0) {
+          form.setValue('currency', response.data.currencies[0]);
         }
       } catch (err: any) {
         setError(err.message || "Échec de la récupération des informations du fournisseur.");
@@ -140,11 +134,14 @@ export default function BuyWithProviderPage() {
     try {
         const orderPayload: BuyOrderPayload = {
             direction: 'buy',
+            payment_method: feeCalc.payment_method,
             provider_id: provider.id,
             amount: data.amount,
             amount_currency: data.currency,
-            btc_amount: parseFloat(feeCalc.btc_amount)
+            btc_amount: feeCalc.btc_amount ? parseFloat(feeCalc.btc_amount) : undefined,
+            ln_amount_sats: feeCalc.sats_amount ? parseInt(feeCalc.sats_amount) : undefined,
         };
+
         const order = await api.createBuyOrder(orderPayload);
         toast({ title: 'Commande créée', description: `Votre commande #${order.data.id} a été créée.` });
         router.push(`/orders/${order.data.id}`);
@@ -203,13 +200,7 @@ export default function BuyWithProviderPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-start gap-4">
-            {provider.image ? (
-                <Image src={provider.image} alt={`${provider.name} logo`} width={48} height={48} className="rounded-lg border" />
-            ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg border bg-secondary">
-                    <Landmark className="size-6 text-muted-foreground" />
-                </div>
-            )}
+            <ProviderIcon provider={provider} />
            <div>
             <CardTitle className="text-2xl">{provider.name}</CardTitle>
             <CardDescription>{provider.description}</CardDescription>
@@ -270,8 +261,14 @@ export default function BuyWithProviderPage() {
                                     </div>
                                     <Separator className="border-dashed" />
                                     <div className="flex items-center justify-between text-base">
-                                        <span className="font-semibold flex items-center gap-2"><Bitcoin className="size-5 text-primary" /> Vous recevrez</span>
-                                        <span className="font-bold font-mono">{feeCalc.btc_amount} BTC</span>
+                                        <span className="font-semibold flex items-center gap-2">
+                                          {feeCalc.payment_method === 'lightning' ? <Zap className="size-5 text-primary" /> : <Bitcoin className="size-5 text-primary" />}
+                                          Vous recevrez
+                                        </span>
+                                        <span className="font-bold font-mono">
+                                            {feeCalc.btc_amount && `${feeCalc.btc_amount} BTC`}
+                                            {feeCalc.sats_amount && `${feeCalc.sats_amount} sats`}
+                                        </span>
                                     </div>
                                 </div>
                             )}

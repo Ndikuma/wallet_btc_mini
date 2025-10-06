@@ -1,5 +1,4 @@
 
-
 export interface User {
   id: number;
   username: string;
@@ -82,7 +81,7 @@ export interface FeeEstimation {
     sendable_usd: number;
     sendable_bif: number;
     network_fee_usd: number;
-network_fee_bif: number;
+    network_fee_bif: number;
 }
 
 export interface ProviderPaymentInfo {
@@ -99,6 +98,7 @@ export interface Provider {
   currencies: string[];
   payment_info?: ProviderPaymentInfo;
   explorer_url?: string;
+  supported_payment_methods?: ('on_chain' | 'lightning')[];
 }
 
 export interface BuyProvider extends Provider {}
@@ -112,7 +112,9 @@ export interface BuyFeeCalculation {
     fee: string;
     total_amount: string;
     currency: string;
-    btc_amount: string;
+    btc_amount?: string;
+    sats_amount?: string;
+    payment_method: 'on_chain' | 'lightning';
 }
 
 export interface PayoutData {
@@ -126,36 +128,26 @@ export interface PayoutData {
 
 export interface BuyOrderPayload {
     direction: 'buy';
-    payment_method: 'on_chain';
+    payment_method: 'on_chain' | 'lightning';
     provider_id: number;
     amount: number;
     amount_currency: string;
-    btc_amount: number;
-}
-
-export interface LightningBuyOrderPayload {
-    direction: 'buy';
-    payment_method: 'lightning';
-    amount_sats: number;
-    memo?: string;
+    btc_amount?: number;
+    ln_amount_sats?: number;
 }
 
 export interface SellOrderPayload {
     direction: 'sell';
-    payment_method: 'on_chain';
+    payment_method: 'on_chain' | 'lightning';
     provider_id: number;
-    amount: number;
-    btc_amount: number;
-    amount_currency: string;
     payout_data: PayoutData;
-    total_amount: string;
+    amount?: number; // for on-chain in BTC
+    btc_amount?: number; // for on-chain in BTC
+    ln_amount_sats?: number; // for lightning in sats
+    amount_currency?: string; // e.g., 'BTC' for on-chain
+    total_amount?: string;
 }
 
-export interface LightningSellOrderPayload {
-    direction: 'sell';
-    payment_method: 'lightning';
-    ln_invoice: string;
-}
 
 export interface OrderUpdatePayload {
   payment_proof?: {
@@ -171,7 +163,7 @@ export interface OrderUpdatePayload {
 export interface Order {
     id: number;
     user: string;
-    provider?: BuyProvider; // Optional for Lightning
+    provider?: BuyProvider;
     provider_id: number | null;
     direction: 'buy' | 'sell';
     payment_method: 'on_chain' | 'lightning';

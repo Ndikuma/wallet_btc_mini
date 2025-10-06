@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import api from '@/lib/api';
 import type { Balance } from '@/lib/types';
 import { AxiosError } from 'axios';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 interface WalletContextType {
   balance: Balance | null;
@@ -21,16 +21,9 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const pathname = usePathname();
-  const router = useRouter();
 
   const fetchBalance = useCallback(async () => {
-    // Do not fetch if we are not authenticated.
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-
+    // This provider only wraps authenticated routes, so we expect a token.
     setIsLoading(true);
     setError(null);
     try {
@@ -43,7 +36,6 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
             localStorage.removeItem("authToken");
             document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
             setError("Session invalide. Veuillez vous reconnecter.");
-            router.push('/login'); // Redirect on the client-side to be safe.
         } else if (err instanceof AxiosError && err.response?.status === 403) {
              setError("Votre portefeuille est en cours de configuration. Cela peut prendre un moment. Veuillez essayer d'actualiser dans quelques secondes.");
         } else {
@@ -53,16 +45,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
-    const isPublicPage = ['/login', '/register', '/', '/restore-wallet', '/create-wallet', '/verify-mnemonic', '/create-or-restore'].includes(pathname);
-    
-    if (!isPublicPage) {
-        fetchBalance();
-    } else {
-        setIsLoading(false); // If on a public page, we are not loading balance.
-    }
+    // Since this provider is only on authenticated routes, we can always fetch.
+    fetchBalance();
   }, [fetchBalance, pathname]);
 
   return (

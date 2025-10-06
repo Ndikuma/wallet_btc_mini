@@ -34,9 +34,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
             localStorage.removeItem("authToken");
             document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
             setError("Session invalide. Veuillez vous reconnecter.");
-            if (pathname !== '/login' && pathname !== '/register' && pathname !== '/') {
-                 router.push("/login");
-            }
+            // Do not redirect here to avoid race conditions and server-side errors.
+            // Let protected routes handle the redirection logic.
         } else if (err instanceof AxiosError && err.response?.status === 403) {
              setError("Votre portefeuille est en cours de configuration. Cela peut prendre un moment. Veuillez essayer d'actualiser dans quelques secondes.");
         } else {
@@ -46,16 +45,18 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [router, pathname]);
+  }, []);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
-    if (token) {
+    const isPublicPage = ['/login', '/register', '/', '/restore-wallet', '/create-wallet', '/verify-mnemonic', '/create-or-restore'].includes(pathname);
+    
+    if (token && !isPublicPage) {
         fetchBalance();
     } else {
-        setIsLoading(false); // If no token, we are not loading anything.
+        setIsLoading(false); // If no token or on a public page, we are not loading balance.
     }
-  }, [fetchBalance]);
+  }, [fetchBalance, pathname]);
 
   return (
     <WalletContext.Provider value={{ balance, isLoading, error, refreshBalance: fetchBalance }}>

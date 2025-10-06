@@ -1,19 +1,22 @@
-
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BitcoinIcon } from "@/components/icons";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('authToken');
-}
+// This is now a Server Component. It checks for the auth cookie on the server.
+// If the user is authenticated, it redirects them immediately to the dashboard.
+// This is the most robust and performant way to handle this, avoiding client-side logic.
+export default function LandingPage() {
+  const cookieStore = cookies();
+  const authToken = cookieStore.get("authToken");
 
-const LandingPage = () => (
+  if (authToken) {
+    redirect("/dashboard");
+  }
+
+  return (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-background/80 backdrop-blur-sm">
         <div className="container flex h-20 items-center justify-between py-6">
@@ -67,29 +70,5 @@ const LandingPage = () => (
         </section>
       </main>
     </div>
-);
-
-
-export default function RootPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      router.replace('/dashboard');
-    } else {
-      setLoading(false);
-    }
-  }, [router]);
-
-  if (loading) {
-    return (
-       <div className="flex h-dvh w-full items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  return <LandingPage />;
+  );
 }

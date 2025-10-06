@@ -1,19 +1,17 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BitcoinIcon } from "@/components/icons";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('authToken');
-}
-
-const LandingPage = () => (
+// This is the clean, client-side landing page component.
+// All complex auth logic has been removed to prevent hydration errors.
+// The redirection logic is now handled by the page protection mechanisms
+// within the main application layout and WalletProvider.
+export default function LandingPage() {
+  return (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-background/80 backdrop-blur-sm">
         <div className="container flex h-20 items-center justify-between py-6">
@@ -67,29 +65,5 @@ const LandingPage = () => (
         </section>
       </main>
     </div>
-);
-
-
-export default function RootPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      router.replace('/dashboard');
-    } else {
-      setLoading(false);
-    }
-  }, [router]);
-
-  if (loading) {
-    return (
-       <div className="flex h-dvh w-full items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  return <LandingPage />;
+  );
 }

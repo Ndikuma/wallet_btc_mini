@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
-import type { BuyProvider } from "@/lib/types";
+import type { BuyProvider, Order } from "@/lib/types";
 import {
   Card,
   CardDescription,
@@ -14,15 +14,14 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, AlertCircle, ArrowRight, Landmark, Loader2, Zap, Construction, Bitcoin, FileText } from "lucide-react";
+import { ArrowLeft, AlertCircle, ArrowRight, Landmark, Loader2, Zap, Bitcoin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CopyButton } from "@/components/copy-button";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const ProviderCard = ({ provider }: { provider: BuyProvider }) => (
   <Link href={`/buy/${provider.id}`} className="block h-full transition-all rounded-lg hover:shadow-lg hover:-translate-y-1">
@@ -130,85 +129,49 @@ const OnChainBuy = () => {
 
 const LightningBuy = () => {
     const { toast } = useToast();
+    const router = useRouter();
     const [amount, setAmount] = useState("");
     const [memo, setMemo] = useState("");
-    const [invoice, setInvoice] = useState<string | null>(null);
-    const [qrCode, setQrCode] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setInvoice(null);
-        setQrCode(null);
         
         try {
-        const response = await api.generateLightningInvoice({
-            amount: parseInt(amount, 10),
-            memo: memo || undefined,
-        });
-        setInvoice(response.data.bolt11);
-        setQrCode(response.data.qr_code);
+            const response = await api.createLightningBuyOrder({
+                direction: 'buy',
+                payment_method: 'lightning',
+                amount_sats: parseInt(amount, 10),
+                memo: memo || undefined,
+            });
+            const newOrder = response.data;
+            toast({
+                title: "Commande d'achat Lightning créée",
+                description: `Commande #${newOrder.id} a été créée. Veuillez procéder au paiement.`,
+            });
+            router.push(`/orders/${newOrder.id}`);
         } catch(error: any) {
-        toast({
-            variant: "destructive",
-            title: "Échec de la génération",
-            description: error.message || "Impossible de générer une facture.",
-        });
+            toast({
+                variant: "destructive",
+                title: "Échec de la création de la commande",
+                description: error.message || "Impossible de créer une commande d'achat Lightning.",
+            });
         } finally {
-        setIsLoading(false);
+            setIsLoading(false);
         }
     };
-    
-    const handleReset = () => {
-        setAmount("");
-        setMemo("");
-        setInvoice(null);
-        setQrCode(null);
-    }
     
     return (
         <div className="space-y-4">
             <h2 className="text-xl font-semibold tracking-tight">Achat via Lightning</h2>
             <Card>
                 <CardHeader>
-                    <CardTitle>Générer une facture de dépôt</CardTitle>
+                    <CardTitle>Créer une commande de dépôt</CardTitle>
                     <CardDescription>
-                        Créez une facture Lightning que vous pouvez payer avec un autre service pour déposer des sats dans ce portefeuille.
+                        Créez une commande pour déposer des sats dans ce portefeuille. Une facture sera générée pour que vous puissiez la payer avec un autre service.
                     </CardDescription>
                 </CardHeader>
-                 {invoice ? (
-                    <>
-                    <CardContent className="flex flex-col items-center gap-6">
-                        <div className="rounded-lg border bg-white p-4 shadow-sm">
-                            {qrCode ? (
-                                <Image
-                                src={qrCode}
-                                alt="Code QR de la facture Lightning"
-                                width={256}
-                                height={256}
-                                className="rounded-md"
-                                data-ai-hint="qr code"
-                            />
-                            ) : (
-                                <Skeleton className="h-64 w-64" />
-                            )}
-                        </div>
-                        <div className="w-full space-y-2">
-                            <Label>Facture Lightning</Label>
-                            <div className="break-all rounded-md border bg-secondary p-3 font-mono text-sm text-muted-foreground">
-                            {invoice}
-                            </div>
-                        </div>
-                        <CopyButton textToCopy={invoice} toastMessage="Facture copiée dans le presse-papiers">
-                            Copier la facture
-                        </CopyButton>
-                    </CardContent>
-                    <CardFooter>
-                        <Button variant="outline" className="w-full" onClick={handleReset}>Créer une autre facture</Button>
-                    </CardFooter>
-                    </>
-                ) : (
                 <form onSubmit={handleGenerate}>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -216,10 +179,11 @@ const LightningBuy = () => {
                             <Input
                             id="amount"
                             type="number"
-                            placeholder="0"
+                            placeholder="ex: 10000"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                             required
+                            min="1"
                             disabled={isLoading}
                             />
                         </div>
@@ -236,13 +200,12 @@ const LightningBuy = () => {
                         </div>
                     </CardContent>
                     <CardFooter>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
+                    <Button type="submit" className="w-full" disabled={isLoading || !amount}>
                         {isLoading && <Loader2 className="mr-2 size-4 animate-spin"/>}
-                        {isLoading ? "Génération en cours..." : "Générer la facture"}
+                        {isLoading ? "Création en cours..." : "Créer la commande"}
                     </Button>
                     </CardFooter>
                 </form>
-                )}
             </Card>
         </div>
     )
@@ -285,7 +248,7 @@ export default function BuyPage() {
         <p className="text-muted-foreground">
           {method === 'on-chain' 
             ? "Choisissez un fournisseur pour payer et recevoir des Bitcoins dans votre portefeuille."
-            : "Générez une facture pour déposer des sats sur votre solde Lightning."
+            : "Générez une commande de dépôt pour ajouter des sats à votre solde Lightning."
           }
         </p>
       </div>
@@ -296,5 +259,3 @@ export default function BuyPage() {
     </div>
   );
 }
-
-    

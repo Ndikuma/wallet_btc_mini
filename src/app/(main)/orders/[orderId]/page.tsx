@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import api from "@/lib/api";
 import type { Order, BuyProvider } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +26,7 @@ import {
   Mail,
   Hourglass,
   AlertCircle,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -170,7 +172,7 @@ function PaymentProofForm({ order, onSuccessfulSubmit }: { order: Order, onSucce
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <CardContent className="space-y-6">
-                        <PaymentInfoDisplay provider={order.provider} />
+                        {order.provider && <PaymentInfoDisplay provider={order.provider} />}
 
                         <FormField
                             control={form.control}
@@ -254,6 +256,98 @@ const PayoutDetailItem = ({ icon, label, value }: { icon: React.ElementType, lab
     )
 }
 
+function LightningBuyOrderDetails({ order }: { order: Order }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Zap className="size-5 text-primary" />Payer la facture Lightning</CardTitle>
+                <CardDescription>Scannez ce code QR ou copiez la facture pour déposer {order.ln_amount_sats} sats dans votre portefeuille.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-6">
+                {order.payment_proof?.qr_code ? (
+                     <div className="rounded-lg border bg-white p-4 shadow-sm">
+                        <Image
+                            src={order.payment_proof.qr_code}
+                            alt="Code QR de la facture Lightning"
+                            width={256}
+                            height={256}
+                            className="rounded-md"
+                            data-ai-hint="qr code"
+                        />
+                     </div>
+                ) : <Skeleton className="h-64 w-64" />}
+
+                {order.ln_invoice && (
+                     <div className="w-full space-y-4">
+                        <div className="break-all rounded-md border bg-secondary p-3 font-mono text-sm text-muted-foreground">
+                            {order.ln_invoice}
+                        </div>
+                         <CopyButton textToCopy={order.ln_invoice} toastMessage="Facture copiée dans le presse-papiers">
+                            Copier la facture
+                        </CopyButton>
+                    </div>
+                )}
+            </CardContent>
+            <CardFooter>
+                 <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>En attente du paiement</AlertTitle>
+                    <AlertDescription>
+                        Cette page se mettra à jour automatiquement une fois le paiement reçu.
+                    </AlertDescription>
+                </Alert>
+            </CardFooter>
+        </Card>
+    )
+}
+
+function LightningSellOrderDetails({ order, onOrderUpdate }: { order: Order, onOrderUpdate: (order: Order) => void }) {
+    const [isPaying, setIsPaying] = useState(false);
+    const { toast } = useToast();
+
+    const handlePay = async () => {
+        if (!order.ln_invoice) return;
+        setIsPaying(true);
+        try {
+            const response = await api.payLightningInvoice({ request: order.ln_invoice });
+            onOrderUpdate(response.data.order);
+            toast({ title: "Paiement réussi", description: `Vous avez payé ${response.data.amount_sats} sats.` });
+        } catch (err: any) {
+            toast({ variant: 'destructive', title: 'Échec du paiement', description: err.message });
+        } finally {
+            setIsPaying(false);
+        }
+    }
+
+    return (
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Zap className="size-5 text-primary" />Confirmer le paiement Lightning</CardTitle>
+                <CardDescription>Veuillez vérifier les détails de la facture avant de confirmer le paiement depuis votre portefeuille.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Détails de la facture</AlertTitle>
+                    <AlertDescription>
+                         <p>Montant: <strong>{order.ln_amount_sats} sats</strong></p>
+                        {order.note && <p>Memo: {order.note}</p>}
+                    </AlertDescription>
+                </Alert>
+                <div className="break-all rounded-md border bg-secondary p-3 font-mono text-sm text-muted-foreground">
+                    {order.ln_invoice}
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button className="w-full" onClick={handlePay} disabled={isPaying}>
+                    {isPaying ? <Loader2 className="mr-2 size-4 animate-spin"/> : <Zap className="mr-2 size-4" />}
+                    {isPaying ? "Paiement en cours..." : `Payer ${order.ln_amount_sats} sats`}
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+}
+
 export default function OrderDetailsPage() {
     const params = useParams();
     const router = useRouter();
@@ -281,10 +375,19 @@ export default function OrderDetailsPage() {
             setLoading(false);
         }
     }, [orderId]);
-
-    useEffect(() => {
+    
+     useEffect(() => {
         fetchOrder();
-    }, [fetchOrder]);
+        
+        const interval = setInterval(() => {
+            if (order && (order.status === 'pending' || order.status === 'awaiting_confirmation')) {
+                fetchOrder();
+            }
+        }, 10000); // Poll every 10 seconds
+
+        return () => clearInterval(interval);
+    }, [fetchOrder, order]);
+
 
     const handleSuccessfulSubmit = (updatedOrder: Order) => {
         setOrder(updatedOrder);
@@ -326,6 +429,7 @@ export default function OrderDetailsPage() {
     if (!order) return null;
 
     const payoutDetails = order.payout_data;
+    const isLightning = order.payment_method === 'lightning';
     
     return (
         <div className="mx-auto max-w-2xl space-y-6">
@@ -342,24 +446,38 @@ export default function OrderDetailsPage() {
                         <div className="flex items-center gap-3">
                            {getStatusIcon(order.status)}
                            <div>
-                                <CardTitle className="text-2xl capitalize">Commande d'{order.direction === 'buy' ? 'Achat' : 'Vente'} #{order.id}</CardTitle>
-                                <CardDescription>le {new Date(order.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric'})}</CardDescription>
+                                <CardTitle className="text-2xl capitalize">
+                                    Commande d'{order.direction === 'buy' ? 'Achat' : 'Vente'} #{order.id}
+                                </CardTitle>
+                                <CardDescription>
+                                    le {new Date(order.created_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric'})}
+                                    <Badge variant="outline" className="ml-2 capitalize">{order.payment_method.replace('_', '-')}</Badge>
+                                </CardDescription>
                            </div>
                         </div>
                         <Badge variant={getStatusVariant(order.status)} className="capitalize text-base py-1 px-3">{order.status.replace('_', ' ')}</Badge>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm">
-                    <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
-                         <div className="flex justify-between"><span className="text-muted-foreground">Montant</span><span>{order.amount} {order.amount_currency}</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Frais</span><span>{order.fee} {order.amount_currency}</span></div>
-                         <Separator />
-                         <div className="flex justify-between font-bold text-base"><span >Total</span><span>{order.total_amount} {order.amount_currency}</span></div>
-                    </div>
-                     <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
-                         <div className="flex justify-between"><span className="text-muted-foreground">Fournisseur</span><span className="font-semibold">{order.provider.name}</span></div>
-                         {order.provider.payment_info?.method && <div className="flex justify-between"><span className="text-muted-foreground">Méthode de paiement</span><span className="font-semibold">{order.provider.payment_info.method}</span></div>}
-                    </div>
+                    { isLightning ? (
+                         <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
+                            <div className="flex justify-between font-bold text-base"><span >Montant</span><span>{order.ln_amount_sats} sats</span></div>
+                        </div>
+                    ) : (
+                        <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
+                            <div className="flex justify-between"><span className="text-muted-foreground">Montant</span><span>{order.amount} {order.amount_currency}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Frais</span><span>{order.fee} {order.amount_currency}</span></div>
+                            <Separator />
+                            <div className="flex justify-between font-bold text-base"><span >Total</span><span>{order.total_amount} {order.amount_currency}</span></div>
+                        </div>
+                    )}
+                    
+                     {order.provider && (
+                        <div className="space-y-2 rounded-lg border bg-secondary/30 p-4">
+                             <div className="flex justify-between"><span className="text-muted-foreground">Fournisseur</span><span className="font-semibold">{order.provider.name}</span></div>
+                             {order.provider.payment_info?.method && <div className="flex justify-between"><span className="text-muted-foreground">Méthode de paiement</span><span className="font-semibold">{order.provider.payment_info.method}</span></div>}
+                        </div>
+                     )}
                 </CardContent>
                  <CardFooter className="justify-end">
                     <Button variant="destructive">
@@ -369,7 +487,7 @@ export default function OrderDetailsPage() {
                 </CardFooter>
             </Card>
 
-            {order.direction === 'sell' && payoutDetails && (
+            {order.direction === 'sell' && order.payment_method === 'on_chain' && payoutDetails && (
                  <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -387,51 +505,74 @@ export default function OrderDetailsPage() {
                 </Card>
             )}
 
-            {order.status === 'completed' && order.btc_amount && (
+            {order.status === 'completed' && (
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                            <Bitcoin className="size-5 text-primary" />
-                           Bitcoin Envoyé
+                           {order.direction === 'buy' ? 'Bitcoin Reçu' : 'Bitcoin Envoyé'}
                         </CardTitle>
-                        <CardDescription>Cette commande est terminée et les Bitcoins ont été envoyés à votre portefeuille.</CardDescription>
+                        <CardDescription>Cette commande est terminée.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-1">
-                            <Label>Montant</Label>
-                            <div className="font-semibold font-mono text-lg">{order.btc_amount} BTC</div>
-                        </div>
-                        <div className="space-y-1">
-                            <Label>Adresse de réception</Label>
-                            <div className="flex items-center gap-2">
-                                <p className="font-mono text-muted-foreground">{shortenText(order.btc_address, 12, 12)}</p>
-                                <CopyButton textToCopy={order.btc_address || ''} size="icon" variant="ghost" className="h-7 w-7"/>
-                            </div>
-                        </div>
-                        {order.btc_txid && (
-                           <>
-                             <div className="space-y-1">
-                                <Label>ID de transaction (TxID)</Label>
-                                <div className="flex items-center gap-2">
-                                    <p className="font-mono text-muted-foreground">{shortenText(order.btc_txid, 12, 12)}</p>
-                                    <CopyButton textToCopy={order.btc_txid || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                         {isLightning ? (
+                            <>
+                                <div className="space-y-1">
+                                    <Label>Montant</Label>
+                                    <div className="font-semibold font-mono text-lg">{order.ln_amount_sats} sats</div>
                                 </div>
-                            </div>
-                            {/* You need a valid explorer link structure */}
-                            {/* <Button variant="outline" asChild>
-                                <Link href={`https://mempool.space/tx/${order.btc_txid}`} target="_blank">
-                                    View on Block Explorer <ExternalLink className="ml-2 size-4" />
-                                </Link>
-                            </Button> */}
-                           </>
-                        )}
+                                <div className="space-y-1">
+                                    <Label>Hash de Paiement</Label>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-mono text-muted-foreground">{shortenText(order.ln_payment_hash, 12, 12)}</p>
+                                        <CopyButton textToCopy={order.ln_payment_hash || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                                    </div>
+                                </div>
+                            </>
+                         ) : (
+                             <>
+                                <div className="space-y-1">
+                                    <Label>Montant</Label>
+                                    <div className="font-semibold font-mono text-lg">{order.btc_amount} BTC</div>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label>Adresse de transaction</Label>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-mono text-muted-foreground">{shortenText(order.btc_address, 12, 12)}</p>
+                                        <CopyButton textToCopy={order.btc_address || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                                    </div>
+                                </div>
+                                {order.btc_txid && (
+                                <>
+                                    <div className="space-y-1">
+                                        <Label>ID de transaction (TxID)</Label>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-mono text-muted-foreground">{shortenText(order.btc_txid, 12, 12)}</p>
+                                            <CopyButton textToCopy={order.btc_txid || ''} size="icon" variant="ghost" className="h-7 w-7"/>
+                                        </div>
+                                    </div>
+                                    {order.provider?.explorer_url && (
+                                    <Button variant="outline" asChild>
+                                        <Link href={`${order.provider.explorer_url}/tx/${order.btc_txid}`} target="_blank">
+                                            Voir sur l'explorateur de blocs <ExternalLink className="ml-2 size-4" />
+                                        </Link>
+                                    </Button>
+                                    )}
+                                </>
+                                )}
+                            </>
+                         )}
                     </CardContent>
                 </Card>
             )}
 
-            {order.direction === 'buy' && order.status === 'pending' && <PaymentProofForm order={order} onSuccessfulSubmit={handleSuccessfulSubmit} />}
+            {order.direction === 'buy' && order.payment_method === 'on_chain' && order.status === 'pending' && <PaymentProofForm order={order} onSuccessfulSubmit={handleSuccessfulSubmit} />}
 
-            {order.direction === 'buy' && order.status === 'awaiting_confirmation' && (
+            {order.direction === 'buy' && isLightning && order.status === 'pending' && <LightningBuyOrderDetails order={order} />}
+
+            {order.direction === 'sell' && isLightning && order.status === 'pending' && <LightningSellOrderDetails order={order} onOrderUpdate={setOrder} />}
+
+            {order.status === 'awaiting_confirmation' && (
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Hourglass className="size-5 text-primary" />En attente de confirmation</CardTitle>
@@ -445,5 +586,3 @@ export default function OrderDetailsPage() {
         </div>
     );
 }
-
-    

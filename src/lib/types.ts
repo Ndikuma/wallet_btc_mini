@@ -98,6 +98,7 @@ export interface Provider {
   description: string;
   currencies: string[];
   payment_info?: ProviderPaymentInfo;
+  explorer_url?: string;
 }
 
 export interface BuyProvider extends Provider {}
@@ -121,22 +122,39 @@ export interface PayoutData {
     email?: string;
 }
 
+// --- Order Payloads ---
+
 export interface BuyOrderPayload {
     direction: 'buy';
+    payment_method: 'on_chain';
     provider_id: number;
     amount: number;
     amount_currency: string;
     btc_amount: number;
 }
 
+export interface LightningBuyOrderPayload {
+    direction: 'buy';
+    payment_method: 'lightning';
+    amount_sats: number;
+    memo?: string;
+}
+
 export interface SellOrderPayload {
     direction: 'sell';
+    payment_method: 'on_chain';
     provider_id: number;
     amount: number;
     btc_amount: number;
     amount_currency: string;
     payout_data: PayoutData;
     total_amount: string;
+}
+
+export interface LightningSellOrderPayload {
+    direction: 'sell';
+    payment_method: 'lightning';
+    ln_invoice: string;
 }
 
 export interface OrderUpdatePayload {
@@ -148,27 +166,38 @@ export interface OrderUpdatePayload {
   status?: 'awaiting_confirmation';
 }
 
+// --- Order Type ---
 
 export interface Order {
     id: number;
     user: string;
-    provider: BuyProvider;
-    provider_id: number;
+    provider?: BuyProvider; // Optional for Lightning
+    provider_id: number | null;
     direction: 'buy' | 'sell';
-    amount_currency: string;
-    amount: string;
-    fee: string;
-    total_amount: string;
-    payment_proof: { [key: string]: any };
+    payment_method: 'on_chain' | 'lightning';
+    amount_currency: string | null;
+    amount: string | null;
+    fee: string | null;
+    total_amount: string | null;
+    payout_data: PayoutData | null;
+    payment_proof: { [key: string]: any } | null;
     status: 'pending' | 'awaiting_confirmation' | 'completed' | 'failed';
     note: string | null;
+    created_at: string;
+    updated_at: string;
+    
+    // On-Chain fields
     btc_address: string | null;
     btc_amount: string | null;
     btc_txid: string | null;
-    created_at: string;
-    updated_at: string;
-    payout_data?: PayoutData;
+
+    // Lightning fields
+    ln_invoice: string | null;
+    ln_amount_sats: number | null;
+    ln_payment_hash: string | null;
+    ln_paid_at: string | null;
 }
+
 
 // Lightning Network Types
 export interface LightningBalance {
@@ -202,11 +231,16 @@ export interface LightningPayment {
   created_at: string;
 }
 
+export interface LightningPaymentResponse {
+  payment: LightningPayment;
+  order: Order;
+  amount_sats: number;
+}
+
+
 export interface PayLightningRequestPayload {
   request: string;
   amount_sats?: number;
-  type: 'invoice' | 'lnurl' | 'ln_address';
-  internal: boolean;
 }
 
 export interface DecodedLightningRequest {

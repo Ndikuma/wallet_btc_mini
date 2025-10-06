@@ -1,14 +1,14 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/lib/api";
-import type { Balance, SellProvider, FeeEstimation, SellOrderPayload, PayoutData, DecodedLightningRequest, LightningBalance } from "@/lib/types";
+import type { Balance, SellProvider, FeeEstimation, SellOrderPayload, PayoutData, Order } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check, Zap, Construction, ScanLine, MessageSquare, Wallet, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check, Zap, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,10 +34,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { getFiat } from "@/lib/utils";
-import jsQR from "jsqr";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
+import { Textarea } from "@/components/ui/textarea";
 
 const networkSchema = z.object({
     network: z.enum(["on-chain", "lightning"]),
@@ -58,188 +56,82 @@ const paymentDetailsSchema = z.object({
     phone_number: z.string().min(1, "Le numéro de téléphone est requis."),
     account_number: z.string().min(1, "Le numéro de compte est requis."),
     email: z.string().email("Veuillez entrer une adresse e-mail valide.").optional(),
-})
+});
 
 type FormData = {
     network?: "on-chain" | "lightning";
     amount?: number;
     providerId?: string;
     paymentDetails?: PayoutData;
+    lightning_invoice?: string;
 };
 
-type PaymentStep = "input" | "confirm" | "success";
 
 const LightningSell = () => {
     const { toast } = useToast();
     const router = useRouter();
-    const [step, setStep] = useState<PaymentStep>("input");
-    const [request, setRequest] = useState("");
-    const [decoded, setDecoded] = useState<DecodedLightningRequest | null>(null);
-    const [isPaying, setIsPaying] = useState(false);
-    const [isDecoding, setIsDecoding] = useState(false);
-    const [decodeError, setDecodeError] = useState<string | null>(null);
-    const [isScanning, setIsScanning] = useState(false);
-    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-     useEffect(() => {
-        if (!isScanning) return;
-        let stream: MediaStream | null = null;
-        let animationFrameId: number;
+    const form = useForm<{ invoice: string }>({
+        resolver: zodResolver(z.object({ invoice: z.string().min(10, "La facture semble invalide.") })),
+    });
 
-        const scanQRCode = () => {
-            if (videoRef.current?.readyState === videoRef.current?.HAVE_ENOUGH_DATA && canvasRef.current) {
-                const video = videoRef.current;
-                const canvas = canvasRef.current;
-                const ctx = canvas.getContext("2d");
-                if (ctx) {
-                    canvas.height = video.videoHeight;
-                    canvas.width = video.videoWidth;
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    if (code) {
-                        const data = code.data.toLowerCase().replace("lightning:", "");
-                        setRequest(data);
-                        toast({ title: "Code scanné avec succès" });
-                        setIsScanning(false);
-                        return;
-                    }
-                }
-            }
-            animationFrameId = requestAnimationFrame(scanQRCode);
-        };
-
-        const startScan = async () => {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                setHasCameraPermission(true);
-                if (videoRef.current) videoRef.current.srcObject = stream;
-            } catch (err) {
-                setHasCameraPermission(false);
-            }
-        };
-
-        startScan();
-        animationFrameId = requestAnimationFrame(scanQRCode);
-        return () => {
-            stream?.getTracks().forEach(track => track.stop());
-            cancelAnimationFrame(animationFrameId);
-        };
-    }, [isScanning, toast]);
-
-
-    const handleDecode = async () => {
-        if (!request) return;
-        setIsDecoding(true);
-        setDecodeError(null);
-        setDecoded(null);
+    const handleSubmit = async (data: { invoice: string }) => {
+        setIsLoading(true);
         try {
-            const res = await api.decodeLightningRequest({ request });
-            setDecoded(res.data);
-            setStep("confirm");
+            const response = await api.createLightningSellOrder({
+                direction: 'sell',
+                payment_method: 'lightning',
+                ln_invoice: data.invoice,
+            });
+            const newOrder: Order = response.data;
+            toast({
+                title: "Commande de vente Lightning créée",
+                description: `Commande #${newOrder.id} créée. Veuillez confirmer le paiement.`,
+            });
+            router.push(`/orders/${newOrder.id}`);
         } catch (err: any) {
-            setDecodeError(err.message);
             toast({ variant: "destructive", title: "Erreur", description: err.message });
         } finally {
-            setIsDecoding(false);
+            setIsLoading(false);
         }
-    }
-
-    const handlePay = async () => {
-        if (!decoded) return;
-        setIsPaying(true);
-        try {
-            await api.payLightningInvoice({
-                request,
-                amount_sats: decoded.amount_sats || undefined,
-                type: decoded.type,
-                internal: decoded.internal,
-            });
-            setStep("success");
-        } catch (err: any) {
-            toast({ variant: "destructive", title: "Échec du paiement", description: err.message });
-        } finally {
-            setIsPaying(false);
-        }
-    }
-
-    if (step === 'success') {
-        return (
-            <Card className="p-8 text-center">
-                <CheckCircle2 className="mx-auto size-20 text-green-500" />
-                <CardHeader>
-                    <CardTitle className="text-2xl">Paiement Envoyé</CardTitle>
-                    <CardDescription>Votre transaction a été complétée avec succès.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Button asChild className="w-full">
-                        <Link href="/lightning">Retour au portefeuille Lightning</Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        )
-    }
-
-    if (step === 'confirm' && decoded) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Confirmer le Paiement</CardTitle>
-                    <CardDescription>Vérifiez les détails avant de payer.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                     <div className="space-y-4 rounded-lg border bg-secondary/50 p-4">
-                        {decoded.payee_pubkey && <p className="text-sm"><span className="font-semibold">À:</span> <span className="font-mono break-all text-xs">{decoded.payee_pubkey}</span></p>}
-                        {decoded.memo && <p className="text-sm"><span className="font-semibold">Mémo:</span> {decoded.memo}</p>}
-                        <p className="text-lg font-bold">{decoded.amount_sats ? `${decoded.amount_sats} sats` : 'Montant flexible'}</p>
-                    </div>
-                </CardContent>
-                <CardFooter className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" onClick={() => setStep('input')}>Retour</Button>
-                    <Button onClick={handlePay} disabled={isPaying}>
-                        {isPaying ? <Loader2 className="mr-2 size-4 animate-spin"/> : null}
-                        Payer
-                    </Button>
-                </CardFooter>
-            </Card>
-        )
-    }
+    };
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Zap className="text-primary"/>Vendre / Payer via Lightning</CardTitle>
-                <CardDescription>Collez une facture ou scannez un QR code pour effectuer un paiement.</CardDescription>
+                <CardDescription>Collez une facture à payer. Une commande sera créée pour que vous puissiez confirmer et suivre la transaction.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <Textarea id="invoice" placeholder="lnbc... / user@domain.com / lnurl..." value={request} onChange={(e) => setRequest(e.target.value)} required rows={5} className="font-mono" />
-                 <Dialog open={isScanning} onOpenChange={setIsScanning}>
-                    <DialogTrigger asChild>
-                        <Button type="button" variant="outline" className="w-full"><ScanLine className="mr-2 size-4" />Scanner un QR code</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader><DialogTitle>Scanner le QR</DialogTitle><DialogDescription>Pointez votre caméra vers un code QR Lightning.</DialogDescription></DialogHeader>
-                        <div className="relative w-full aspect-square bg-muted rounded-md overflow-hidden">
-                            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                            <canvas ref={canvasRef} className="hidden" />
-                            <div className="absolute inset-0 border-4 border-primary rounded-lg" />
-                        </div>
-                        {hasCameraPermission === false && <Alert variant="destructive"><AlertTitle>Accès caméra requis</AlertTitle><AlertDescription>Veuillez autoriser l'accès à la caméra.</AlertDescription></Alert>}
-                    </DialogContent>
-                </Dialog>
-                {decodeError && <p className="text-sm text-destructive">{decodeError}</p>}
-            </CardContent>
-            <CardFooter>
-                <Button onClick={handleDecode} disabled={!request || isDecoding} className="w-full">
-                    {isDecoding && <Loader2 className="mr-2 size-4 animate-spin"/>}
-                    Suivant
-                </Button>
-            </CardFooter>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)}>
+                    <CardContent className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="invoice"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Facture Lightning (BOLT11)</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="lnbc..." {...field} required rows={5} className="font-mono" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit" disabled={isLoading} className="w-full">
+                            {isLoading && <Loader2 className="mr-2 size-4 animate-spin"/>}
+                            Créer la commande de paiement
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Form>
         </Card>
-    )
-}
+    );
+};
+
 
 export default function SellPage() {
     const { toast } = useToast();
@@ -337,10 +229,7 @@ export default function SellPage() {
             if(isStepValid) {
                 const newFormData = { ...formData, ...networkForm.getValues() };
                 setFormData(newFormData);
-                const network = newFormData.network;
-                if (network === 'lightning') {
-                    // Skip to Lightning component directly
-                } else if (network === 'on-chain') {
+                if (newFormData.network === 'on-chain') {
                     setCurrentStep(1);
                 }
             }
@@ -403,6 +292,7 @@ export default function SellPage() {
                 amount_currency: 'BTC',
                 payout_data: formData.paymentDetails,
                 total_amount: String(feeEstimation.sendable_bif),
+                payment_method: 'on_chain',
             };
             
             const response = await api.createSellOrder(orderPayload);
@@ -866,4 +756,3 @@ export default function SellPage() {
         </div>
     );
 }
-

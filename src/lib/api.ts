@@ -1,6 +1,5 @@
 
-
-import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload, OrderUpdatePayload, LightningBalance, CreateInvoicePayload, LightningInvoice, PayLightningRequestPayload, LightningPayment, LightningTransaction, DecodeLightningRequestPayload, DecodedLightningRequest } from '@/lib/types';
+import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, BuyOrderPayload, SellOrderPayload, OrderUpdatePayload, LightningBalance, CreateInvoicePayload, LightningInvoice, PayLightningRequestPayload, LightningPayment, LightningTransaction, DecodeLightningRequestPayload, DecodedLightningRequest, LightningBuyOrderPayload, LightningSellOrderPayload, LightningPaymentResponse } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
 const BACKEND_URL = 'https://indicating-exit-customise-vegetation.trycloudflare.com/';
@@ -125,6 +124,15 @@ const createSellOrder = (payload: SellOrderPayload): Promise<AxiosResponse<Order
     return axiosInstance.post('orders/', payload);
 }
 
+const createLightningBuyOrder = (payload: LightningBuyOrderPayload): Promise<AxiosResponse<Order>> => {
+    return axiosInstance.post('orders/', payload);
+};
+
+const createLightningSellOrder = (payload: LightningSellOrderPayload): Promise<AxiosResponse<Order>> => {
+    return axiosInstance.post('orders/', payload);
+};
+
+
 const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');
 const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);
 const updateOrder = (orderId: number, data: OrderUpdatePayload): Promise<AxiosResponse<Order>> => {
@@ -135,7 +143,7 @@ const updateOrder = (orderId: number, data: OrderUpdatePayload): Promise<AxiosRe
 const getLightningBalance = (): Promise<AxiosResponse<LightningBalance>> => axiosInstance.get('lightning/balance/');
 const getLightningTransactions = (): Promise<AxiosResponse<PaginatedResponse<LightningTransaction>>> => axiosInstance.get('lightning/transactions/');
 const generateLightningInvoice = (payload: CreateInvoicePayload): Promise<AxiosResponse<LightningInvoice>> => axiosInstance.post('lightning/invoices/', payload);
-const payLightningInvoice = (payload: PayLightningRequestPayload): Promise<AxiosResponse<LightningPayment>> => axiosInstance.post('lightning/payments/', payload);
+const payLightningInvoice = (payload: PayLightningRequestPayload): Promise<AxiosResponse<LightningPaymentResponse>> => axiosInstance.post('lightning/payments/', payload);
 const getLightningInvoice = (invoiceId: string): Promise<AxiosResponse<LightningInvoice>> => axiosInstance.get(`lightning/invoices/${invoiceId}/`);
 const decodeLightningRequest = (payload: DecodeLightningRequestPayload): Promise<AxiosResponse<DecodedLightningRequest>> => axiosInstance.post('lightning/decode/', payload);
 
@@ -165,6 +173,8 @@ const api = {
     calculateBuyFee,
     createBuyOrder,
     createSellOrder,
+    createLightningBuyOrder,
+    createLightningSellOrder,
     getOrders,
     getOrder,
     updateOrder,

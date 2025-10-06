@@ -25,6 +25,7 @@ import {
   Clock,
   Loader2,
   Zap,
+  Bitcoin,
 } from "lucide-react";
 import { cn, shortenText } from "@/lib/utils.tsx";
 import api from "@/lib/api";
@@ -405,10 +406,16 @@ export default function TransactionsPage() {
         </p>
       </div>
       
-      <Tabs defaultValue="on-chain" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="on-chain">On-Chain</TabsTrigger>
-                <TabsTrigger value="lightning">Lightning</TabsTrigger>
+       <Tabs defaultValue="on-chain" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 h-auto">
+                <TabsTrigger value="on-chain" className="py-2.5 text-base gap-2">
+                    <Bitcoin className="size-5" />
+                    On-Chain
+                </TabsTrigger>
+                <TabsTrigger value="lightning" className="py-2.5 text-base gap-2">
+                    <Zap className="size-5" />
+                    Lightning
+                </TabsTrigger>
             </TabsList>
             <TabsContent value="on-chain" className="pt-4">
                 <OnChainTransactions />

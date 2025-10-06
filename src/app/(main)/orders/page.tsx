@@ -265,7 +265,7 @@ export default function OrdersPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Mes Commandes</h1>
         <p className="text-muted-foreground">
-          Suivez le statut de vos commandes d'achat et de vente.
+          Suivez le statut de vos commandes d'achat et de vente et consultez vos transactions Lightning.
         </p>
       </div>
 
@@ -284,3 +284,5 @@ export default function OrdersPage() {
     </div>
   );
 }
+
+    

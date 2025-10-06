@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -5,7 +6,6 @@ import { Inter, Source_Code_Pro } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/context/theme-provider';
 import { SettingsProvider } from '@/context/settings-context';
-import { WalletProvider } from '@/context/wallet-context';
 
 const fontBody = Inter({
   subsets: ['latin'],
@@ -35,9 +35,7 @@ export default function RootLayout({
       <body className={cn("font-body antialiased", fontBody.variable, fontCode.variable)}>
         <SettingsProvider>
             <ThemeProvider>
-              <WalletProvider>
                 {children}
-              </WalletProvider>
               <Toaster />
             </ThemeProvider>
         </SettingsProvider>

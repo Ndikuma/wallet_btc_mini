@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -121,7 +122,7 @@ const OnChainOrders = () => {
     setError(null);
     try {
       const response = await api.getOrders({ payment_method: 'on_chain' });
-      setOrders(response.data.results || response.data);
+      setOrders(response.data.results || []);
     } catch (err: any) {
       setError(err.message || "Échec du chargement des commandes.");
     } finally {

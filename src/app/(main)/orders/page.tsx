@@ -6,7 +6,7 @@ import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import api from "@/lib/api";
-import type { Order, LightningTransaction } from "@/lib/types";
+import type { Order } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -15,12 +15,11 @@ import {
   CardDescription
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, Zap, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { AlertCircle, ShoppingCart, Clock, CircleCheck, CircleX, Hourglass, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import type { VariantProps } from "class-variance-authority";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 
 const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
   switch (status.toLowerCase()) {
@@ -50,6 +49,11 @@ const getStatusIcon = (status: string) => {
     }
 }
 
+const formatSats = (sats: number | null | undefined) => {
+  if (sats === null || sats === undefined) return '0';
+  return new Intl.NumberFormat("fr-FR").format(sats);
+};
+
 const OrderCard = ({ order }: { order: Order }) => (
   <Card className="hover:border-primary/50 transition-colors">
     <Link href={`/orders/${order.id}`} className="block h-full">
@@ -69,11 +73,16 @@ const OrderCard = ({ order }: { order: Order }) => (
         <div className="flex justify-between items-center">
             <div>
                 <p className="text-sm text-muted-foreground">Fournisseur</p>
-                <p className="font-semibold">{order.provider.name}</p>
+                <p className="font-semibold">{order.provider?.name || 'N/A'}</p>
             </div>
             <div className="text-right">
                 <p className="text-sm text-muted-foreground">Total</p>
-                <p className="font-semibold">{order.total_amount} {order.amount_currency}</p>
+                <p className="font-semibold">
+                  {order.payment_method === 'lightning' 
+                    ? `${formatSats(order.ln_amount_sats)} sats`
+                    : `${order.total_amount} ${order.amount_currency}`
+                  }
+                </p>
             </div>
         </div>
       </CardContent>
@@ -90,7 +99,7 @@ const OnChainOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.getOrders();
+      const response = await api.getOrders({ payment_method: 'on_chain' });
       setOrders(response.data.results || response.data);
     } catch (err: any) {
       setError(err.message || "Échec du chargement des commandes.");
@@ -148,58 +157,33 @@ const OnChainOrders = () => {
   );
 }
 
-const formatSats = (sats: number) => {
-  return new Intl.NumberFormat("fr-FR").format(sats);
-};
-
-const getLightningStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'paid':
-      case 'succeeded':
-      case 'confirmed':
-        return <CircleCheck className="size-3.5" />;
-      case 'pending': return <Clock className="size-3.5" />;
-       case 'failed':
-       case 'expired':
-        return <CircleX className="size-3.5" />;
-      default: return <AlertCircle className="size-3.5" />;
-    }
-}
-
 const LightningOrders = () => {
-    const [transactions, setTransactions] = useState<LightningTransaction[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchTransactions = useCallback(async () => {
+    const fetchOrders = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.getLightningTransactions();
-            const results = response.data.results || response.data || [];
-            setTransactions(results);
+            const response = await api.getOrders({ payment_method: 'lightning' });
+            setOrders(response.data.results || response.data || []);
         } catch (err: any) {
-            setError(err.message || "Impossible de charger l'historique des transactions.");
+            setError(err.message || "Impossible de charger les commandes Lightning.");
         } finally {
             setLoading(false);
         }
     }, []);
 
      useEffect(() => {
-        fetchTransactions();
-    }, [fetchTransactions]);
+        fetchOrders();
+    }, [fetchOrders]);
 
     if (loading) {
         return (
             <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                    <Card key={i}><CardContent className="p-4"><div className="flex items-center gap-4 h-16">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-3 w-1/2" />
-                        </div>
-                    </div></CardContent></Card>
+                    <Skeleton key={i} className="h-40 w-full" />
                 ))}
             </div>
         )
@@ -212,7 +196,7 @@ const LightningOrders = () => {
                     <AlertCircle className="mx-auto h-8 w-8" />
                     <p className="mt-2 font-semibold">Erreur de chargement</p>
                     <p className="text-sm text-muted-foreground max-w-sm mx-auto">{error}</p>
-                    <Button onClick={fetchTransactions} variant="secondary" className="mt-4">
+                    <Button onClick={fetchOrders} variant="secondary" className="mt-4">
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                         Réessayer
                     </Button>
@@ -222,62 +206,21 @@ const LightningOrders = () => {
     }
 
     return (
-        <Card>
-            <CardContent className="p-0">
-                <div className="space-y-0">
-                    {transactions.length > 0 ? (
-                        transactions.map((tx, index) => (
-                            <div key={tx.payment_hash || `${index}-${tx.created_at}`}>
-                                <div className="flex items-center gap-4 p-4">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-                                    {tx.type === "incoming" ? (
-                                        <ArrowDownLeft className="size-5 text-green-500" />
-                                    ) : (
-                                        <ArrowUpRight className="size-5 text-red-500" />
-                                    )}
-                                    </div>
-                                    <div className="flex-1">
-                                    <p
-                                        className={`font-semibold ${
-                                        tx.type === "incoming"
-                                            ? "text-green-500"
-                                            : "text-red-500"
-                                        }`}
-                                    >
-                                        {tx.type === "incoming" ? "+" : "-"}
-                                        {formatSats(tx.amount_sats)} sats
-                                    </p>
-                                    <p className="text-sm text-muted-foreground truncate">
-                                        {tx.memo || (tx.type === 'incoming' ? 'Paiement reçu' : 'Paiement envoyé')}
-                                    </p>
-                                    </div>
-                                    <div className="text-right space-y-1">
-                                        <p className="text-xs text-muted-foreground capitalize">
-                                          {format(parseISO(tx.created_at), "d MMM", { locale: fr })}
-                                        </p>
-                                        <Badge variant={getStatusVariant(tx.status)} className="capitalize text-xs py-0.5 px-1.5 font-medium">
-                                            {getLightningStatusIcon(tx.status)}
-                                            <span className="ml-1">{tx.status}</span>
-                                        </Badge>
-                                    </div>
-                                </div>
-                                {index < transactions.length - 1 && (
-                                    <Separator />
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <div className="p-8 text-center text-muted-foreground">
-                            <Zap className="mx-auto h-12 w-12 text-muted-foreground" />
-                            <p className="mt-4">Aucune transaction Lightning pour le moment.</p>
-                             <Button asChild className="mt-4">
-                                <Link href="/lightning">Aller au Portefeuille Lightning</Link>
-                            </Button>
-                        </div>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
+        <div className="space-y-4">
+            {orders.length > 0 ? (
+                orders.map((order) => <OrderCard key={order.id} order={order} />)
+            ) : (
+                <Card className="flex h-48 items-center justify-center">
+                    <div className="text-center text-muted-foreground">
+                        <Zap className="mx-auto h-12 w-12" />
+                        <p className="mt-4">Aucune commande Lightning pour le moment.</p>
+                         <Button asChild className="mt-4">
+                            <Link href="/lightning">Aller au Portefeuille Lightning</Link>
+                        </Button>
+                    </div>
+                </Card>
+            )}
+        </div>
     )
 }
 
@@ -308,6 +251,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-
-    
-    

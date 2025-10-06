@@ -18,8 +18,7 @@ function getCookie(name: string): string | null {
   return null;
 }
 
-function LandingPage() {
-  return (
+const LandingPage = () => (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-background/80 backdrop-blur-sm">
         <div className="container flex h-20 items-center justify-between py-6">
@@ -73,11 +72,10 @@ function LandingPage() {
         </section>
       </main>
     </div>
-  );
-}
+);
 
 
-export default function Page() {
+export default function RootPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 

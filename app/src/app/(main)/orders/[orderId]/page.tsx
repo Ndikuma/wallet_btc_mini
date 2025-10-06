@@ -409,7 +409,7 @@ export default function OrderDetailsPage() {
                         <CardDescription>Cette commande est terminée et les fonds ont été envoyés.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {isLightning ? (
+                        {order.payment_method === 'lightning' ? (
                             <>
                                 <div className="space-y-1">
                                     <Label>Montant</Label>

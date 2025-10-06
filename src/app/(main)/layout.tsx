@@ -19,7 +19,6 @@ export default function MainLayout({
 }) {
   return (
     <WalletProvider>
-      <SettingsProvider>
         <SidebarProvider>
           <Sidebar collapsible="icon" variant="inset">
             <Suspense>
@@ -40,7 +39,6 @@ export default function MainLayout({
             <MobileNav />
           </SidebarInset>
         </SidebarProvider>
-      </SettingsProvider>
     </WalletProvider>
   );
 }

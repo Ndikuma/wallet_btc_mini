@@ -48,8 +48,8 @@ export default function GenerateInvoicePage() {
           clearInterval(intervalId);
         }
       } catch (error: any) {
-        // Stop polling on error to avoid spamming
-        console.error("Failed to check invoice status:", error);
+        // Stop polling on error to avoid spamming the console.
+        // This can happen if the backend hasn't processed the invoice yet.
         clearInterval(intervalId);
       }
     }, 3000); // Poll every 3 seconds

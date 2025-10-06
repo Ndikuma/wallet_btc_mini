@@ -5,7 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import api from '@/lib/api';
 import type { Balance } from '@/lib/types';
 import { AxiosError } from 'axios';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface WalletContextType {
   balance: Balance | null;
@@ -21,6 +21,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const fetchBalance = useCallback(async () => {
     setIsLoading(true);
@@ -29,14 +30,14 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       const balanceRes = await api.getWalletBalance();
       setBalance(balanceRes.data);
     } catch (err: any) {
-        if (err.message?.includes("Invalid token") || (err instanceof AxiosError && (err.response?.status === 401))) {
+        if (err instanceof AxiosError && (err.response?.status === 401)) {
             localStorage.removeItem("authToken");
             document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-            router.push("/login");
-            return;
-        }
-
-        if (err instanceof AxiosError && err.response?.status === 403) {
+            setError("Session invalide. Veuillez vous reconnecter.");
+            if (pathname !== '/login' && pathname !== '/register' && pathname !== '/') {
+                 router.push("/login");
+            }
+        } else if (err instanceof AxiosError && err.response?.status === 403) {
              setError("Votre portefeuille est en cours de configuration. Cela peut prendre un moment. Veuillez essayer d'actualiser dans quelques secondes.");
         } else {
             setError(err.message || "Impossible de charger le solde.");
@@ -45,14 +46,14 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     if (token) {
         fetchBalance();
     } else {
-        setIsLoading(false);
+        setIsLoading(false); // If no token, we are not loading anything.
     }
   }, [fetchBalance]);
 

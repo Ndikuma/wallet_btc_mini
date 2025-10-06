@@ -1,12 +1,17 @@
+
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BitcoinIcon } from "@/components/icons";
 import { ArrowRight, Loader2 } from "lucide-react";
 
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('authToken');
+}
 
 const LandingPage = () => (
     <div className="flex min-h-dvh flex-col bg-background">
@@ -64,43 +69,27 @@ const LandingPage = () => (
     </div>
 );
 
-// This component handles the client-side check and redirection.
-// It will only run on the client, after the initial render.
-const AuthRedirect = () => {
+
+export default function RootPage() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     if (token) {
-      setIsAuthenticated(true);
       router.replace('/dashboard');
     } else {
-      setIsAuthenticated(false);
+      setLoading(false);
     }
   }, [router]);
 
-  // While checking, show a loader to prevent flashes of the landing page
-  if (isAuthenticated === null || isAuthenticated === true) {
+  if (loading) {
     return (
-      <div className="flex h-dvh w-full items-center justify-center bg-background">
+       <div className="flex h-dvh w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  // If not authenticated, show the landing page
   return <LandingPage />;
-};
-
-export default function RootPage() {
-  return (
-    <Suspense fallback={
-        <div className="flex h-dvh w-full items-center justify-center bg-background">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-    }>
-        <AuthRedirect />
-    </Suspense>
-  );
 }

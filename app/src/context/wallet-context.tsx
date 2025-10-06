@@ -33,8 +33,10 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         if (err instanceof AxiosError && (err.response?.status === 401)) {
             // Invalid token. Clean up state but DO NOT redirect here to avoid server/client race conditions.
             // Let protected routes handle redirection on the next navigation attempt.
-            localStorage.removeItem("authToken");
-            document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem("authToken");
+                document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            }
             setError("Session invalide. Veuillez vous reconnecter.");
         } else if (err instanceof AxiosError && err.response?.status === 403) {
              setError("Votre portefeuille est en cours de configuration. Cela peut prendre un moment. Veuillez essayer d'actualiser dans quelques secondes.");
@@ -48,8 +50,16 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    // Since this provider is only on authenticated routes, we can always fetch.
-    fetchBalance();
+    // Only fetch if there is a token. This check makes it safer for SSR.
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    if (token) {
+        fetchBalance();
+    } else {
+        // If there's no token, we can assume the user is not logged in.
+        // The middleware or page logic should handle redirection if necessary.
+        setIsLoading(false);
+        setError("Non authentifié.");
+    }
   }, [fetchBalance, pathname]);
 
   return (

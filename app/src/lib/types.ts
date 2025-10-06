@@ -1,5 +1,3 @@
-
-
 export interface User {
   id: number;
   username: string;
@@ -191,10 +189,10 @@ export interface OrderBase {
 
 export interface OnChainOrder extends OrderBase {
   payment_method: "on_chain";
-  btc_address?: string | null;
-  btc_amount?: string | null;
-  btc_txid?: string | null;
-  // Make lightning fields optional
+  btc_address: string | null;
+  btc_amount: string | null;
+  btc_txid: string | null;
+  // Make lightning fields optional and never exist
   ln_invoice?: never;
   ln_amount_sats?: never;
   ln_payment_hash?: never;
@@ -203,11 +201,11 @@ export interface OnChainOrder extends OrderBase {
 
 export interface LightningOrder extends OrderBase {
   payment_method: "lightning";
-  ln_invoice?: string | null;
-  ln_amount_sats?: number | null;
-  ln_payment_hash?: string | null;
-  ln_paid_at?: string | null;
-  // Make on-chain fields optional
+  ln_invoice: string | null;
+  ln_amount_sats: number | null;
+  ln_payment_hash: string | null;
+  ln_paid_at: string | null;
+  // Make on-chain fields optional and never exist
   btc_address?: never;
   btc_amount?: never;
   btc_txid?: never;

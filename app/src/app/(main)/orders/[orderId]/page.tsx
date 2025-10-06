@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -409,7 +408,7 @@ export default function OrderDetailsPage() {
                         <CardDescription>Cette commande est terminée et les fonds ont été envoyés.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {order.payment_method === 'lightning' ? (
+                        {order.payment_method === 'lightning' && order.direction === 'buy' ? (
                             <>
                                 <div className="space-y-1">
                                     <Label>Montant</Label>

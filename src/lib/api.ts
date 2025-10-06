@@ -125,7 +125,9 @@ const createSellOrder = (payload: SellOrderPayload): Promise<AxiosResponse<Order
     return axiosInstance.post('orders/', payload);
 }
 
-const getOrders = (): Promise<AxiosResponse<PaginatedResponse<Order>>> => axiosInstance.get('orders/');
+const getOrders = (params?: { network?: 'on-chain' | 'lightning' }): Promise<AxiosResponse<PaginatedResponse<Order>>> => {
+    return axiosInstance.get('orders/', { params });
+}
 const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);
 const updateOrder = (orderId: number, data: OrderUpdatePayload): Promise<AxiosResponse<Order>> => {
     return axiosInstance.patch(`orders/${orderId}/`, data);

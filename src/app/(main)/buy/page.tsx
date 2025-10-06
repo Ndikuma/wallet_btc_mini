@@ -14,10 +14,9 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, AlertCircle, ArrowRight, Landmark, Loader2, Zap, Construction, Bitcoin, FileText } from "lucide-react";
+import { ArrowLeft, AlertCircle, ArrowRight, Landmark, Loader2, Zap, Bitcoin, FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -296,5 +295,7 @@ export default function BuyPage() {
     </div>
   );
 }
+
+    
 
     

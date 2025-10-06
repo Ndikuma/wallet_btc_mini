@@ -8,7 +8,7 @@ import { z } from "zod";
 import api from "@/lib/api";
 import type { Balance, SellProvider, FeeEstimation, SellOrderPayload, PayoutData, DecodedLightningRequest, LightningBalance } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check, Zap, Construction, ScanLine, MessageSquare, Wallet, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Bitcoin, Landmark, Loader2, Banknote, Info, User as UserIcon, Phone, Mail, AlertCircle, Check, Zap, ScanLine, Wallet, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -375,7 +375,7 @@ export default function SellPage() {
 
     const handleBack = () => {
         if (currentStep === 0 && formData.network) {
-            setFormData({}); // Reset network choice
+             setFormData(prev => ({...prev, network: undefined }));
         } else {
             setCurrentStep(prev => Math.max(0, prev - 1));
         }
@@ -435,7 +435,7 @@ export default function SellPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <RadioGroup onValueChange={(value) => { field.onChange(value); setFormData(prev => ({ ...prev, network: value as "on-chain" | "lightning" }))}} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <FormItem>
                                                 <FormControl>
                                                     <RadioGroupItem value="on-chain" id="on-chain" className="peer sr-only" />
@@ -463,9 +463,6 @@ export default function SellPage() {
                             )}
                         />
                     </CardContent>
-                    <CardFooter>
-                        <Button type="submit" className="w-full" size="lg">Suivant</Button>
-                    </CardFooter>
                 </form>
             </Form>
         </Card>
@@ -836,7 +833,7 @@ export default function SellPage() {
                 <p className="text-muted-foreground">Suivez les étapes pour vendre vos Bitcoins en toute sécurité.</p>
             </div>
             
-            {formData.network === 'on-chain' && (
+            {formData.network === 'on-chain' && currentStep > 0 && (
                 <div className="flex w-full items-center justify-between rounded-lg border bg-card p-2 text-xs sm:text-sm">
                     {onChainSteps.map((step, index) => (
                         <React.Fragment key={index}>
@@ -867,3 +864,5 @@ export default function SellPage() {
     );
 }
 
+
+    

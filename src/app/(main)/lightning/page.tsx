@@ -3,14 +3,18 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowUpRight, Loader2, AlertCircle, ArrowDownLeft, Send, FileText, Zap } from "lucide-react";
+import { ArrowUpRight, Loader2, AlertCircle, ArrowDownLeft, Send, FileText, Zap, CircleCheck, Clock, CircleX } from "lucide-react";
 import api from "@/lib/api";
 import type { LightningBalance, LightningTransaction } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFiat } from "@/lib/utils";
+import { Badge, badgeVariants } from "@/components/ui/badge";
+import type { VariantProps } from "class-variance-authority";
 
 const formatSats = (sats: number) => {
   return new Intl.NumberFormat("fr-FR").format(sats);
@@ -29,6 +33,34 @@ const ActionButton = ({ href, icon: Icon, title, description }: { href: string; 
         </div>
     </Link>
 );
+
+const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
+  switch (status.toLowerCase()) {
+    case 'paid':
+    case 'succeeded':
+    case 'confirmed':
+       return 'success';
+    case 'pending': return 'warning';
+    case 'failed':
+    case 'expired':
+       return 'destructive';
+    default: return 'secondary';
+  }
+}
+
+const getStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'paid':
+      case 'succeeded':
+      case 'confirmed':
+        return <CircleCheck className="size-3.5" />;
+      case 'pending': return <Clock className="size-3.5" />;
+       case 'failed':
+       case 'expired':
+        return <CircleX className="size-3.5" />;
+      default: return <AlertCircle className="size-3.5" />;
+    }
+}
 
 
 export default function LightningPage() {
@@ -194,13 +226,14 @@ export default function LightningPage() {
                             {tx.memo || (tx.type === 'incoming' ? 'Paiement reçu' : 'Paiement envoyé')}
                         </p>
                         </div>
-                         <div className="text-right">
-                             <p className="text-xs text-muted-foreground">
-                                {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
+                         <div className="text-right space-y-1">
+                             <p className="text-xs text-muted-foreground capitalize">
+                                {format(new Date(tx.created_at), "d MMM", { locale: fr })}
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                               Frais: {tx.fee_sats} sats
-                            </p>
+                            <Badge variant={getStatusVariant(tx.status)} className="capitalize text-xs py-0.5 px-1.5 font-medium">
+                                {getStatusIcon(tx.status)}
+                                <span className="ml-1">{tx.status}</span>
+                            </Badge>
                          </div>
                     </div>
                     {index < transactions.length - 1 && (
@@ -219,5 +252,3 @@ export default function LightningPage() {
     </div>
   );
 }
-
-    

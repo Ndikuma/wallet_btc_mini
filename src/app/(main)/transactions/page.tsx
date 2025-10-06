@@ -2,6 +2,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
   Card,
   CardContent,
@@ -242,6 +244,32 @@ const formatSats = (sats: number) => {
   return new Intl.NumberFormat("fr-FR").format(sats);
 };
 
+const getLightningStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
+  switch (status.toLowerCase()) {
+    case 'paid':
+    case 'succeeded':
+       return 'success';
+    case 'pending': return 'warning';
+    case 'failed':
+    case 'expired':
+       return 'destructive';
+    default: return 'secondary';
+  }
+}
+
+const getLightningStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'paid':
+      case 'succeeded':
+        return <CircleCheck className="size-3.5" />;
+      case 'pending': return <Clock className="size-3.5" />;
+       case 'failed':
+       case 'expired':
+        return <CircleX className="size-3.5" />;
+      default: return <AlertCircle className="size-3.5" />;
+    }
+}
+
 const LightningHistory = () => {
     const [transactions, setTransactions] = useState<LightningTransaction[]>([]);
     const [loading, setLoading] = useState(true);
@@ -269,13 +297,13 @@ const LightningHistory = () => {
         return (
             <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-4 px-2 h-20">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-3 w-1/2" />
-                        </div>
-                    </div>
+                  <Card key={i}><CardContent className="p-4"><div className="flex items-center gap-4 h-16">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-3 w-1/2" />
+                      </div>
+                  </div></CardContent></Card>
                 ))}
             </div>
         )
@@ -326,13 +354,14 @@ const LightningHistory = () => {
                                         {tx.memo || (tx.type === 'incoming' ? 'Paiement reçu' : 'Paiement envoyé')}
                                     </p>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-xs text-muted-foreground">
-                                            {new Date(tx.created_at).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
+                                    <div className="text-right space-y-1">
+                                        <p className="text-xs text-muted-foreground capitalize">
+                                            {format(new Date(tx.created_at), "d MMM", { locale: fr })}
                                         </p>
-                                        <p className="text-xs text-muted-foreground">
-                                        Frais: {tx.fee_sats} sats
-                                        </p>
+                                        <Badge variant={getLightningStatusVariant(tx.status)} className="capitalize text-xs py-0.5 px-1.5 font-medium">
+                                            {getLightningStatusIcon(tx.status)}
+                                            <span className="ml-1">{tx.status}</span>
+                                        </Badge>
                                     </div>
                                 </div>
                                 {index < transactions.length - 1 && (
@@ -378,5 +407,3 @@ export default function TransactionsPage() {
     </div>
   );
 }
-
-    

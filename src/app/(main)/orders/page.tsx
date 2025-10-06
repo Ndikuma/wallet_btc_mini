@@ -32,6 +32,7 @@ import {
     Hash,
     Landmark,
     CalendarClock,
+    Bitcoin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
@@ -49,13 +50,17 @@ import { useToast } from "@/hooks/use-toast";
 
 const getStatusVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
   switch (status.toLowerCase()) {
-    case 'completed': return 'success';
-    case 'paid': return 'success';
-    case 'succeeded': return 'success';
-    case 'pending': return 'warning';
-    case 'awaiting_confirmation': return 'warning';
-    case 'failed': return 'destructive';
-    case 'expired': return 'destructive';
+    case 'completed':
+    case 'paid':
+    case 'succeeded':
+       return 'success';
+    case 'pending':
+    case 'awaiting_confirmation':
+       return 'warning';
+    case 'failed':
+    case 'expired':
+    case 'cancelled':
+       return 'destructive';
     default: return 'secondary';
   }
 }
@@ -70,6 +75,7 @@ const getStatusIcon = (status: string) => {
       case 'awaiting_confirmation': return <Hourglass className="size-4" />;
       case 'failed':
       case 'expired':
+      case 'cancelled':
         return <CircleX className="size-4" />;
       default: return <ShoppingCart className="size-4" />;
     }
@@ -81,13 +87,13 @@ const OrderCard = ({ order }: { order: Order }) => (
       <CardHeader>
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-                {getStatusIcon(order.status)}
-                <CardTitle className="text-lg capitalize">Commande d'{order.direction === 'buy' ? 'Achat' : 'Vente'} #{order.id}</CardTitle>
+                {order.payment_method === 'lightning' ? <Zap className="size-5" /> : <Bitcoin className="size-5" />}
+                <CardTitle className="text-lg capitalize">Commande #{order.id}</CardTitle>
             </div>
-            <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status.replace('_', ' ')}</Badge>
+            <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status.replace(/_/g, ' ')}</Badge>
         </div>
         <CardDescription>
-          {new Date(order.created_at).toLocaleString('fr-FR')}
+          {new Date(order.created_at).toLocaleString('fr-FR')} - {order.direction === 'buy' ? 'Achat' : 'Vente'}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -115,8 +121,7 @@ const OnChainOrders = () => {
     setLoading(true);
     setError(null);
     try {
-      // Explicitly fetch on-chain orders
-      const response = await api.getOrders({ network: 'on-chain' });
+      const response = await api.getOrders({ payment_method: 'on_chain' });
       setOrders(response.data.results || response.data);
     } catch (err: any) {
       setError(err.message || "Échec du chargement des commandes.");

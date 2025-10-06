@@ -1,6 +1,5 @@
 
-
-import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, OnChainBuyOrderPayload, OnChainSellOrderPayload, OrderUpdatePayload, LightningBalance, CreateInvoicePayload, LightningInvoice, PayLightningRequestPayload, LightningPayment, LightningTransaction, DecodeLightningRequestPayload, DecodedLightningRequest, OrderPayload } from '@/lib/types';
+import type { ApiResponse, AuthResponse, PaginatedResponse, Transaction, User, Wallet, Balance, FeeEstimation, BuyProvider, BuyFeeCalculation, Order, SellProvider, OrderUpdatePayload, LightningBalance, CreateInvoicePayload, LightningInvoice, PayLightningRequestPayload, LightningPayment, LightningTransaction, DecodeLightningRequestPayload, DecodedLightningRequest, OrderPayload } from '@/lib/types';
 import axios, { type AxiosError, type AxiosResponse, type AxiosInstance } from 'axios';
 
 const BACKEND_URL = 'https://indicating-exit-customise-vegetation.trycloudflare.com/';
@@ -122,7 +121,7 @@ const createOrder = (payload: OrderPayload): Promise<AxiosResponse<Order>> => {
     return axiosInstance.post('orders/', payload);
 }
 
-const getOrders = (params?: { network?: 'on-chain' | 'lightning' }): Promise<AxiosResponse<PaginatedResponse<Order>>> => {
+const getOrders = (params?: { payment_method?: 'on_chain' | 'lightning' }): Promise<AxiosResponse<PaginatedResponse<Order>>> => {
     return axiosInstance.get('orders/', { params });
 }
 const getOrder = (orderId: number): Promise<AxiosResponse<Order>> => axiosInstance.get(`orders/${orderId}/`);

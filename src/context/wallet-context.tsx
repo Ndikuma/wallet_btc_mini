@@ -29,16 +29,14 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       const balanceRes = await api.getWalletBalance();
       setBalance(balanceRes.data);
     } catch (err: any) {
-        if (err.message?.includes("Invalid token") || (err instanceof AxiosError && (err.response?.status === 401 || err.response?.status === 403))) {
-            // Handle token invalidation by logging the user out
+        if (err instanceof AxiosError && (err.response?.status === 401)) {
+            // This is the critical change: remove the automatic redirection from here.
+            // Just clear the invalid token and let the UI handle the state.
             localStorage.removeItem("authToken");
             document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-            router.push("/login");
-            // Don't set an error message, as the user will be redirected
-            return;
-        }
-
-        if (err instanceof AxiosError && err.response?.status === 403) {
+            // Don't router.push here to prevent race conditions.
+            setError("Session invalide. Veuillez vous reconnecter.");
+        } else if (err instanceof AxiosError && err.response?.status === 403) {
              setError("Votre portefeuille est en cours de configuration. Cela peut prendre un moment. Veuillez essayer d'actualiser dans quelques secondes.");
         } else {
             setError(err.message || "Impossible de charger le solde.");
@@ -47,17 +45,14 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     if (token) {
         fetchBalance();
     } else {
-        // If there's no token, we shouldn't attempt to fetch balance.
-        // This can happen on pages that are part of the main layout but don't require auth
-        // or if the user gets logged out.
-        setIsLoading(false);
+        setIsLoading(false); // If no token, we are not loading anything.
     }
   }, [fetchBalance]);
 

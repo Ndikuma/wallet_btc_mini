@@ -65,7 +65,7 @@ export default function DashboardPage() {
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
-  const { error: walletError } = useWallet();
+  const { error: walletError, refreshBalance } = useWallet();
 
   const fetchTransactions = useCallback(async () => {
     setLoadingTransactions(true);
@@ -81,7 +81,6 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    // Only fetch transactions if the wallet context doesn't have an error
     if (!walletError) {
       fetchTransactions();
     } else {
@@ -91,19 +90,15 @@ export default function DashboardPage() {
 
   
     if (walletError) {
-        const handleRefresh = () => {
-             window.location.reload();
-        };
-
         return (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
                 <Alert variant="destructive" className="max-w-lg">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Portefeuille non prêt</AlertTitle>
                     <AlertDescription>
                         {walletError}
                         <div className="mt-4">
-                            <Button onClick={handleRefresh}>Actualiser</Button>
+                            <Button onClick={refreshBalance}>Actualiser</Button>
                         </div>
                     </AlertDescription>
                 </Alert>
@@ -159,7 +154,7 @@ export default function DashboardPage() {
                   </div>
                 ))}
                 {transactionsError && (
-                     <div className="h-24 text-center flex flex-col items-center justify-center text-destructive">
+                     <div className="flex h-24 flex-col items-center justify-center text-center text-destructive">
                         <AlertCircle className="size-8 mb-2" />
                         <p className="font-semibold">Erreur de chargement des transactions</p>
                         <p className="text-sm">{transactionsError}</p>
@@ -205,7 +200,7 @@ export default function DashboardPage() {
                   })
                 )}
                 {!loadingTransactions && !transactionsError && recentTransactions.length === 0 && (
-                  <div className="h-24 text-center flex flex-col items-center justify-center text-muted-foreground">
+                  <div className="flex h-24 flex-col items-center justify-center text-center text-muted-foreground">
                     <Wallet className="size-8 mb-4" />
                     <p className="font-semibold">Aucune transaction disponible</p>
                     <p className="text-sm">Vos transactions récentes apparaîtront ici.</p>

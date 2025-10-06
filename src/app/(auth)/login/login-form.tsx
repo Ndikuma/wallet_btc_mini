@@ -59,6 +59,7 @@ export function LoginForm() {
       } else {
         router.push("/create-or-restore");
       }
+      // Refresh the router to ensure all server components are re-rendered with the new auth state.
       router.refresh(); 
 
     } catch (error: any) {

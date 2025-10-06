@@ -82,7 +82,7 @@ export interface FeeEstimation {
     sendable_usd: number;
     sendable_bif: number;
     network_fee_usd: number;
-network_fee_bif: number;
+    network_fee_bif: number;
 }
 
 export interface ProviderPaymentInfo {
@@ -191,17 +191,17 @@ export interface OrderBase {
 
 export interface OnChainOrder extends OrderBase {
   payment_method: "on_chain";
-  btc_address?: string | null;
-  btc_amount?: string | null;
-  btc_txid?: string | null;
+  btc_address: string | null;
+  btc_amount: string | null;
+  btc_txid: string | null;
 }
 
 export interface LightningOrder extends OrderBase {
   payment_method: "lightning";
-  ln_invoice?: string | null;
-  ln_amount_sats?: number | null;
-  ln_payment_hash?: string | null;
-  ln_paid_at?: string | null;
+  ln_invoice: string | null;
+  ln_amount_sats: number | null;
+  ln_payment_hash: string | null;
+  ln_paid_at: string | null;
 }
 
 export type Order = OnChainOrder | LightningOrder;

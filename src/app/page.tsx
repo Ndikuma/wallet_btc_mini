@@ -8,14 +8,9 @@ import { Button } from "@/components/ui/button";
 import { BitcoinIcon } from "@/components/icons";
 import { ArrowRight, Loader2 } from "lucide-react";
 
-function getCookie(name: string): string | null {
-  if (typeof document === 'undefined') {
-    return null;
-  }
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-  return null;
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('authToken');
 }
 
 const LandingPage = () => (
@@ -80,7 +75,7 @@ export default function RootPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getCookie('authToken');
+    const token = getAuthToken();
     if (token) {
       router.replace('/dashboard');
     } else {

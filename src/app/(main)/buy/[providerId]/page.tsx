@@ -266,8 +266,9 @@ export default function BuyWithProviderPage() {
                                           Vous recevrez
                                         </span>
                                         <span className="font-bold font-mono">
-                                            {feeCalc.btc_amount && `${feeCalc.btc_amount} BTC`}
-                                            {feeCalc.sats_amount && `${feeCalc.sats_amount} sats`}
+                                          {feeCalc.payment_method === 'lightning'
+                                            ? `${feeCalc.sats_amount} sats`
+                                            : `${feeCalc.btc_amount} BTC`}
                                         </span>
                                     </div>
                                 </div>

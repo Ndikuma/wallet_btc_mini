@@ -359,13 +359,13 @@ export default function OrderDetailsPage() {
     const [error, setError] = useState<string | null>(null);
 
     const fetchOrder = useCallback(async () => {
-        setLoading(true);
-        setError(null);
         if (isNaN(orderId)) {
             setError("L'ID de la commande est invalide.");
             setLoading(false);
             return;
         }
+        setLoading(true);
+        setError(null);
         try {
             const response = await api.getOrder(orderId);
             setOrder(response.data);
@@ -378,15 +378,7 @@ export default function OrderDetailsPage() {
     
      useEffect(() => {
         fetchOrder();
-        
-        const interval = setInterval(() => {
-            if (order && (order.status === 'pending' || order.status === 'awaiting_confirmation')) {
-                fetchOrder();
-            }
-        }, 10000); // Poll every 10 seconds
-
-        return () => clearInterval(interval);
-    }, [fetchOrder, order]);
+    }, [fetchOrder]);
 
 
     const handleSuccessfulSubmit = (updatedOrder: Order) => {
@@ -585,4 +577,5 @@ export default function OrderDetailsPage() {
             )}
         </div>
     );
-}
+
+    
